@@ -1,29 +1,50 @@
 # Product Requirements Document
 
 ## Vision
-_Describe what you are building and why._
+Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kalender, Aufgaben, Einkäufe, Essensplanung, Chat und ein Belohnungssystem für Kinder in einer einzigen Anwendung bündelt. Familien mit Kindern sollen ihren Alltag einfacher koordinieren können – von der Terminplanung bis zur Motivation der Kinder durch Gamification.
 
 ## Target Users
-_Who will use this product? Describe their needs and pain points._
+**Primär: Familien mit Kindern (5–16 Jahre)**
+- Eltern (Admins/Erwachsene): Koordinieren Termine, verteilen Aufgaben, planen Mahlzeiten, führen Einkaufslisten und motivieren Kinder über das Punktesystem.
+- Kinder: Sehen eigene Aufgaben und Termine, haken erledigte Aufgaben ab, sammeln Punkte, nutzen den Familienchat.
+
+**Kernbedürfnisse:**
+- Alle Familien-Infos an einem Ort statt verteilt über WhatsApp, Papierkalender und Notizzettel.
+- Kinder aktiv in den Familienalltag einbinden (Aufgaben + Belohnung).
+- Mehrgeräte-Nutzung: Desktop, Tablet, Smartphone.
 
 ## Core Features (Roadmap)
 
 | Priority | Feature | Status |
 |----------|---------|--------|
-| P0 (MVP) | _Feature 1_ | Planned |
-| P0 (MVP) | _Feature 2_ | Planned |
-| P1 | _Feature 3_ | Planned |
-| P2 | _Feature 4_ | Planned |
+| P0 (MVP) | PROJ-1: Authentifizierung & Onboarding | Planned |
+| P0 (MVP) | PROJ-2: Familienverwaltung | Planned |
+| P0 (MVP) | PROJ-3: Familien-Dashboard | Planned |
+| P0 (MVP) | PROJ-4: Familienkalender | Planned |
+| P0 (MVP) | PROJ-5: Aufgaben & To-Dos | Planned |
+| P0 (MVP) | PROJ-6: Belohnungssystem | Planned |
+| P1 | PROJ-7: Einkaufslisten | Planned |
+| P1 | PROJ-8: Essens- & Rezeptplanung | Planned |
+| P1 | PROJ-9: Chat & Kommunikation | Planned |
+| P1 | PROJ-10: Benachrichtigungen | Planned |
+| P2 | PROJ-11: Bild-Upload im Chat | Planned |
+| P2 | PROJ-12: iCloud Kalender Integration | Planned |
 
 ## Success Metrics
-_How will you measure success? (e.g., user signups, retention, task completion rate)_
+- Alle Familienmitglieder nutzen die App täglich (Dashboard, Kalender, Aufgaben).
+- Kinder erledigen zugewiesene Aufgaben und sammeln Punkte selbstständig.
+- Einkaufslisten und Essensplan werden wöchentlich gepflegt.
+- Keine externen Tools mehr nötig für interne Familienkoordination.
 
 ## Constraints
-_Budget, timeline, technical limitations, team size._
+- Privates Familienprojekt ohne festes Budget oder Deadline.
+- Solo-Entwickler: Fokus auf Einfachheit, schnelle Iterationen.
+- Tech-Stack festgelegt: Next.js (App Router) + Supabase + Tailwind CSS + shadcn/ui.
 
 ## Non-Goals
-_What are you explicitly NOT building in this version?_
-
----
-
-Use `/requirements` to create detailed feature specifications for each item in the roadmap above.
+- Keine offene öffentliche API für Drittanbieter (v1).
+- Kein Google Kalender Import (nur iCloud als P2).
+- Kein Social Login (Google etc.) in v1.
+- Keine nativen Mobile Apps (iOS/Android) – nur responsive Web.
+- Keine finanziellen Features (Budget, Ausgaben) in v1.
+- Kein technisches Belohnungssystem (Gutscheine, digitale Preise) – nur Punkteübersicht.
