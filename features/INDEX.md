@@ -12,7 +12,7 @@
 
 | ID | Feature | Status | Spec | Created |
 |----|---------|--------|------|---------|
-| PROJ-1 | Authentifizierung & Onboarding | Planned | [PROJ-1-authentifizierung-onboarding.md](PROJ-1-authentifizierung-onboarding.md) | 2026-03-18 |
+| PROJ-1 | Authentifizierung & Onboarding | In Progress | [PROJ-1-authentifizierung-onboarding.md](PROJ-1-authentifizierung-onboarding.md) | 2026-03-18 |
 | PROJ-2 | Familienverwaltung | Planned | [PROJ-2-familienverwaltung.md](PROJ-2-familienverwaltung.md) | 2026-03-18 |
 | PROJ-3 | Familien-Dashboard | Planned | [PROJ-3-familien-dashboard.md](PROJ-3-familien-dashboard.md) | 2026-03-18 |
 | PROJ-4 | Familienkalender | Planned | [PROJ-4-familienkalender.md](PROJ-4-familienkalender.md) | 2026-03-18 |

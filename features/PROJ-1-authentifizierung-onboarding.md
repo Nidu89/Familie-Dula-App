@@ -1,6 +1,6 @@
 # PROJ-1: Authentifizierung & Onboarding
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -44,7 +44,85 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Seitenstruktur
+
+```
+App (Next.js)
+│
+├── Middleware (schützt alle Routen serverseitig)
+│   ├── Nicht eingeloggt → weiter zu /login
+│   ├── Eingeloggt, keine Familie → weiter zu /onboarding
+│   └── Eingeloggt + Familie → Zugang zum App-Bereich
+│
+├── /login                      ← Öffentliche Route
+│   ├── E-Mail/Passwort-Formular
+│   ├── Link "Passwort vergessen"
+│   └── Link "Registrieren"
+│
+├── /register                   ← Öffentliche Route
+│   ├── E-Mail/Passwort-Formular (mit Bestätigung)
+│   └── Link "Bereits registriert"
+│
+├── /forgot-password            ← Öffentliche Route
+│   ├── E-Mail-Eingabe
+│   └── Bestätigungsmeldung nach Versand
+│
+├── /auth/reset-password        ← Öffentliche Route (via E-Mail-Link)
+│   └── Neues Passwort setzen
+│
+├── /auth/confirm               ← Callback von Supabase
+│   └── E-Mail-Bestätigung verarbeiten + weiterleiten
+│
+└── /onboarding                 ← Geschützte Route (nur eingeloggter Nutzer ohne Familie)
+    ├── Karte "Familie erstellen"
+    └── Karte "Familie beitreten (Code eingeben)"
+```
+
+### Datenmodell
+
+**Supabase Auth verwaltet automatisch:**
+- E-Mail-Adresse, Passwort-Hash, Session-Token, E-Mail-Bestätigungsstatus
+
+**Eigene `profiles`-Tabelle** (ergänzt auth.users):
+- Benutzer-ID (Verknüpfung zu auth.users)
+- Anzeigename
+- Profilbild-URL (optional)
+- Erstellt-am
+
+> `family_id` und Rolle kommen mit PROJ-2; `profiles` wird dann erweitert.
+
+### Tech-Entscheidungen
+
+| Entscheidung | Warum |
+|---|---|
+| Supabase Auth | Kein eigenes Auth-System nötig; E-Mail-Verifizierung, Passwort-Hashing, PKCE-Flow fertig. |
+| Next.js Middleware | Routenschutz serverseitig vor dem Laden der Seite – kein Flackern, keine unsicheren Client-Checks. |
+| Server Components für Session | Session serverseitig lesen – sicherer, kein Token im Browser-JS. |
+| Client Components nur für Formulare | Formulare brauchen interaktiven Zustand (Validierung, Lade-Indikatoren). |
+| react-hook-form + Zod | Bereits im Stack; typsichere Validierung vor dem Absenden. |
+| @supabase/ssr | Offizielles Paket für Next.js App Router – verwaltet Cookies korrekt auf Server und Client. |
+
+### Datenfluß: Login
+
+```
+Nutzer tippt E-Mail + Passwort
+       ↓
+react-hook-form validiert (Format, min. 8 Zeichen)
+       ↓
+Supabase Auth API aufrufen
+       ↓
+Fehler → Fehlermeldung anzeigen
+Erfolg → Cookie gesetzt
+       ↓
+Middleware prüft: Hat Nutzer eine Familie?
+       ↓
+Ja → /dashboard   |   Nein → /onboarding
+```
+
+### Neue Pakete
+- `@supabase/supabase-js` – Supabase-Client
+- `@supabase/ssr` – Next.js App Router Integration für Supabase Sessions
 
 ## QA Test Results
 _To be added by /qa_
