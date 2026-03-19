@@ -90,7 +90,12 @@ export async function registerAction(email: string, password: string, displayNam
   })
 
   if (error) {
-    // BUG-3: Spezifische Fehlermeldung fuer bereits registrierte E-Mail
+    // BUG-17: Offizielle Supabase ErrorCodes statt fragiler String-Erkennung
+    const code = (error as { code?: string }).code
+    if (code === 'user_already_exists' || code === 'email_exists') {
+      return { error: 'Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.' }
+    }
+    // Fallback fuer aeltere Supabase-Versionen ohne error.code
     if (error.message.toLowerCase().includes('already') || error.message.toLowerCase().includes('registered')) {
       return { error: 'Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.' }
     }
