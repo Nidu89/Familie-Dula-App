@@ -1,0 +1,288 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2, Eye, EyeOff } from "lucide-react"
+
+import { AuthLayout } from "@/components/auth-layout"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import {
+  registerSchema,
+  type RegisterFormValues,
+} from "@/lib/validations/auth"
+import { registerAction, resendConfirmationAction } from "@/lib/actions/auth"
+
+export default function RegisterPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [submittedEmail, setSubmittedEmail] = useState("")
+  const [resendState, setResendState] = useState<"idle" | "loading" | "sent">("idle")
+
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      displayName: "",
+    },
+  })
+
+  async function onSubmit(values: RegisterFormValues) {
+    setIsLoading(true)
+    setErrorMessage(null)
+
+    const result = await registerAction(values.email, values.password, values.displayName)
+    if (result?.error) {
+      setErrorMessage(result.error)
+      setIsLoading(false)
+    } else {
+      setSubmittedEmail(values.email)
+      setIsSuccess(true)
+      setIsLoading(false)
+    }
+  }
+
+  if (isSuccess) {
+    return (
+      <AuthLayout
+        title="Fast geschafft!"
+        subtitle="Wir haben dir eine Bestaetigungs-E-Mail gesendet."
+      >
+        <Card className="w-full shadow-lg">
+          <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/30 text-3xl">
+              <span role="img" aria-label="E-Mail">
+                &#x2709;&#xFE0F;
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Bitte oeffne deine E-Mails und klicke auf den
+              Bestaetigungslink, um dein Konto zu aktivieren.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Keine E-Mail erhalten?{" "}
+              <button
+                type="button"
+                className="font-medium text-primary hover:underline disabled:opacity-50"
+                disabled={resendState !== "idle"}
+                onClick={async () => {
+                  setResendState("loading")
+                  await resendConfirmationAction(submittedEmail)
+                  setResendState("sent")
+                }}
+              >
+                {resendState === "loading"
+                  ? "Wird gesendet..."
+                  : resendState === "sent"
+                    ? "E-Mail gesendet!"
+                    : "Erneut senden"}
+              </button>
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Zurueck zur Anmeldung</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </AuthLayout>
+    )
+  }
+
+  return (
+    <AuthLayout
+      title="Konto erstellen"
+      subtitle="Registriere dich, um mit deiner Familie loszulegen."
+    >
+      <Card className="w-full shadow-lg">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4 pt-6">
+              {errorMessage && (
+                <div
+                  className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                  role="alert"
+                  aria-live="polite"
+                >
+                  {errorMessage}
+                </div>
+              )}
+
+              <FormField
+                control={form.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Anzeigename</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Dein Name"
+                        autoComplete="name"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>E-Mail</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="name@beispiel.de"
+                        autoComplete="email"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passwort</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Mindestens 8 Zeichen"
+                          autoComplete="new-password"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={
+                            showPassword
+                              ? "Passwort verbergen"
+                              : "Passwort anzeigen"
+                          }
+                          tabIndex={-1}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passwort bestaetigen</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Passwort wiederholen"
+                          autoComplete="new-password"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          aria-label={
+                            showConfirmPassword
+                              ? "Passwort verbergen"
+                              : "Passwort anzeigen"
+                          }
+                          tabIndex={-1}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+
+            <CardFooter className="flex flex-col gap-4">
+              <Button
+                type="submit"
+                className="w-full text-base font-semibold"
+                size="lg"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Registrieren...
+                  </>
+                ) : (
+                  "Registrieren"
+                )}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Bereits ein Konto?{" "}
+                <Link
+                  href="/login"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Jetzt anmelden
+                </Link>
+              </p>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+    </AuthLayout>
+  )
+}
