@@ -139,6 +139,55 @@ App (Next.js)
 ### Keine neuen Pakete nötig
 Alle benötigten shadcn/ui-Komponenten (`Table`, `Dialog`, `Select`, `Badge`) sind bereits installiert. E-Mail-Versand über Supabase Auth (keine externe Bibliothek).
 
+## Frontend Implementation Notes
+**Implemented by:** /frontend skill
+**Date:** 2026-03-19
+
+### Was gebaut wurde
+- **Zod-Validierungsschemas** in `src/lib/validations/family.ts`: createFamily, joinFamilyByCode, updateFamilyName, inviteByEmail, updateRole, removeMember
+- **Server Action Stubs** in `src/lib/actions/family.ts`: Alle 8 Aktionen (createFamily, joinByCode, inviteByEmail, generateCode, updateFamilyName, updateMemberRole, removeMember, leaveFamily) mit Zod-Validierung und simulierten Verzoegerungen
+- **Onboarding-Seite aktualisiert** (`/onboarding`): Verbunden mit Server Actions statt console.log, Unterstuetzung fuer `?invite=CODE` URL-Parameter, Suspense-Boundary fuer useSearchParams, Zod-validiertes Formular fuer "Familie erstellen", 6-stelliger numerischer Code-Input mit inputMode="numeric"
+- **Familieneinstellungen-Seite** (`/family/settings`): Neue Seite in Route-Group `(app)`
+  - `FamilyNameSection`: Inline-Bearbeitung des Familiennamens (nur Admin), Zod-validiert
+  - `MemberListSection`: Desktop-Tabelle + Mobile-Karten-Layout, Rollen-Dropdown (Admin/Erwachsener/Kind), Mitglied-entfernen mit Bestaetigung-Dialog, Schutz vor Entfernen des letzten Admins
+  - `InviteSection`: E-Mail-Einladung + 6-stelliger Einladungscode mit Kopieren-Button, Code-Generierung und Ablaufdatum-Anzeige
+  - `LeaveFamilySection`: Familie-verlassen mit Bestaetigung-Dialog, Blockiert wenn letzter Admin
+
+### Noch offen (fuer /backend)
+- Alle Server Actions nutzen console.log + setTimeout statt echte Supabase-Calls
+- Middleware-Update: Whitelist-Logik + Family-Check (BUG-4 + BUG-19)
+- Familiendaten aus Supabase laden (aktuell Mock-Daten auf der Settings-Seite)
+- E-Mail-Versand fuer Einladungen
+- RLS-Policies fuer families und family_invitations Tabellen
+- Datenbank-Schema: families Tabelle, profiles-Erweiterung (family_id, role), family_invitations Tabelle
+
+### Design-Entscheidungen
+- Responsive Design: Desktop-Tabelle fuer Mitgliederliste, Karten-Layout auf Mobil
+- Alle Texte auf Deutsch (konsistent mit PROJ-1)
+- shadcn/ui Komponenten: Card, Button, Input, Form, Table, Badge, Select, Dialog, Separator, Skeleton
+- Bestaetigungs-Dialoge fuer destruktive Aktionen (Mitglied entfernen, Familie verlassen)
+- Inline-Bearbeitung fuer Familienname statt separatem Formular
+- Route-Group `(app)` fuer geschuetzte Seiten, `(auth)` fuer Onboarding
+
+## Backend Implementation Notes
+**Implemented by:** /backend skill
+**Date:** 2026-03-20
+
+### Was gebaut wurde
+- **Datenbank-Migration** (`supabase/migrations/20260319_proj2_familienverwaltung.sql`): `families`-Tabelle, `profiles` um `family_id` + `role` erweitert, `family_invitations`-Tabelle – alle mit RLS
+- **3 Security-Definer-Funktionen** in Supabase: `join_family`, `mark_invitation_used`, `invalidate_family_codes` (umgehen RLS fuer Aktionen, bei denen der Nutzer noch kein Mitglied ist)
+- **`src/lib/actions/family.ts`**: Alle 8 Server Actions mit echten Supabase-Calls ersetzt (createFamily, joinByCode, inviteByEmail, generateCode, updateFamilyName, updateMemberRole, removeMember, leaveFamily, getFamilyData)
+- **`src/middleware.ts`**: Whitelist-Logik (BUG-19) + Family-Check (BUG-4): eingeloggte User ohne Familie → `/onboarding`, mit Familie auf Auth-Route → `/dashboard`
+- **`src/app/(app)/family/settings/page.tsx`**: Von Mock-Daten auf Server Component mit echtem `getFamilyDataAction()`-Call umgestellt; Kind-Komponenten nutzen `router.refresh()` statt State-Callbacks
+
+### Abweichungen vom Spec
+- `profiles`-Tabelle nutzt `id` (nicht `user_id`) als FK zu `auth.users` – alle Queries angepasst
+- `profiles` hat keine `email`-Spalte – Mitgliederliste zeigt nur `display_name`; E-Mail wird als leerer String uebergeben (kein Breaking Change fuer die UI)
+- E-Mail-Einladung nutzt `supabase.auth.signInWithOtp` mit `shouldCreateUser: true` statt `inviteUserByEmail` (erfordert keinen Service-Role-Key)
+
+### Supabase Dashboard Konfiguration (manuell)
+Keine zusaetzliche Konfiguration noetig. Migration wurde direkt angewendet.
+
 ## QA Test Results
 _To be added by /qa_
 

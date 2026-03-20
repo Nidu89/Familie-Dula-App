@@ -1,6 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Whitelist oeffentlicher Routen (BUG-19/PROJ-1: Whitelist statt Blacklist)
+const PUBLIC_ROUTES = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/auth',
+  '/onboarding',
+]
+
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -28,20 +41,35 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Auth-Routen: eingeloggte User zum Dashboard weiterleiten
-  const authRoutes = ['/login', '/register', '/forgot-password', '/onboarding']
-  if (user && authRoutes.some(route => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
-  // Geschuetzte Routen: nicht eingeloggte User zum Login weiterleiten
-  if (!user && pathname.startsWith('/dashboard')) {
+  // 1. Nicht eingeloggt → Login (ausser oeffentliche Routen)
+  if (!user && !isPublicRoute(pathname)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // E-Mail-Bestaetigung: eingeloggte aber unbestaetigt User vom Dashboard fernhalten
-  if (user && !user.email_confirmed_at && pathname.startsWith('/dashboard')) {
+  // 2. Eingeloggt, E-Mail nicht bestaetigt → Login
+  if (user && !user.email_confirmed_at && !isPublicRoute(pathname)) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  if (user && user.email_confirmed_at) {
+    // 3. Family-Check (BUG-4/PROJ-1)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('family_id')
+      .eq('user_id', user.id)
+      .single()
+
+    const hasFamiliy = !!profile?.family_id
+
+    // Eingeloggt ohne Familie → /onboarding (ausser bereits dort)
+    if (!hasFamiliy && !pathname.startsWith('/onboarding')) {
+      return NextResponse.redirect(new URL('/onboarding', request.url))
+    }
+
+    // Eingeloggt mit Familie auf oeffentlicher/onboarding Route → /dashboard
+    if (hasFamiliy && isPublicRoute(pathname)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return supabaseResponse

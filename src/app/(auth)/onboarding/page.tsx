@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Plus, Users } from "lucide-react"
@@ -24,56 +25,93 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { joinFamilySchema, type JoinFamilyFormValues } from "@/lib/validations/auth"
+import {
+  createFamilySchema,
+  joinFamilyByCodeSchema,
+  type CreateFamilyFormValues,
+  type JoinFamilyByCodeFormValues,
+} from "@/lib/validations/family"
+import {
+  createFamilyAction,
+  joinFamilyByCodeAction,
+} from "@/lib/actions/family"
 
 type OnboardingStep = "choose" | "create" | "join"
 
 export default function OnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuthLayout title="Willkommen!" subtitle="Laden...">
+          <div className="flex w-full items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </AuthLayout>
+      }
+    >
+      <OnboardingContent />
+    </Suspense>
+  )
+}
+
+function OnboardingContent() {
+  const searchParams = useSearchParams()
+  const inviteCode = searchParams.get("invite")
+
   const [step, setStep] = useState<OnboardingStep>("choose")
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [familyName, setFamilyName] = useState("")
 
-  const joinForm = useForm<JoinFamilyFormValues>({
-    resolver: zodResolver(joinFamilySchema),
+  const createForm = useForm<CreateFamilyFormValues>({
+    resolver: zodResolver(createFamilySchema),
     defaultValues: {
-      familyCode: "",
+      familyName: "",
     },
   })
 
-  async function onCreateFamily() {
-    if (!familyName.trim()) return
+  const joinForm = useForm<JoinFamilyByCodeFormValues>({
+    resolver: zodResolver(joinFamilyByCodeSchema),
+    defaultValues: {
+      code: "",
+    },
+  })
 
+  // Wenn ein Einladungscode in der URL steht, direkt zum Beitritts-Schritt
+  useEffect(() => {
+    if (inviteCode) {
+      setStep("join")
+      joinForm.setValue("code", inviteCode)
+    }
+  }, [inviteCode, joinForm])
+
+  async function onCreateFamily(values: CreateFamilyFormValues) {
     setIsLoading(true)
     setErrorMessage(null)
 
     try {
-      // TODO: Supabase wird im /backend Skill angebunden
-      console.log("Create family:", familyName)
-
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // window.location.href = "/dashboard"
+      const result = await createFamilyAction(values.familyName)
+      // redirect() wirft intern einen Fehler, deshalb kommt man hier nur bei error an
+      if (result?.error) {
+        setErrorMessage(result.error)
+      }
     } catch {
-      setErrorMessage("Familie konnte nicht erstellt werden. Bitte versuche es erneut.")
+      // redirect() wirft eine NEXT_REDIRECT Exception – das ist kein Fehler
     } finally {
       setIsLoading(false)
     }
   }
 
-  async function onJoinFamily(values: JoinFamilyFormValues) {
+  async function onJoinFamily(values: JoinFamilyByCodeFormValues) {
     setIsLoading(true)
     setErrorMessage(null)
 
     try {
-      // TODO: Supabase wird im /backend Skill angebunden
-      console.log("Join family with code:", values.familyCode)
-
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // window.location.href = "/dashboard"
+      const result = await joinFamilyByCodeAction(values.code)
+      if (result?.error) {
+        setErrorMessage(result.error)
+      }
     } catch {
-      setErrorMessage("Familien-Code ungueltig. Bitte pruefe den Code und versuche es erneut.")
+      // redirect() wirft eine NEXT_REDIRECT Exception
     } finally {
       setIsLoading(false)
     }
@@ -149,70 +187,72 @@ export default function OnboardingPage() {
         subtitle="Gib deiner Familie einen Namen."
       >
         <Card className="w-full shadow-lg">
-          <CardContent className="space-y-4 pt-6">
-            {errorMessage && (
-              <div
-                className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-                role="alert"
-                aria-live="polite"
-              >
-                {errorMessage}
-              </div>
-            )}
+          <Form {...createForm}>
+            <form onSubmit={createForm.handleSubmit(onCreateFamily)}>
+              <CardContent className="space-y-4 pt-6">
+                {errorMessage && (
+                  <div
+                    className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    {errorMessage}
+                  </div>
+                )}
 
-            <div className="space-y-2">
-              <label
-                htmlFor="familyName"
-                className="text-sm font-medium leading-none"
-              >
-                Familienname
-              </label>
-              <Input
-                id="familyName"
-                type="text"
-                placeholder="z.B. Familie Dula"
-                value={familyName}
-                onChange={(e) => setFamilyName(e.target.value)}
-                disabled={isLoading}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    onCreateFamily()
-                  }
-                }}
-              />
-            </div>
-          </CardContent>
+                <FormField
+                  control={createForm.control}
+                  name="familyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Familienname</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="z.B. Familie Dula"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
 
-          <CardFooter className="flex flex-col gap-3">
-            <Button
-              className="w-full text-base font-semibold"
-              size="lg"
-              disabled={isLoading || !familyName.trim()}
-              onClick={onCreateFamily}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Erstellen...
-                </>
-              ) : (
-                "Familie erstellen"
-              )}
-            </Button>
+              <CardFooter className="flex flex-col gap-3">
+                <Button
+                  type="submit"
+                  className="w-full text-base font-semibold"
+                  size="lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Erstellen...
+                    </>
+                  ) : (
+                    "Familie erstellen"
+                  )}
+                </Button>
 
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => {
-                setStep("choose")
-                setErrorMessage(null)
-              }}
-              disabled={isLoading}
-            >
-              Zurueck
-            </Button>
-          </CardFooter>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setStep("choose")
+                    setErrorMessage(null)
+                    createForm.reset()
+                  }}
+                  disabled={isLoading}
+                >
+                  Zurueck
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
         </Card>
       </AuthLayout>
     )
@@ -222,7 +262,7 @@ export default function OnboardingPage() {
   return (
     <AuthLayout
       title="Familie beitreten"
-      subtitle="Gib den Einladungs-Code ein, den du erhalten hast."
+      subtitle="Gib den 6-stelligen Einladungs-Code ein, den du erhalten hast."
     >
       <Card className="w-full shadow-lg">
         <Form {...joinForm}>
@@ -240,15 +280,17 @@ export default function OnboardingPage() {
 
               <FormField
                 control={joinForm.control}
-                name="familyCode"
+                name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Familien-Code</FormLabel>
+                    <FormLabel>Einladungs-Code</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder="z.B. ABC123"
+                        inputMode="numeric"
+                        placeholder="123456"
                         autoComplete="off"
+                        maxLength={6}
                         disabled={isLoading}
                         className="text-center text-lg font-mono tracking-widest"
                         {...field}
