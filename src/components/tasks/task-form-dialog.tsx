@@ -493,9 +493,9 @@ export function TaskFormDialog({
                   ].map((opt) => (
                     <div key={opt.value} className="flex items-center gap-2">
                       <RadioGroupItem value={opt.value} id={`task-series-${opt.value}`} />
-                      <FormLabel htmlFor={`task-series-${opt.value}`} className="font-normal cursor-pointer">
+                      <label htmlFor={`task-series-${opt.value}`} className="text-sm font-normal cursor-pointer">
                         {opt.label}
-                      </FormLabel>
+                      </label>
                     </div>
                   ))}
                 </RadioGroup>
