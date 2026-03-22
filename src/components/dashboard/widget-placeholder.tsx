@@ -1,0 +1,52 @@
+import type { LucideIcon } from "lucide-react"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+interface WidgetPlaceholderProps {
+  title: string
+  description: string
+  icon: LucideIcon
+  comingSoonText?: string
+}
+
+export function WidgetPlaceholder({
+  title,
+  description,
+  icon: Icon,
+  comingSoonText = "Kommt bald",
+}: WidgetPlaceholderProps) {
+  return (
+    <Card className="flex flex-col">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div>
+            <CardTitle className="text-base">{title}</CardTitle>
+            <CardDescription className="text-xs">{description}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-1 items-center justify-center pb-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <Icon className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-medium text-muted-foreground">
+            {comingSoonText}
+          </p>
+          <p className="max-w-[200px] text-xs text-muted-foreground/70">
+            Dieses Feature wird in einem zukuenftigen Update verfuegbar sein.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

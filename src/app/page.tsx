@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 
 export default function Home() {
-  // TODO: Middleware wird im /backend Skill eingerichtet
-  // Vorlaeufig: Weiterleitung zur Login-Seite
-  redirect("/login")
+  // Middleware leitet zu /login (nicht eingeloggt), /onboarding (keine Familie)
+  // oder /dashboard (eingeloggt + Familie) weiter.
+  redirect("/dashboard")
 }

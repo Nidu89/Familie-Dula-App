@@ -544,5 +544,247 @@ Migration: `supabase/migrations/20260322_proj2_bug_fixes.sql`
   - **BUG-25 (High):** Member removal/role changes may silently fail due to RLS
   - **BUG-26, BUG-27 (Medium):** Other SECURITY DEFINER functions lack authorization checks
 
+### Test Run #2 (2026-03-22) -- Bug Fix Verification
+
+**Tested:** 2026-03-22
+**App URL:** http://localhost:3000
+**Tester:** QA Engineer (AI)
+**Build Status:** PASS (Next.js compiles successfully, 0 TypeScript errors, 0 lint errors)
+**Lint Status:** PASS (`npm run lint` runs cleanly)
+**Scope:** Verify fixes for BUG-20 through BUG-29, re-test all acceptance criteria, new security audit
+
+### Bug Fix Verification
+
+#### BUG-20 (CRITICAL): Middleware queries profiles with wrong column name -- FIXED
+- [x] Middleware now queries `.eq('id', user.id)` on line 58 of middleware.ts, matching the profiles PK
+- [x] All server actions use `.eq('id', user.id)` consistently
+- [x] All RPC functions use `WHERE id = auth.uid()` consistently
+- **Verdict: FIXED**
+
+#### BUG-21 (MEDIUM): No DELETE RLS policy on families table -- FIXED
+- [x] `families_delete_creator` policy added: `USING (created_by = auth.uid())`
+- [x] Policy present in both the bug-fix migration and the consolidated main migration
+- **Verdict: FIXED**
+
+#### BUG-22 (HIGH): Email invitation flow broken end-to-end -- FIXED
+- [x] New `join_family_by_email_invitation()` RPC created: looks up caller email from `auth.users`, finds matching pending email invitation, atomically marks it used and updates profile
+- [x] New `checkAndJoinEmailInvitationAction()` server action wraps the RPC
+- [x] Onboarding page is now a Server Component that calls `checkAndJoinEmailInvitationAction()` on load; if `familyId` is returned, it `redirect("/dashboard")`
+- [x] RLS policy `family_invitations_select_own_email` added for users to see their own email invitations
+- **Verdict: FIXED**
+
+#### BUG-23 (LOW): Race condition on invite code redemption -- FIXED
+- [x] Old two-step flow (`joinFamilyByCodeAction` lookup + `mark_invitation_used` + `join_family`) replaced with single atomic `redeem_invite_code` RPC
+- [x] `redeem_invite_code` uses `SELECT ... FOR UPDATE` to lock the invitation row
+- [x] Marks invitation as used and updates profile within the same function
+- **Verdict: FIXED**
+
+#### BUG-24 (MEDIUM): Member list does not display email addresses -- FIXED
+- [x] `email` column added to `profiles` table
+- [x] Backfill from `auth.users` for existing rows
+- [x] `BEFORE INSERT` trigger (`set_profile_email`) auto-populates email from `auth.users` on new profile creation
+- [x] `getFamilyDataAction` now reads `m.email` directly from profiles (line 531): `email: m.email || ""`
+- **Verdict: FIXED**
+
+#### BUG-25 (HIGH): removeMemberAction may silently fail due to profiles RLS -- FIXED
+- [x] Old self-only update policies dropped (`Users can update own profile`, `profiles_update_own`)
+- [x] New `profiles_update_self_or_admin` policy: allows `id = auth.uid()` OR admin of same family to update
+- [x] Both USING and WITH CHECK clauses present and identical
+- **Verdict: FIXED**
+
+#### BUG-26 (MEDIUM): invalidate_family_codes RPC unprotected -- FIXED
+- [x] Function now verifies `auth.uid()` is admin of `target_family_id` before executing
+- [x] Raises exception `Not authorized to invalidate codes for this family` on failure
+- **Verdict: FIXED**
+
+#### BUG-27 (MEDIUM): mark_invitation_used RPC unprotected -- FIXED
+- [x] Function dropped entirely (`DROP FUNCTION IF EXISTS mark_invitation_used(UUID)`)
+- [x] Replaced by atomic `redeem_invite_code` which only operates on caller's own profile
+- **Verdict: FIXED**
+
+#### BUG-28 (CRITICAL): join_family RPC allows arbitrary role escalation -- FIXED
+- [x] Old `join_family(UUID, TEXT)` function dropped
+- [x] Replaced with `join_family_as_creator(UUID)`: hardcodes `role = 'admin'`, verifies `families.created_by = auth.uid()`
+- [x] Code-based joining uses `redeem_invite_code(TEXT)`: hardcodes `role = 'adult'`, requires valid unexpired code
+- [x] Email-based joining uses `join_family_by_email_invitation()`: hardcodes `role = 'adult'`, requires matching email invitation
+- [x] No RPC accepts a role parameter anymore -- roles are hardcoded in the function body
+- **Verdict: FIXED**
+
+#### BUG-29 (MEDIUM): /onboarding is in PUBLIC_ROUTES whitelist -- FIXED
+- [x] `/onboarding` removed from `PUBLIC_ROUTES` array (now only `/login`, `/register`, `/forgot-password`, `/auth`)
+- [x] Unauthenticated users accessing `/onboarding` will be redirected to `/login` by middleware
+- **Verdict: FIXED**
+
+#### BUG-30 (LOW): leaveFamilyAction error not shown in UI -- NOT FIXED
+- [ ] `handleLeave` in `leave-family-section.tsx` (line 38-44) still uses `try { await leaveFamilyAction() } catch {}` without checking the return value
+- [ ] The `errorMessage` state variable exists and is rendered in the UI, but `setErrorMessage` is never called because the action result is not inspected
+- **Verdict: NOT FIXED** (remains low priority)
+
+### Re-test: Acceptance Criteria Status
+
+#### AC-1: Beim ersten Login ohne Familie -- Weiterleitung zu /onboarding
+- [x] Middleware uses whitelist (PUBLIC_ROUTES) -- BUG-19 fix verified
+- [x] Middleware queries `.eq('id', user.id)` -- BUG-20 fix verified
+- [x] `/onboarding` not in PUBLIC_ROUTES -- BUG-29 fix verified
+- [x] Users without `family_id` redirected to `/onboarding`
+- [x] Users with `family_id` on auth routes redirected to `/dashboard`
+- **Result: PASS**
+
+#### AC-2: Familie erstellen -- Nutzer wird Admin
+- [x] Uses `join_family_as_creator` RPC -- BUG-28 fix verified
+- [x] RPC verifies `families.created_by = auth.uid()` before setting admin
+- [x] Rollback supported by `families_delete_creator` RLS -- BUG-21 fix verified
+- **Result: PASS**
+
+#### AC-3: Einladung per E-Mail -- Eingeladener erhaelt E-Mail und tritt bei
+- [x] `inviteByEmailAction` sends magic link + creates email invitation record
+- [x] On arriving at `/onboarding`, Server Component calls `checkAndJoinEmailInvitationAction` -- BUG-22 fix verified
+- [x] `join_family_by_email_invitation` RPC auto-joins user to family
+- [x] If successful, immediate redirect to `/dashboard`
+- **Result: PASS**
+
+#### AC-4: Einladungscode -- 6-stellig, 7 Tage gueltig
+- [x] No changes from Test Run #1 -- still passing
+- [x] `invalidate_family_codes` now properly authorized -- BUG-26 fix verified
+- **Result: PASS**
+
+#### AC-5: Beitritt per Code
+- [x] Uses atomic `redeem_invite_code` RPC -- BUG-23 fix verified
+- [x] No more separate lookup + mark + join steps
+- [x] `FOR UPDATE` prevents race conditions
+- **Result: PASS**
+
+#### AC-6: Rollen -- Admin kann zuweisen
+- [x] `profiles_update_self_or_admin` RLS policy enables admin to update other members -- BUG-25 fix verified
+- **Result: PASS**
+
+#### AC-7: Ein Nutzer gehoert immer zu genau einer Familie
+- [x] All RPCs check `family_id IS NULL` -- no changes needed
+- **Result: PASS**
+
+#### AC-8: Admin kann Mitglieder entfernen
+- [x] `profiles_update_self_or_admin` RLS policy enables admin to set `family_id = null` on other members -- BUG-25 fix verified
+- **Result: PASS**
+
+#### AC-9: Mitgliederliste zeigt Name, E-Mail und Rolle
+- [x] `profiles.email` column exists, backfilled, auto-populated -- BUG-24 fix verified
+- [x] `getFamilyDataAction` reads `m.email` from profiles
+- **Result: PASS**
+
+#### AC-10: Familienname editierbar (nur Admin)
+- [x] No changes -- still passing
+- **Result: PASS**
+
+#### AC-11: Mindestens ein Admin verbleibt
+- [x] No changes -- still passing
+- **Result: PASS**
+
+### Re-test: Edge Cases Status
+
+#### EC-1: Einladungscode ablaeuft
+- **Result: PASS** (no changes)
+
+#### EC-2: Eingeladene E-Mail hat bereits ein Konto
+- [x] `join_family_by_email_invitation` handles this: looks up email in `family_invitations`, auto-joins -- BUG-22 fix verified
+- **Result: PASS**
+
+#### EC-3: Einladungslink ohne Konto
+- [x] `signInWithOtp({ shouldCreateUser: true })` creates account + sends magic link
+- [x] After account creation and redirect, `checkAndJoinEmailInvitationAction` auto-joins
+- **Result: PASS**
+
+#### EC-4: Letzter Admin entfernt sich selbst
+- **Result: PASS** (no changes)
+
+#### EC-5: Mitglied gehoert bereits einer anderen Familie an
+- **Result: PASS** (no changes)
+
+#### EC-6: Nach Familien-Erstellen -- Middleware erkennt family_id
+- [x] Middleware column name fixed -- BUG-20 fix verified
+- **Result: PASS**
+
+### New Security Audit (Post-Fix)
+
+#### Security-Definer Functions -- Re-Audit
+- [x] `join_family_as_creator(UUID)`: Verifies `families.created_by = auth.uid()`, hardcodes `role = 'admin'`, checks `family_id IS NULL` -- SECURE
+- [x] `redeem_invite_code(TEXT)`: Checks `family_id IS NULL`, uses `FOR UPDATE` locking, hardcodes `role = 'adult'` -- SECURE
+- [x] `join_family_by_email_invitation()`: No parameters (uses `auth.uid()` internally), checks `family_id IS NULL`, uses `FOR UPDATE` locking, hardcodes `role = 'adult'` -- SECURE
+- [x] `invalidate_family_codes(UUID)`: Verifies caller is admin of target family -- SECURE
+- [x] `set_profile_email()`: BEFORE INSERT trigger, reads from `auth.users` -- SECURE (no user input)
+
+#### RLS Policies -- Re-Audit
+- [x] `families`: SELECT (members), UPDATE (admins), INSERT (authenticated), DELETE (creator) -- Complete
+- [x] `profiles`: UPDATE allows self OR admin of same family -- Correct
+- [x] `family_invitations`: SELECT for admins, SELECT for active codes (any auth), SELECT for own email invitations, INSERT for admins -- Complete
+- [ ] BUG-31: `family_invitations` has no UPDATE RLS policy. The `redeem_invite_code` and `join_family_by_email_invitation` RPCs update `family_invitations.used_at` using SECURITY DEFINER, so this works. However, there is no direct UPDATE policy, which means non-SECURITY-DEFINER paths cannot update invitations. This is correct behavior (all updates go through RPCs), but worth noting for future maintainability.
+- **Result: NOT A BUG** (by design -- all updates go through RPCs)
+
+#### New Issue Found: Rate Limit Key Collision
+- [ ] BUG-31: `getIP()` in family.ts parses `x-forwarded-for` by taking the LAST IP (`ips[ips.length - 1]`). The comment says "vom vertrauenswuerdigsten Proxy gesetzt", but the standard convention is that the FIRST IP is the client IP and the LAST is the nearest proxy. This means the rate limit may be keyed by the proxy IP instead of the client IP. In a shared NAT/proxy environment, all users behind the same proxy would share rate limits. Same issue exists in auth.ts.
+- **Severity:** Low
+- **Impact:** Rate limiting may be less effective behind proxies. Not exploitable for rate limit bypass (if anything, it is too aggressive -- legitimate users may be rate-limited by others' actions). For a private family app, this is negligible.
+- **Priority:** Nice to have
+
+#### New Issue Found: Duplicate Supabase Client in leaveFamilyAction
+- [ ] BUG-32: `leaveFamilyAction` calls `await createClient()` twice (lines 436 and 451 of family.ts). The first call is inside the admin check block, the second is for the actual update. While not a bug per se (each creates a valid client), it is wasteful and could cause subtle session inconsistencies if cookies change between calls.
+- **Severity:** Low
+- **Impact:** Minor performance inefficiency. No functional impact.
+- **Priority:** Nice to have
+
+#### New Issue Found: profiles_update_self_or_admin RLS allows admin to escalate other members
+- [ ] BUG-33: The `profiles_update_self_or_admin` RLS policy allows any admin to update ANY column on family members' profiles (not just `role` and `family_id`). An admin could theoretically use the Supabase client directly to update another member's `display_name` or `email`. The server actions only update `role` or `family_id`, but the RLS is broader than necessary.
+- **Severity:** Low
+- **Impact:** Admin can modify other members' display_name or email via direct Supabase client calls. In a family app where admins are parents, this is likely acceptable behavior. Not a security escalation since admins are already trusted.
+- **Priority:** Nice to have (could add column-level restrictions via a more granular policy or a SECURITY DEFINER function)
+
+#### Cross-Browser Testing
+- Cannot be fully performed via code review. Code uses standard Tailwind CSS, shadcn/ui, no browser-specific APIs.
+- `navigator.clipboard.writeText` (in invite-section.tsx) requires HTTPS in some browsers. May fail on HTTP localhost in Firefox. Fallback is a silent catch -- no crash.
+- Expected to work in Chrome, Firefox, Safari based on code review.
+
+#### Responsive Testing
+- Cannot be fully performed via code review.
+- Desktop (1440px): Table layout for members, inline forms -- expected correct
+- Tablet (768px): `md:` breakpoint is 768px, so tablet may show either table or card depending on exact width. At exactly 768px, table layout activates.
+- Mobile (375px): Card layout, `w-[120px]` Select may be tight but functional. `max-w-2xl` container with `px-4` padding leaves adequate space.
+
+### New Bugs Found
+
+#### BUG-31: getIP() uses last IP from x-forwarded-for instead of first (Low)
+- **Severity:** Low
+- **Steps to Reproduce:**
+  1. Access the app through a proxy that sets `x-forwarded-for: client-ip, proxy-ip`
+  2. Rate limiting is keyed by `proxy-ip` instead of `client-ip`
+  3. All users behind the same proxy share rate limit counters
+- **Priority:** Nice to have
+
+#### BUG-32: leaveFamilyAction creates duplicate Supabase clients (Low)
+- **Severity:** Low
+- **Steps to Reproduce:**
+  1. Call `leaveFamilyAction` as an admin (non-last-admin)
+  2. Two separate `createClient()` calls are made within the same action
+  3. Minor performance waste; no functional impact
+- **Priority:** Nice to have
+
+#### BUG-33: profiles_update_self_or_admin RLS is broader than necessary (Low)
+- **Severity:** Low
+- **Steps to Reproduce:**
+  1. As an admin, use Supabase client directly to update another member's `display_name`
+  2. RLS allows it because the policy permits admin to update any column on family members
+  3. Server actions only update `role`/`family_id`, but RLS does not restrict columns
+- **Priority:** Nice to have (acceptable for family app trust model)
+
+### Summary (Test Run #2)
+- **Bug Fixes Verified:** 9/10 fixed (BUG-20 through BUG-29). BUG-30 remains unfixed (low priority).
+- **Acceptance Criteria:** 11/11 PASSED
+- **Edge Cases:** 6/6 PASSED
+- **New Bugs Found:** 3 (all Low severity)
+- **Security Audit:** All critical and high-severity security issues resolved. Remaining items are low-severity hardening opportunities.
+- **Production Ready:** YES (conditional)
+- **Conditions:**
+  - BUG-30 (Low): `leaveFamilyAction` error not shown in UI -- acceptable as defense-in-depth; UI prevents the scenario.
+  - BUG-31, BUG-32, BUG-33 (all Low): Minor issues that do not affect functionality or security for a private family app.
+- **Recommendation:** Deploy. Fix remaining low-priority bugs in next iteration.
+
 ## Deployment
 _To be added by /deploy_
