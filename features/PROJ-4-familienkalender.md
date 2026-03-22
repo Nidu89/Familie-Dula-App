@@ -1,6 +1,6 @@
 # PROJ-4: Familienkalender
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -49,7 +49,119 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponentenstruktur
+
+```
+Kalender-Seite (Server – lädt initiale Termine)
+│
+├── CalendarHeader (Client)
+│   ├── Ansichts-Tabs (Tag / Woche / Monat / Liste)
+│   ├── Navigations-Pfeile (vor/zurück, "Heute"-Button)
+│   └── FilterBar (nach Person, nach Kategorie)
+│
+├── CalendarView (Client – interaktiv, Realtime)
+│   ├── MonthView
+│   │   ├── DayCell (Klick öffnet EventFormDialog)
+│   │   ├── EventChip (farbig, Drag'n'Drop optional P2)
+│   │   └── OverflowLink ("+X weitere" → Expand)
+│   ├── WeekView
+│   │   ├── TimeGrid (Stunden-Raster)
+│   │   └── EventBlock (überlappt = nebeneinander)
+│   ├── DayView (wie WeekView, nur 1 Tag)
+│   └── ListView (chronologische Listenansicht)
+│
+├── EventFormDialog (Client – shadcn Dialog)
+│   ├── Felder: Titel, Beschreibung, Ort
+│   ├── Start/Ende DateTimePicker (shadcn Popover + shadcn Calendar)
+│   ├── Kategorie-Select (Schule/Arbeit/Freizeit/Gesundheit/Sonstiges)
+│   ├── Teilnehmende (Multi-Select aus Familienmitgliedern)
+│   ├── Wiederholung-Select (tägl./wöch./monatl./jährl.)
+│   └── Erinnerung-Select (15min / 30min / 1h vor Termin)
+│
+└── SeriesEditDialog (Client – Auswahl bei Serien-Bearbeitung)
+    └── "Nur dieser" / "Dieser + folgende" / "Alle"
+```
+
+### Datenmodell
+
+**Tabelle `calendar_events`** – ein Eintrag pro Termin (oder Serien-Ausnahme):
+| Feld | Beschreibung |
+|------|-------------|
+| id | Eindeutige ID |
+| family_id | Zugehörige Familie |
+| created_by | Ersteller (Profil-ID) |
+| title | Titel (Pflicht) |
+| description | Optionale Beschreibung |
+| location | Optionaler Ort |
+| start_at / end_at | Start- und Endzeit |
+| all_day | Ganztägiger Termin (ja/nein) |
+| category | Schule / Arbeit / Freizeit / Gesundheit / Sonstiges |
+| recurrence_rule | Wiederholungsregel im RRULE-Format (leer = Einzeltermin) |
+| recurrence_parent_id | Verweist auf den Ursprungstermin einer Serie |
+| is_exception | Dieser Termin überschreibt eine Serien-Instanz |
+| reminder_minutes | Erinnerung X Minuten vor Termin (null = keine) |
+| created_at | Erstellungszeitpunkt |
+
+**Tabelle `event_participants`** – welche Familienmitglieder nehmen teil:
+| Feld | Beschreibung |
+|------|-------------|
+| event_id | Verknüpfter Termin |
+| profile_id | Teilnehmendes Familienmitglied |
+
+### Tech-Entscheidungen
+
+| Entscheidung | Begründung |
+|---|---|
+| `react-big-calendar` Paket | Monat/Woche/Tag-Ansichten von Grund auf zu bauen ist sehr aufwändig. Diese bewährte Bibliothek liefert alle Ansichten fertig, ist anpassbar per CSS/Tailwind. |
+| RRULE-Format für Wiederholungen | Standard (RFC 5545, gleich wie iCal) – einfacher Import/Export mit PROJ-12 (iCloud) später |
+| Serien als einzelne DB-Einträge + Ausnahmen | Nicht alle Instanzen speichern (würde die DB aufblähen), stattdessen Regel + Ausnahmen (Standard-Ansatz bei Kalender-Apps) |
+| Realtime via Supabase | Neuer Termin erscheint sofort bei allen Familienmitgliedern |
+| Server Action für Mutationen | Konsistent mit PROJ-1/2/3-Muster, kein separates API-Route nötig |
+| RLS: Kinder nur lesen, Erwachsene schreiben | Datenbank-Regel, nicht nur Frontend-Check – sicher auch bei direktem API-Zugriff |
+
+### Neue Pakete
+| Paket | Zweck |
+|-------|-------|
+| `react-big-calendar` | Fertige Monat/Woche/Tag/Liste-Kalenderansichten |
+| `rrule` | Wiederholungsregeln berechnen (nächste Termine aus RRULE generieren) |
+| `date-fns` | Datumsformatierung (wahrscheinlich bereits transient installiert) |
+
+### Neue Datenbank-Tabellen
+- `calendar_events`
+- `event_participants`
+
+### Neue Server Actions
+- `createEventAction` / `updateEventAction` / `deleteEventAction`
+- `getEventsForRangeAction` (lädt nur Termine im sichtbaren Zeitraum)
+
+### Neue Seiten & Komponenten
+| Pfad | Was |
+|------|-----|
+| `src/app/(app)/calendar/page.tsx` | Kalender-Seite |
+| `src/components/calendar/` | Alle Kalender-Komponenten |
+| `src/lib/actions/calendar.ts` | Server Actions für Termine |
+| `src/lib/validations/calendar.ts` | Zod-Schema für Termin-Formular |
+
+## Backend Implementation Notes (2026-03-22)
+
+**Database:**
+- `calendar_events` table with RLS: family members SELECT, adults/admins INSERT/UPDATE/DELETE
+- `event_participants` join table with RLS aligned to parent event family membership
+- Indexes on `family_id`, `start_at`, `recurrence_parent_id`
+- Realtime enabled via `supabase_realtime` publication
+
+**Server Actions (`src/lib/actions/calendar.ts`):**
+- `getEventsForRangeAction(startDate, endDate)` -- fetches events + participants with Supabase joins
+- `createEventAction(data)` -- creates event + inserts participants
+- `updateEventAction(id, data)` -- handles single/following/all series modes
+- `deleteEventAction(id, seriesMode)` -- handles single/following/all series modes
+
+**Validation (`src/lib/validations/calendar.ts`):**
+- Zod schemas for create/update/delete/range queries
+- Validates start <= end, category enum, participant UUIDs
+
+**Migration:** `supabase/migrations/20260322_proj4_proj5_proj6_backend.sql`
 
 ## QA Test Results
 _To be added by /qa_
