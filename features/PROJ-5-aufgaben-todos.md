@@ -376,4 +376,8 @@ Keines – `rrule` und `date-fns` sind bereits durch PROJ-4 vorhanden.
 - **Remaining:** BUG-P5-1 (Kategorie field, DB migration needed), BUG-P5-2 (subtask checkboxes, needs new action), BUG-P5-6, BUG-P5-7 – defer to next sprint
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-03-22
+**Tag:** v1.4.0-PROJ-4-5-6
+**DB Migration:** `proj4_proj5_proj6_backend` – applied to `fmmorvmshvgqatnefkpf`
+**Status:** PROJ-5 → Deployed in INDEX.md

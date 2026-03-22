@@ -271,4 +271,8 @@ Keine – alle benötigten shadcn-Komponenten (Avatar, Badge, Progress, Sheet, D
 - **Recommendation:** PROJ-6 is the strongest of the three features. BUG-P6-1 is a nice-to-have improvement. Can be deployed alongside PROJ-5 fixes.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-03-22
+**Tag:** v1.4.0-PROJ-4-5-6
+**DB Migration:** `proj4_proj5_proj6_backend` – applied to `fmmorvmshvgqatnefkpf`
+**Status:** PROJ-6 → Deployed in INDEX.md
