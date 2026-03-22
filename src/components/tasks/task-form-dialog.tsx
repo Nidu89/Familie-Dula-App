@@ -445,7 +445,7 @@ export function TaskFormDialog({
 
             {/* Subtasks */}
             <div>
-              <FormLabel>Unteraufgaben</FormLabel>
+              <p className="text-sm font-medium leading-none">Unteraufgaben</p>
               <div className="mt-2 space-y-2">
                 {fields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-2">
@@ -480,7 +480,7 @@ export function TaskFormDialog({
 
             {isEditing && isRecurring && (
               <div className="rounded-md border p-3 space-y-2">
-                <FormLabel>Welche Aufgaben bearbeiten?</FormLabel>
+                <p className="text-sm font-medium leading-none">Welche Aufgaben bearbeiten?</p>
                 <RadioGroup
                   value={seriesMode}
                   onValueChange={(v) => setSeriesMode(v as SeriesMode)}
