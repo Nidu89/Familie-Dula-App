@@ -52,11 +52,15 @@ export async function middleware(request: NextRequest) {
 
   if (user && user.email_confirmed_at) {
     // 3. Family-Check (BUG-4/PROJ-1)
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('family_id')
       .eq('id', user.id)
       .single()
+
+    if (profileError) {
+      console.error('[middleware] profile query failed:', profileError.message)
+    }
 
     const hasFamiliy = !!profile?.family_id
 
