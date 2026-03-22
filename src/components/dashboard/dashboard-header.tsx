@@ -34,7 +34,6 @@ function formatDate(): string {
     weekday: "long",
     day: "numeric",
     month: "long",
-    year: "numeric",
   })
 }
 
@@ -60,65 +59,64 @@ export function DashboardHeader({
     try {
       await logoutAction()
     } catch {
-      // If logout fails, reset state so user can try again
       setIsLoggingOut(false)
     }
   }
 
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          {greeting}, {displayName}!
-        </h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
+    <div className="flex items-start justify-between gap-4">
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">
           {dateString} &middot; Familie {familyName}
         </p>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          {greeting},<br className="sm:hidden" />{" "}
+          <span className="text-primary">{displayName}!</span>
+        </h1>
       </div>
-      <div className="mt-3 flex items-center gap-2 self-start sm:mt-0 sm:self-auto">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9 rounded-full"
-              aria-label="Benutzermenue"
-            >
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">{displayName}</p>
-              <p className="text-xs text-muted-foreground">Familie {familyName}</p>
-            </div>
-            <DropdownMenuSeparator />
-            {isAdmin && (
-              <>
-                <DropdownMenuItem asChild>
-                  <Link href="/family/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Einstellungen
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
-            <DropdownMenuItem
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="cursor-pointer text-destructive focus:text-destructive"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              {isLoggingOut ? "Abmelden..." : "Abmelden"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative mt-1 h-10 w-10 shrink-0 rounded-full"
+            aria-label="Benutzermenue"
+          >
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <div className="px-2 py-1.5">
+            <p className="text-sm font-medium">{displayName}</p>
+            <p className="text-xs text-muted-foreground">Familie {familyName}</p>
+          </div>
+          <DropdownMenuSeparator />
+          {isAdmin && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/family/settings" className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Einstellungen
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          <DropdownMenuItem
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="cursor-pointer text-destructive focus:text-destructive"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            {isLoggingOut ? "Abmelden..." : "Abmelden"}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }

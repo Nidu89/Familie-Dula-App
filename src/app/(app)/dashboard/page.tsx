@@ -7,8 +7,8 @@ import { CalendarWidget } from "@/components/dashboard/calendar-widget"
 import { TasksWidget } from "@/components/dashboard/tasks-widget"
 import { MealPlanWidget } from "@/components/dashboard/meal-plan-widget"
 import { ChatWidget } from "@/components/dashboard/chat-widget"
+import { RewardsWidget } from "@/components/dashboard/rewards-widget"
 import { KidsView } from "@/components/dashboard/kids-view"
-import { Separator } from "@/components/ui/separator"
 
 export default async function DashboardPage() {
   const result = await getDashboardDataAction()
@@ -20,7 +20,6 @@ export default async function DashboardPage() {
     if (result.error === "Du gehoerst keiner Familie an.") {
       redirect("/onboarding")
     }
-    // Unexpected error (network, DB) – render inline instead of redirect
     return (
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
         <p className="text-sm text-muted-foreground">
@@ -35,7 +34,7 @@ export default async function DashboardPage() {
   const isChild = role === "child"
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
       {/* Header */}
       <DashboardHeader
         displayName={user.displayName}
@@ -43,31 +42,27 @@ export default async function DashboardPage() {
         isAdmin={isAdmin}
       />
 
-      <Separator className="my-6" />
-
       {/* Quick Actions */}
-      <section aria-label="Schnellzugriff" className="mb-6">
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-          Schnellzugriff
-        </h2>
+      <section aria-label="Schnellzugriff" className="mt-8">
         <QuickActions />
       </section>
 
       {/* Kids View (only for children) */}
       {isChild && (
-        <section aria-label="Mein Bereich" className="mb-6">
+        <section aria-label="Mein Bereich" className="mt-6">
           <KidsView displayName={user.displayName} userId={user.id} />
         </section>
       )}
 
       {/* Widget Grid */}
-      <section aria-label="Familienuebersicht">
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-          {isChild ? "Familienuebersicht" : "Dein Tag auf einen Blick"}
+      <section aria-label="Familienübersicht" className="mt-8">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {isChild ? "Familienübersicht" : "Dein Tag auf einen Blick"}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <CalendarWidget />
           <TasksWidget />
+          <RewardsWidget isAdmin={isAdmin} currentUserId={user.id} />
           <MealPlanWidget />
           <ChatWidget />
         </div>

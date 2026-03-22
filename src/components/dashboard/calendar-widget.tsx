@@ -12,24 +12,46 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getEventsForRangeAction, type CalendarEvent } from "@/lib/actions/calendar"
 
-const CATEGORY_COLORS: Record<string, string> = {
-  school: "bg-primary/20 text-primary",
-  work: "bg-secondary/20 text-secondary-foreground",
-  leisure: "bg-chart-3/20 text-chart-3",
-  health: "bg-chart-4/20 text-chart-4",
-  other: "bg-chart-5/20 text-chart-5",
+const CATEGORY_ACCENT: Record<string, string> = {
+  school: "bg-primary",
+  work: "bg-secondary",
+  leisure: "bg-accent",
+  health: "bg-chart-5",
+  other: "bg-muted-foreground/40",
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  school: "Schule",
+  work: "Arbeit",
+  leisure: "Freizeit",
+  health: "Gesundheit",
+  other: "Sonstiges",
 }
 
 function formatEventTime(startAt: string, allDay: boolean): string {
-  if (allDay) return "Ganztaegig"
+  if (allDay) return "Ganztägig"
   return new Date(startAt).toLocaleTimeString("de-DE", {
     hour: "2-digit",
     minute: "2-digit",
   })
+}
+
+function formatEventDate(startAt: string, allDay: boolean): string {
+  const date = new Date(startAt)
+  const today = new Date()
+  const tomorrow = new Date()
+  tomorrow.setDate(today.getDate() + 1)
+
+  today.setHours(0, 0, 0, 0)
+  tomorrow.setHours(0, 0, 0, 0)
+  date.setHours(0, 0, 0, 0)
+
+  if (date.getTime() === today.getTime()) return "Heute"
+  if (date.getTime() === tomorrow.getTime()) return "Morgen"
+  return new Date(startAt).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" })
 }
 
 export function CalendarWidget() {
@@ -49,7 +71,6 @@ export function CalendarWidget() {
         )
 
         if (!("error" in result)) {
-          // Filter out deleted exceptions and take first 4
           const upcoming = result.events
             .filter((e) => e.title !== "__DELETED__")
             .slice(0, 4)
@@ -75,7 +96,7 @@ export function CalendarWidget() {
             <div>
               <CardTitle className="text-base">Kalender</CardTitle>
               <CardDescription className="text-xs">
-                Anstehende Termine
+                Nächste Termine
               </CardDescription>
             </div>
           </div>
@@ -91,7 +112,7 @@ export function CalendarWidget() {
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-md" />
+              <Skeleton key={i} className="h-12 w-full rounded-lg" />
             ))}
           </div>
         ) : events.length === 0 ? (
@@ -106,30 +127,25 @@ export function CalendarWidget() {
             {events.map((event) => (
               <div
                 key={event.id}
-                className="flex items-center gap-3 rounded-md border p-2.5"
+                className="flex items-stretch gap-0 rounded-lg bg-muted/50 overflow-hidden"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {event.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatEventTime(event.startAt, event.allDay)}
-                  </p>
+                <div
+                  className={`w-1 shrink-0 rounded-l-lg ${CATEGORY_ACCENT[event.category] ?? CATEGORY_ACCENT.other}`}
+                />
+                <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{event.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatEventDate(event.startAt, event.allDay)}
+                      {!event.allDay && (
+                        <> &middot; {formatEventTime(event.startAt, event.allDay)}</>
+                      )}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {CATEGORY_LABELS[event.category] ?? CATEGORY_LABELS.other}
+                  </span>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`shrink-0 text-[10px] ${CATEGORY_COLORS[event.category] || CATEGORY_COLORS.other}`}
-                >
-                  {event.category === "school"
-                    ? "Schule"
-                    : event.category === "work"
-                      ? "Arbeit"
-                      : event.category === "leisure"
-                        ? "Freizeit"
-                        : event.category === "health"
-                          ? "Gesundheit"
-                          : "Sonstiges"}
-                </Badge>
               </div>
             ))}
           </div>
