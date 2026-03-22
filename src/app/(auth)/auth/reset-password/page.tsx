@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -30,7 +30,17 @@ import {
 import { createClient } from "@/lib/supabase/client"
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
+  )
+}
+
+function ResetPasswordContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isInvited = searchParams.get("invited") === "true"
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -62,14 +72,14 @@ export default function ResetPasswordPage() {
 
     setIsSuccess(true)
     setIsLoading(false)
-    setTimeout(() => router.push('/login'), 2000)
+    setTimeout(() => router.push(isInvited ? '/dashboard' : '/login'), 2000)
   }
 
   if (isSuccess) {
     return (
       <AuthLayout
-        title="Passwort geaendert!"
-        subtitle="Du kannst dich jetzt mit deinem neuen Passwort anmelden."
+        title="Passwort gespeichert!"
+        subtitle={isInvited ? "Willkommen! Du wirst weitergeleitet..." : "Du kannst dich jetzt mit deinem neuen Passwort anmelden."}
       >
         <Card className="w-full shadow-lg">
           <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
@@ -77,12 +87,16 @@ export default function ResetPasswordPage() {
               <CheckCircle2 className="h-8 w-8 text-accent-foreground" />
             </div>
             <p className="text-sm text-muted-foreground">
-              Dein Passwort wurde erfolgreich zurueckgesetzt. Du wirst zur Anmeldung weitergeleitet...
+              {isInvited
+                ? "Dein Passwort wurde gespeichert. Du wirst zum Dashboard weitergeleitet..."
+                : "Dein Passwort wurde erfolgreich zurueckgesetzt. Du wirst zur Anmeldung weitergeleitet..."}
             </p>
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full" size="lg">
-              <Link href="/login">Zur Anmeldung</Link>
+              <Link href={isInvited ? "/dashboard" : "/login"}>
+                {isInvited ? "Zum Dashboard" : "Zur Anmeldung"}
+              </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -92,8 +106,8 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      title="Neues Passwort"
-      subtitle="Waehle ein neues, sicheres Passwort fuer dein Konto."
+      title={isInvited ? "Passwort festlegen" : "Neues Passwort"}
+      subtitle={isInvited ? "Lege ein Passwort fest, um dich kuenftig einloggen zu koennen." : "Waehle ein neues, sicheres Passwort fuer dein Konto."}
     >
       <Card className="w-full shadow-lg">
         <Form {...form}>

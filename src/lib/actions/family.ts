@@ -193,7 +193,7 @@ export async function inviteByEmailAction(email: string) {
     email: parsed.data.email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/onboarding`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/onboarding%3Fset_password%3Dtrue`,
     },
   })
 
