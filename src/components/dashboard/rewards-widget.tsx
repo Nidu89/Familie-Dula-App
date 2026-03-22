@@ -58,11 +58,11 @@ export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
     : children.filter((c) => c.id === currentUserId)
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col border-0 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20 text-accent-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/20 text-accent-foreground">
               <Trophy className="h-4 w-4" />
             </div>
             <div>
@@ -112,7 +112,7 @@ export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
               return (
                 <div
                   key={child.id}
-                  className="rounded-lg bg-muted/50 p-3 space-y-2"
+                  className="rounded-xl bg-input p-3 space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">{child.displayName}</p>

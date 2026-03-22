@@ -51,7 +51,7 @@ export function KidsView({ displayName, userId }: KidsViewProps) {
   }, [userId])
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
+    <Card className="border-0 bg-primary/8 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
@@ -73,7 +73,7 @@ export function KidsView({ displayName, userId }: KidsViewProps) {
           {/* Tasks summary */}
           <Link
             href="/tasks"
-            className="flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-primary/30"
+            className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm transition-shadow hover:shadow-md"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <ListChecks className="h-5 w-5" />
@@ -93,7 +93,7 @@ export function KidsView({ displayName, userId }: KidsViewProps) {
           {/* Points summary */}
           <Link
             href="/rewards"
-            className="flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-primary/30"
+            className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm transition-shadow hover:shadow-md"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-chart-4/20 text-chart-4">
               <Star className="h-5 w-5" />

@@ -65,11 +65,11 @@ export function DashboardHeader({
 
   return (
     <div className="flex items-start justify-between gap-4">
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">
+      <div className="space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {dateString} &middot; Familie {familyName}
         </p>
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+        <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
           {greeting},<br className="sm:hidden" />{" "}
           <span className="text-primary">{displayName}!</span>
         </h1>

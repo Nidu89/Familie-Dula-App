@@ -54,11 +54,11 @@ export function TasksWidget() {
   const overdueCount = tasks.filter((t) => isOverdue(t.dueDate)).length
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col border-0 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/15 text-secondary">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary/15 text-secondary">
               <ListTodo className="h-4 w-4" />
             </div>
             <div>
@@ -105,12 +105,12 @@ export function TasksWidget() {
               return (
                 <div
                   key={task.id}
-                  className={`flex items-center gap-3 rounded-lg p-2.5 ${
+                  className={`flex items-center gap-3 rounded-xl p-2.5 ${
                     overdue
                       ? "bg-destructive/8"
                       : task.priority === "high"
                         ? "bg-secondary/10"
-                        : "bg-muted/50"
+                        : "bg-input"
                   }`}
                 >
                   <div

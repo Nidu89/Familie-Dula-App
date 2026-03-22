@@ -22,10 +22,10 @@ export function WidgetPlaceholder({
   comingSoonText = "Kommt bald",
 }: WidgetPlaceholderProps) {
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col border-0 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Icon className="h-4 w-4" />
           </div>
           <div>

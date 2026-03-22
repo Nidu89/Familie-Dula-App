@@ -86,11 +86,11 @@ export function CalendarWidget() {
   }, [])
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col border-0 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Calendar className="h-4 w-4" />
             </div>
             <div>
@@ -127,7 +127,7 @@ export function CalendarWidget() {
             {events.map((event) => (
               <div
                 key={event.id}
-                className="flex items-stretch gap-0 rounded-lg bg-muted/50 overflow-hidden"
+                className="flex items-stretch gap-0 rounded-xl bg-input overflow-hidden"
               >
                 <div
                   className={`w-1 shrink-0 rounded-l-lg ${CATEGORY_ACCENT[event.category] ?? CATEGORY_ACCENT.other}`}
