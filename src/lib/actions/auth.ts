@@ -95,6 +95,9 @@ export async function registerAction(email: string, password: string, displayNam
     if (code === 'user_already_exists' || code === 'email_exists') {
       return { error: 'Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.' }
     }
+    if (code === 'over_email_send_rate_limit' || error.message.toLowerCase().includes('rate limit') || error.message.toLowerCase().includes('email rate')) {
+      return { error: 'Zu viele E-Mails wurden gesendet. Bitte warte eine Stunde und versuche es erneut.' }
+    }
     // Fallback fuer aeltere Supabase-Versionen ohne error.code
     if (error.message.toLowerCase().includes('already') || error.message.toLowerCase().includes('registered')) {
       return { error: 'Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.' }

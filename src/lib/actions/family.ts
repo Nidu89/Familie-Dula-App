@@ -107,30 +107,19 @@ export async function createFamilyAction(familyName: string) {
     return { error: "Du gehoerst bereits einer Familie an." }
   }
 
-  // Create the family
-  const { data: family, error: familyError } = await supabase
-    .from("families")
-    .insert({
-      name: parsed.data.familyName,
-      created_by: user.id,
-    })
-    .select("id")
-    .single()
-
-  if (familyError || !family) {
-    return { error: "Familie konnte nicht erstellt werden. Bitte versuche es erneut." }
-  }
-
-  // Update own profile: set family_id and role=admin
-  // Use RPC that verifies caller is the family creator and hardcodes role='admin'
-  const { error: profileError } = await supabase.rpc("join_family_as_creator", {
-    target_family_id: family.id,
+  // Create family and join as admin atomically via SECURITY DEFINER RPC
+  const { error: createError } = await supabase.rpc("create_family_and_join", {
+    family_name: parsed.data.familyName,
   })
 
-  if (profileError) {
-    // Rollback: delete the family we just created
-    await supabase.from("families").delete().eq("id", family.id)
-    return { error: "Profil konnte nicht aktualisiert werden. Bitte versuche es erneut." }
+  if (createError) {
+    if (createError.message.includes("Already in a family")) {
+      return { error: "Du gehoerst bereits einer Familie an." }
+    }
+    if (createError.message.includes("Not authenticated")) {
+      return { error: "Nicht angemeldet." }
+    }
+    return { error: "Familie konnte nicht erstellt werden. Bitte versuche es erneut." }
   }
 
   redirect("/dashboard")
