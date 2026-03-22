@@ -1,6 +1,6 @@
 # PROJ-1: Authentifizierung & Onboarding
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-19
 
@@ -468,4 +468,7 @@ In **Authentication -> URL Configuration** eintragen:
 - **Blocking Issues:** BUG-2 (no logout UI, blocked by PROJ-3) is the only High-severity bug. BUG-16 (broken lint), BUG-18 (unsafe-eval in CSP) should be fixed before deployment. BUG-4 and BUG-12 will resolve with PROJ-2.
 
 ## Deployment
-_To be added by /deploy_
+- **Deployed:** 2026-03-22
+- **Production URL:** https://familie-dula-app.vercel.app
+- **Platform:** Vercel (nidu89s-projects/familie-dula-app)
+- **Deployment ID:** dpl_FN3hcyddZb2ntUjNbf5AqDz6Z6YN

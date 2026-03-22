@@ -1,6 +1,6 @@
 # PROJ-3: Familien-Dashboard
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-22
 
@@ -417,4 +417,7 @@ Note: Cross-browser testing is based on code review since this is an AI tester w
 - **Production Ready:** YES
 
 ## Deployment
-_To be added by /deploy_
+- **Deployed:** 2026-03-22
+- **Production URL:** https://familie-dula-app.vercel.app
+- **Platform:** Vercel (nidu89s-projects/familie-dula-app)
+- **Deployment ID:** dpl_FN3hcyddZb2ntUjNbf5AqDz6Z6YN

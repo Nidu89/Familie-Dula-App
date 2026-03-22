@@ -1,6 +1,6 @@
 # PROJ-2: Familienverwaltung
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-22
 
@@ -787,4 +787,7 @@ Migration: `supabase/migrations/20260322_proj2_bug_fixes.sql`
 - **Recommendation:** Deploy. Fix remaining low-priority bugs in next iteration.
 
 ## Deployment
-_To be added by /deploy_
+- **Deployed:** 2026-03-22
+- **Production URL:** https://familie-dula-app.vercel.app
+- **Platform:** Vercel (nidu89s-projects/familie-dula-app)
+- **Deployment ID:** dpl_FN3hcyddZb2ntUjNbf5AqDz6Z6YN
