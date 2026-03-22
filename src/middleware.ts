@@ -7,7 +7,6 @@ const PUBLIC_ROUTES = [
   '/register',
   '/forgot-password',
   '/auth',
-  '/onboarding',
 ]
 
 function isPublicRoute(pathname: string): boolean {
@@ -56,7 +55,7 @@ export async function middleware(request: NextRequest) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('family_id')
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single()
 
     const hasFamiliy = !!profile?.family_id
@@ -67,7 +66,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Eingeloggt mit Familie auf oeffentlicher/onboarding Route → /dashboard
-    if (hasFamiliy && isPublicRoute(pathname)) {
+    if (hasFamiliy && (isPublicRoute(pathname) || pathname.startsWith('/onboarding'))) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }

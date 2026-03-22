@@ -122,10 +122,9 @@ export async function createFamilyAction(familyName: string) {
   }
 
   // Update own profile: set family_id and role=admin
-  // Use RPC since the user just created the family and RLS checks membership
-  const { error: profileError } = await supabase.rpc("join_family", {
+  // Use RPC that verifies caller is the family creator and hardcodes role='admin'
+  const { error: profileError } = await supabase.rpc("join_family_as_creator", {
     target_family_id: family.id,
-    target_role: "admin",
   })
 
   if (profileError) {
@@ -168,37 +167,13 @@ export async function joinFamilyByCodeAction(code: string) {
     return { error: "Du gehoerst bereits einer Familie an." }
   }
 
-  // Find active, non-expired, unused invitation of type 'code'
-  const { data: invitation, error: inviteError } = await supabase
-    .from("family_invitations")
-    .select("id, family_id")
-    .eq("type", "code")
-    .eq("code", parsed.data.code)
-    .is("used_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .single()
+  // Atomically redeem the invite code: find, lock, mark used, join family
+  const { error: redeemError } = await supabase.rpc("redeem_invite_code", {
+    invite_code: parsed.data.code,
+  })
 
-  if (inviteError || !invitation) {
+  if (redeemError) {
     return { error: "Einladungscode ungueltig oder abgelaufen." }
-  }
-
-  // Mark invitation as used
-  const { error: markError } = await supabase.rpc("mark_invitation_used", {
-    invitation_id: invitation.id,
-  })
-
-  if (markError) {
-    return { error: "Einladung konnte nicht eingeloest werden. Bitte versuche es erneut." }
-  }
-
-  // Update profile: join the family as 'adult'
-  const { error: joinError } = await supabase.rpc("join_family", {
-    target_family_id: invitation.family_id,
-    target_role: "adult",
-  })
-
-  if (joinError) {
-    return { error: "Beitritt fehlgeschlagen. Bitte versuche es erneut." }
   }
 
   redirect("/dashboard")
@@ -487,6 +462,37 @@ export async function leaveFamilyAction() {
   redirect("/onboarding")
 }
 
+export async function checkAndJoinEmailInvitationAction(): Promise<{ familyId: string | null }> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { familyId: null }
+  }
+
+  // Check if user already has a family
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("family_id")
+    .eq("id", user.id)
+    .single()
+
+  if (profile?.family_id) {
+    return { familyId: null }
+  }
+
+  // Try to redeem an email invitation for this user's email
+  const { data: familyId, error } = await supabase.rpc("join_family_by_email_invitation")
+
+  if (error || !familyId) {
+    return { familyId: null }
+  }
+
+  return { familyId: familyId as string }
+}
+
 export async function getFamilyDataAction() {
   const supabase = await createClient()
   const {
@@ -522,7 +528,7 @@ export async function getFamilyDataAction() {
   // Load all members (join via profiles)
   const { data: members } = await supabase
     .from("profiles")
-    .select("id, display_name, role")
+    .select("id, display_name, email, role")
     .eq("family_id", profile.family_id)
     .order("role")
     .limit(50)
@@ -557,7 +563,7 @@ export async function getFamilyDataAction() {
     members: (members || []).map((m) => ({
       id: m.id,
       displayName: m.display_name || "Unbekannt",
-      email: "",
+      email: m.email || "",
       role: m.role as "admin" | "adult" | "child",
     })),
     currentUserId: user.id,
