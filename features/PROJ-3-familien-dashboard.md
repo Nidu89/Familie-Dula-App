@@ -16,6 +16,7 @@
 - Als Nutzer möchte ich die letzten Chat-Nachrichten sehen, damit ich informiert bin ohne extra in den Chat zu gehen.
 - Als Nutzer möchte ich per Schnellzugriff direkt einen Termin, eine Aufgabe, eine Einkaufsliste oder ein Rezept anlegen können.
 - Als Kind möchte ich meine eigenen offenen Aufgaben und mein Punkteguthaben auf dem Dashboard sehen.
+- Als eingeloggter Nutzer möchte ich mich direkt vom Dashboard abmelden können, ohne in ein Untermenü navigieren zu müssen.
 
 ## Acceptance Criteria
 - [ ] Dashboard ist die Landing-Page nach dem Login für eingeloggte Nutzer mit Familie.
@@ -27,6 +28,8 @@
 - [ ] Für Kinder: Eigene Aufgaben und aktuelles Punkteguthaben prominent angezeigt.
 - [ ] Dashboard lädt in unter 2 Sekunden (Server-seitige Aggregation der Daten).
 - [ ] Realtime-Updates: Chat-Nachrichten und Aufgabenstatus aktualisieren sich automatisch.
+- [ ] Logout-Button ist im Dashboard-Header sichtbar und für alle Nutzerrollen zugänglich.
+- [ ] Nach dem Klick auf Logout wird die Session beendet und der Nutzer zu `/login` weitergeleitet.
 - [ ] Responsive: Auf Mobile werden Widgets gestapelt, auf Desktop nebeneinander.
 
 ## Edge Cases
@@ -144,6 +147,13 @@ Solange ein Modul noch nicht gebaut ist, zeigt das jeweilige Widget eine Platzha
 - Kein zusaetzliches Backend noetig – Dashboard liest nur aus bestehenden Tabellen
 - Realtime-Updates fuer Chat und Aufgaben erst relevant wenn PROJ-5 und PROJ-9 gebaut werden
 - Widget-Inhalte werden ersetzt, sobald die jeweiligen Features implementiert sind
+
+### Logout-Ergänzung (2026-03-22)
+- **Avatar-Button** im Dashboard-Header zeigt Initialen des Nutzers
+- **Dropdown-Menü** (DropdownMenu shadcn) mit: Nutzername + Familienname, "Einstellungen"-Link (nur Admin), "Abmelden"-Button (rot/destructive)
+- Logout ruft bestehende `logoutAction` Server Action auf, leitet zu `/login` weiter
+- Loading-State ("Abmelden...") und Error Handling integriert
+- Alter separater Settings-Button wurde durch den Dropdown ersetzt
 
 ### Neue Dateien
 | Datei | Was |

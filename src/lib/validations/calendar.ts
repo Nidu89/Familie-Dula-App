@@ -76,9 +76,14 @@ export const deleteEventSchema = z.object({
 
 export type DeleteEventFormValues = z.infer<typeof deleteEventSchema>
 
+const isoDateTimeString = z.string().regex(
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+  "Ungültiges Datumsformat (erwartet ISO 8601)"
+)
+
 export const getEventsForRangeSchema = z.object({
-  startDate: z.string().min(1, "Startdatum ist erforderlich"),
-  endDate: z.string().min(1, "Enddatum ist erforderlich"),
+  startDate: isoDateTimeString,
+  endDate: isoDateTimeString,
 })
 
 export type GetEventsForRangeFormValues = z.infer<typeof getEventsForRangeSchema>

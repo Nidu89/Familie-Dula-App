@@ -56,7 +56,7 @@ export default async function DashboardPage() {
       {/* Kids View (only for children) */}
       {isChild && (
         <section aria-label="Mein Bereich" className="mb-6">
-          <KidsView displayName={user.displayName} />
+          <KidsView displayName={user.displayName} userId={user.id} />
         </section>
       )}
 
