@@ -1,24 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { LogOut, Settings } from "lucide-react"
-import Link from "next/link"
-
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { logoutAction } from "@/lib/actions/auth"
-
 interface DashboardHeaderProps {
   displayName: string
   familyName: string
-  isAdmin: boolean
+  memberCount: number
 }
 
 function getGreeting(): string {
@@ -29,94 +14,31 @@ function getGreeting(): string {
   return "Guten Abend"
 }
 
-function formatDate(): string {
-  return new Date().toLocaleDateString("de-DE", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  })
-}
-
 export function DashboardHeader({
   displayName,
   familyName,
-  isAdmin,
+  memberCount,
 }: DashboardHeaderProps) {
   const greeting = getGreeting()
-  const dateString = formatDate()
-
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
-
-  async function handleLogout() {
-    setIsLoggingOut(true)
-    try {
-      await logoutAction()
-    } catch {
-      setIsLoggingOut(false)
-    }
-  }
 
   return (
     <div className="flex items-start justify-between gap-4">
-      <div className="space-y-1.5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {dateString} &middot; Familie {familyName}
-        </p>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-          {greeting},<br className="sm:hidden" />{" "}
-          <span className="text-primary">{displayName}!</span>
+      <div>
+        <span className="font-display text-xs font-bold uppercase tracking-widest text-primary-foreground">
+          {greeting} &middot; Familie {familyName}
+        </span>
+        <h1 className="mt-2 font-display text-4xl font-black text-foreground md:text-5xl">
+          Hallo, {displayName}!
         </h1>
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative mt-1 h-10 w-10 shrink-0 rounded-full"
-            aria-label="Benutzermenue"
-          >
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <div className="px-2 py-1.5">
-            <p className="text-sm font-medium">{displayName}</p>
-            <p className="text-xs text-muted-foreground">Familie {familyName}</p>
-          </div>
-          <DropdownMenuSeparator />
-          {isAdmin && (
-            <>
-              <DropdownMenuItem asChild>
-                <Link href="/family/settings" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Einstellungen
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-          )}
-          <DropdownMenuItem
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="cursor-pointer text-destructive focus:text-destructive"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            {isLoggingOut ? "Abmelden..." : "Abmelden"}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="hidden items-center gap-3 md:flex">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <span className="text-sm font-bold text-muted-foreground">
+            +{memberCount}
+          </span>
+        </div>
+      </div>
     </div>
   )
 }

@@ -61,6 +61,10 @@ npm run start      # Production server
 
 @docs/PRD.md
 
+## Design System
+
+@docs/DESIGN.md
+
 ## Feature Overview
 
 @features/INDEX.md

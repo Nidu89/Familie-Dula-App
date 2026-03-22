@@ -1,17 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Star, ChevronRight, Trophy } from "lucide-react"
+import { Star, Trophy } from "lucide-react"
 import Link from "next/link"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -19,7 +11,11 @@ import {
   type ChildPointsSummary,
 } from "@/lib/actions/rewards"
 
-function getLevel(points: number): { level: number; name: string; next: number } {
+function getLevel(points: number): {
+  level: number
+  name: string
+  next: number
+} {
   if (points < 100) return { level: 1, name: "Starter", next: 100 }
   if (points < 250) return { level: 2, name: "Entdecker", next: 250 }
   if (points < 500) return { level: 3, name: "Abenteurer", next: 500 }
@@ -52,88 +48,92 @@ export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
     load()
   }, [])
 
-  // For children: show only own points
   const displayChildren = isAdmin
     ? children
     : children.filter((c) => c.id === currentUserId)
 
   return (
-    <Card className="flex flex-col border-0 shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/20 text-accent-foreground">
-              <Trophy className="h-4 w-4" />
-            </div>
-            <div>
-              <CardTitle className="text-base">Belohnungen</CardTitle>
-              <CardDescription className="text-xs">
-                {isAdmin ? "Punkte der Kinder" : "Deine Punkte"}
-              </CardDescription>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/rewards" className="gap-1 text-xs">
-              Alle
-              <ChevronRight className="h-3 w-3" />
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1">
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : displayChildren.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-4 text-center">
-            <Star className="h-8 w-8 text-muted-foreground/50" />
-            <p className="text-xs text-muted-foreground">
-              {isAdmin ? "Noch keine Kinder in der Familie" : "Noch keine Punkte gesammelt"}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {displayChildren.map((child) => {
-              const { name: levelName, next } = getLevel(child.pointsBalance)
-              const prevThreshold =
-                child.pointsBalance < 100 ? 0
-                : child.pointsBalance < 250 ? 100
-                : child.pointsBalance < 500 ? 250
-                : child.pointsBalance < 1000 ? 500
-                : 1000
-              const progress = Math.min(
-                ((child.pointsBalance - prevThreshold) / (next - prevThreshold)) * 100,
-                100
-              )
+    <section className="flex flex-col rounded-[2rem] bg-card p-8 shadow-sm">
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <h3 className="font-display text-xl font-bold text-primary-foreground">
+          Belohnungen
+        </h3>
+        <Trophy className="h-5 w-5 text-primary-foreground" />
+      </div>
 
-              return (
-                <div
-                  key={child.id}
-                  className="rounded-xl bg-input p-3 space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">{child.displayName}</p>
-                    <span className="flex items-center gap-1 text-sm font-semibold text-accent-foreground">
-                      <Star className="h-3.5 w-3.5 fill-accent text-accent" />
-                      {child.pointsBalance}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <Progress value={progress} className="h-1.5" />
-                    <p className="text-[10px] text-muted-foreground">
-                      Level: {levelName} &middot; noch{" "}
-                      {Math.max(next - child.pointsBalance, 0)} Punkte bis zum nächsten Level
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
+      {/* Content */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-lg" />
+          ))}
+        </div>
+      ) : displayChildren.length === 0 ? (
+        <div className="flex flex-col items-center gap-4 py-4 text-center">
+          <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-primary">
+            <span className="text-3xl font-black text-primary-foreground">
+              0
+            </span>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <p className="text-sm text-muted-foreground">
+            {isAdmin
+              ? "Noch keine Kinder in der Familie"
+              : "Noch keine Punkte gesammelt"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Erledige Aufgaben, um Punkte zu sammeln
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {displayChildren.map((child) => {
+            const { name: levelName, next } = getLevel(child.pointsBalance)
+            const prevThreshold =
+              child.pointsBalance < 100
+                ? 0
+                : child.pointsBalance < 250
+                  ? 100
+                  : child.pointsBalance < 500
+                    ? 250
+                    : child.pointsBalance < 1000
+                      ? 500
+                      : 1000
+            const progress = Math.min(
+              ((child.pointsBalance - prevThreshold) /
+                (next - prevThreshold)) *
+                100,
+              100
+            )
+
+            return (
+              <div key={child.id} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-bold">{child.displayName}</p>
+                  <span className="flex items-center gap-1 text-sm font-semibold text-accent-foreground">
+                    <Star className="h-3.5 w-3.5 fill-accent text-accent" />
+                    {child.pointsBalance}
+                  </span>
+                </div>
+                <Progress value={progress} className="h-2" />
+                <p className="text-[10px] text-muted-foreground">
+                  {levelName} &middot; noch{" "}
+                  {Math.max(next - child.pointsBalance, 0)} Punkte bis zum
+                  naechsten Level
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Footer */}
+      <Link
+        href="/rewards"
+        className="mt-6 block w-full rounded-full bg-muted py-3 text-center text-sm font-bold text-secondary transition-colors hover:bg-muted/80"
+      >
+        Alle Belohnungen
+      </Link>
+    </section>
   )
 }

@@ -121,26 +121,46 @@ Solange ein Modul noch nicht gebaut ist, zeigt das jeweilige Widget eine Platzha
 **Implemented by:** /frontend skill
 **Date:** 2026-03-22
 
-### Was gebaut wurde
+### Was gebaut wurde (Initial, 2026-03-22)
 - **Server Action** in `src/lib/actions/dashboard.ts`: `getDashboardDataAction()` laedt User-Profil, Familienname, Rolle und Mitgliederzahl
 - **Dashboard-Seite** (`/dashboard`): Server Component in Route-Group `(app)`, laedt Daten serverseitig, leitet bei Fehler zu `/onboarding` weiter
-- **DashboardHeader**: Dynamische Begruessung (Guten Morgen/Tag/Abend/Nacht), heutiges Datum, Familienname, Link zu Familieneinstellungen (nur Admin)
-- **QuickActions**: 4 Buttons (Neuer Termin, Neue Aufgabe, Einkaufsliste, Neues Rezept) – zeigen "Kommt bald" Toast, da PROJ-4/5/7/8 noch nicht gebaut
-- **CalendarWidget**: Platzhalter-Karte fuer PROJ-4
-- **TasksWidget**: Platzhalter-Karte fuer PROJ-5
-- **MealPlanWidget**: Platzhalter-Karte fuer PROJ-8
-- **ChatWidget**: Platzhalter-Karte fuer PROJ-9
-- **KidsView**: Persoenlicher Bereich fuer Kinder mit Aufgaben- und Punkte-Zusammenfassung (Platzhalter fuer PROJ-5/PROJ-6)
+- **DashboardHeader**: Dynamische Begruessung, heutiges Datum, Familienname
+- **CalendarWidget**: Laedt echte Termine via `getEventsForRangeAction()` (naechste 3 Tage, max. 4)
+- **TasksWidget**: Laedt echte Aufgaben via `getTasksAction()` (ueberfaellige + heute faellige)
+- **RewardsWidget**: Laedt Punktestand via `getRewardsOverviewAction()` mit Level-System
+- **MealPlanWidget**: Platzhalter fuer PROJ-8
+- **ChatWidget**: Platzhalter fuer PROJ-9 (nicht mehr im Dashboard angezeigt)
+- **KidsView**: Persoenlicher Bereich fuer Kinder (Aufgaben + Punkte)
 - **Loading State**: Skeleton-basierte Ladeanzeige (`loading.tsx`)
-- **Toaster**: `<Toaster />` in Root-Layout eingebunden fuer globale Toast-Nachrichten
-- **Root-Redirect**: `page.tsx` leitet jetzt zu `/dashboard` statt `/login` (Middleware steuert Auth)
+- **Root-Redirect**: `page.tsx` leitet zu `/dashboard` statt `/login`
+
+### Design-Redesign: "Joyful Curator / Digital Sandbox" (2026-03-23)
+Komplette Neugestaltung nach Design-System `docs/DESIGN.md`.
+
+**Neue Layout-Komponenten:**
+- `src/components/layout/app-sidebar.tsx` — Fixe Sidebar (w-72, rounded-r-[3rem], Glassmorphism-Schatten), Gradient-Pill fuer aktiven Nav-Link, Hilfe + Abmelden am unteren Rand
+- `src/components/layout/app-top-bar.tsx` — Fixe Top-Bar (h-20) mit Bell, Settings-Link (Admin only), Avatar-Dropdown mit Logout
+- `src/components/layout/bottom-nav.tsx` — Mobile Bottom-Nav mit zentralem FAB (Gradient-Pill)
+
+**Neues Dashboard-Layout (Bento-Grid):**
+- 12-Spalten-Grid: Links 8 Spalten, rechts 4 Spalten
+- Links: CalendarWidget (Horizontal-Scroll) → Tasks & Rewards (2-spaltig) → Family Highlight
+- Rechts: MealPlanWidget (Teal-Karte) → Einkaufslisten-Platzhalter → Zitat-Bubble (organische Form)
+- Mobile: Alles gestapelt, Bottom-Nav statt Sidebar
+
+**Widget-Neugestaltung:**
+- **DashboardHeader**: Vereinfacht — Begruessung + Familienmitglieder-Badge, kein Dropdown mehr (Logout jetzt in AppTopBar)
+- **CalendarWidget**: Horizontale Scroll-Karten mit kategoriespezifischen Hintergrundfarben (accent/tertiary-container/muted)
+- **TasksWidget**: Ueberfaellig-Badge + border-l-4 border-destructive fuer kritische Aufgaben + "Alle ansehen"-Footer-Link
+- **RewardsWidget**: Gelber Punkte-Kreis + Fortschrittsbalken + Level-Labels
+- **MealPlanWidget**: Teal-Karte (bg-secondary), Glasmorphismus-Blob, Platzhalter-CTA
 
 ### Design-Entscheidungen
-- Alle Widgets nutzen eine gemeinsame `WidgetPlaceholder`-Komponente fuer konsistente Platzhalter-Darstellung
-- Responsive: Mobile gestapelt (1 Spalte), Desktop 2-spaltig (via `sm:grid-cols-2`)
-- Rollenbasiertes Rendering: Kinder sehen einen zusaetzlichen `KidsView`-Bereich
-- shadcn/ui Komponenten: Card, Button, Badge, Skeleton, Separator, Toast
-- Alle Texte auf Deutsch (konsistent mit PROJ-1 und PROJ-2)
+- Keine shadcn Card-Komponenten mehr fuer Widget-Container — raw divs mit `bg-card rounded-[2rem] shadow-sm`
+- Kein QuickActions-Bar mehr — Navigation ueber Sidebar und Bottom-Nav
+- `hide-scrollbar` CSS-Utility in `globals.css` fuer horizontalen Kalender-Scroll
+- Sidebar wird direkt in `dashboard/page.tsx` gerendert (nicht im `(app)/layout.tsx`), da nur Dashboard das neue Shell-Layout hat — andere Seiten bekommen Shell spaeter
+- Logout-Logik ausschliesslich in `AppTopBar` (kein doppeltes Logout mehr)
 
 ### Noch offen (fuer /backend)
 - Dashboard-Daten kommen aus Supabase (bereits verbunden via `getDashboardDataAction`)

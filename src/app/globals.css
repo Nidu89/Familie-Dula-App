@@ -5,102 +5,131 @@
 @layer base {
   :root {
     /* ============================================================
-     * Design System: "The Living Room Hearth / Digital Hearth"
-     * Primary:   #0060ad (deep blue)      / container #9ac3ff
-     * Secondary: #1f6d29 (forest green)   / container #adffa9
-     * Tertiary:  #795a00 (warm gold)      / container #fdc003
-     * Surface:   #faf9f8 (warm white)
+     * Design System: "The Joyful Curator / Digital Sandbox"
+     * Primary:   #ffd709 (sunny yellow)  / on-primary #6c5a00
+     * Secondary: #006384 (teal)          / on-secondary #ffffff
+     * Tertiary:  #ffd5c2 (warm peach)   / container only
+     * Surface:   #f3f7fb (soft sky-blue-white)
+     * On-surface: #2a2f32 (dark blue-grey — never pure black)
+     *
+     * Rules:
+     *   - No 100% opaque borders for sectioning (use bg-color shifts)
+     *   - Ghost borders only: outline-variant at max 15% opacity
+     *   - Min radius: sm (0.5rem) — no sharp corners
+     *   - Primary CTA: gradient 135deg from #6c5a00 → #ffd709
+     *   - Floating UI: backdrop-blur-xl + surface-lowest/70 opacity
      * ============================================================ */
 
-    --background: 40 20% 98%;           /* #faf9f8 surface – warm white */
-    --foreground: 180 5% 19%;           /* #303333 on_surface */
+    /* shadcn / Radix base tokens */
+    --background: 210 50% 97%;          /* #f3f7fb  surface */
+    --foreground: 202 9% 18%;           /* #2a2f32  on-surface */
 
-    --card: 0 0% 100%;                  /* #ffffff surface-container-lowest */
-    --card-foreground: 180 5% 19%;
+    --card: 0 0% 100%;                  /* #ffffff  surface-container-lowest */
+    --card-foreground: 202 9% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 180 5% 19%;
+    --popover-foreground: 202 9% 18%;
 
-    --primary: 207 100% 34%;            /* #0060ad deep blue */
-    --primary-foreground: 240 100% 99%; /* #f8f8ff */
+    --primary: 50 100% 52%;             /* #ffd709  sunny yellow */
+    --primary-foreground: 50 100% 21%;  /* #6c5a00  dark golden */
 
-    --secondary: 128 56% 27%;           /* #1f6d29 forest green */
-    --secondary-foreground: 128 100% 95%; /* #eaffe3 */
+    --secondary: 195 100% 26%;          /* #006384  teal */
+    --secondary-foreground: 0 0% 100%;  /* #ffffff */
 
-    --muted: 60 3% 93%;                 /* #eeeeed surface-container */
-    --muted-foreground: 120 1% 37%;     /* #5d605f */
+    --muted: 210 35% 94%;               /* #ecf1f6  surface-container-low */
+    --muted-foreground: 202 5% 40%;     /* mid-tone text on muted areas */
 
-    --accent: 45 98% 50%;               /* #fdc003 warm gold */
-    --accent-foreground: 43 100% 17%;   /* #553e00 */
+    --accent: 195 55% 87%;              /* #cce8f2  secondary-container */
+    --accent-foreground: 195 100% 15%;  /* dark teal */
 
-    --destructive: 0 53% 43%;           /* #ac3434 */
-    --destructive-foreground: 6 100% 99%; /* #fff7f6 */
+    --destructive: 0 53% 43%;
+    --destructive-foreground: 6 100% 99%;
 
-    --border: 150 1% 79%;               /* softer outline-variant */
-    --input: 40 7% 95%;                 /* #f4f3f2 surface-container-low */
-    --ring: 207 100% 34%;               /* #0060ad */
+    --border: 210 19% 88%;              /* #dde3e8  outline-variant (use at 15% opacity) */
+    --input: 210 35% 94%;               /* #ecf1f6  surface-container-low */
+    --ring: 50 100% 52%;                /* #ffd709  primary yellow */
 
-    --radius: 1.5rem;
+    --radius: 2rem;                     /* lg — standard card radius */
 
-    --chart-1: 207 100% 34%;            /* primary blue */
-    --chart-2: 128 56% 27%;             /* secondary green */
-    --chart-3: 45 98% 50%;              /* tertiary gold */
-    --chart-4: 0 53% 43%;               /* red */
-    --chart-5: 25 80% 55%;              /* warm orange */
+    /* Extended surface tier tokens */
+    --surface: 210 50% 97%;             /* #f3f7fb */
+    --surface-container-low: 210 35% 94%;   /* #ecf1f6 */
+    --surface-container: 210 25% 92%;       /* #e5eaf0 */
+    --surface-container-high: 210 19% 88%;  /* #dde3e8 */
+    --surface-container-lowest: 0 0% 100%;  /* #ffffff */
 
-    --sidebar-background: 40 7% 95%;    /* #f4f3f2 surface-container-low */
-    --sidebar-foreground: 180 5% 19%;
-    --sidebar-primary: 207 100% 34%;
-    --sidebar-primary-foreground: 240 100% 99%;
-    --sidebar-accent: 128 40% 88%;      /* light green */
-    --sidebar-accent-foreground: 128 56% 15%;
-    --sidebar-border: 150 1% 85%;
-    --sidebar-ring: 207 100% 34%;
+    /* Tertiary — Activity Bubble & special milestones */
+    --tertiary-container: 18 100% 87%;  /* #ffd5c2 warm peach */
+
+    /* Charts */
+    --chart-1: 50 100% 52%;             /* primary yellow */
+    --chart-2: 195 100% 26%;            /* secondary teal */
+    --chart-3: 18 100% 65%;             /* warm coral */
+    --chart-4: 0 53% 43%;               /* destructive red */
+    --chart-5: 270 60% 60%;             /* soft purple */
+
+    /* Sidebar */
+    --sidebar-background: 210 35% 94%;  /* surface-container-low */
+    --sidebar-foreground: 202 9% 18%;
+    --sidebar-primary: 50 100% 52%;
+    --sidebar-primary-foreground: 50 100% 21%;
+    --sidebar-accent: 195 55% 87%;      /* secondary-container */
+    --sidebar-accent-foreground: 195 100% 15%;
+    --sidebar-border: 210 19% 88%;
+    --sidebar-ring: 50 100% 52%;
   }
 
   .dark {
-    --background: 180 5% 8%;
-    --foreground: 60 3% 93%;
+    --background: 210 15% 10%;
+    --foreground: 210 20% 90%;
 
-    --card: 180 5% 11%;
-    --card-foreground: 60 3% 93%;
+    --card: 210 15% 14%;
+    --card-foreground: 210 20% 90%;
 
-    --popover: 180 5% 11%;
-    --popover-foreground: 60 3% 93%;
+    --popover: 210 15% 14%;
+    --popover-foreground: 210 20% 90%;
 
-    --primary: 213 100% 75%;            /* lighter blue for dark */
-    --primary-foreground: 207 100% 10%;
+    --primary: 50 100% 52%;             /* yellow stays vibrant in dark */
+    --primary-foreground: 50 100% 10%;
 
-    --secondary: 128 40% 55%;
-    --secondary-foreground: 128 100% 10%;
+    --secondary: 195 60% 50%;           /* lighter teal for dark mode */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 180 5% 18%;
-    --muted-foreground: 120 1% 60%;
+    --muted: 210 15% 18%;
+    --muted-foreground: 210 10% 60%;
 
-    --accent: 45 98% 50%;
-    --accent-foreground: 43 100% 17%;
+    --accent: 195 40% 25%;
+    --accent-foreground: 195 60% 85%;
 
     --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 180 3% 22%;
-    --input: 180 3% 22%;
-    --ring: 213 100% 75%;
+    --border: 210 15% 22%;
+    --input: 210 15% 18%;
+    --ring: 50 100% 52%;
 
-    --chart-1: 213 100% 75%;
-    --chart-2: 128 40% 55%;
-    --chart-3: 45 98% 60%;
+    --surface: 210 15% 10%;
+    --surface-container-low: 210 15% 14%;
+    --surface-container: 210 15% 18%;
+    --surface-container-high: 210 15% 22%;
+    --surface-container-lowest: 210 15% 12%;
+
+    --tertiary-container: 18 60% 30%;
+
+    --chart-1: 50 100% 60%;
+    --chart-2: 195 60% 50%;
+    --chart-3: 18 80% 60%;
     --chart-4: 0 60% 55%;
-    --chart-5: 25 70% 60%;
+    --chart-5: 270 50% 65%;
 
-    --sidebar-background: 180 5% 8%;
-    --sidebar-foreground: 60 3% 93%;
-    --sidebar-primary: 213 100% 75%;
-    --sidebar-primary-foreground: 207 100% 10%;
-    --sidebar-accent: 180 5% 18%;
-    --sidebar-accent-foreground: 60 3% 93%;
-    --sidebar-border: 180 3% 22%;
-    --sidebar-ring: 213 100% 75%;
+    --sidebar-background: 210 15% 10%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 50 100% 52%;
+    --sidebar-primary-foreground: 50 100% 10%;
+    --sidebar-accent: 210 15% 18%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 210 15% 22%;
+    --sidebar-ring: 50 100% 52%;
   }
 }
 
@@ -111,4 +140,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

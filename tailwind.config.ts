@@ -63,12 +63,26 @@ const config: Config = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			/* Design System surface tiers — use instead of borders for sectioning */
+  			surface: {
+  				DEFAULT: 'hsl(var(--surface))',
+  				low: 'hsl(var(--surface-container-low))',
+  				container: 'hsl(var(--surface-container))',
+  				high: 'hsl(var(--surface-container-high))',
+  				lowest: 'hsl(var(--surface-container-lowest))',
+  			},
+  			tertiary: {
+  				container: 'hsl(var(--tertiary-container))',
   			}
   		},
   		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			sm: '0.5rem',    /* minimum allowed — no sharp corners */
+  			md: '1rem',      /* form inputs, small chips */
+  			lg: 'var(--radius)', /* 2rem — standard cards */
+  			xl: '3rem',      /* large hero containers */
+  			'2xl': '4rem',
+  			full: '9999px',  /* pill buttons */
   		},
   		keyframes: {
   			'accordion-down': {
