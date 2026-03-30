@@ -24,7 +24,8 @@
 | PROJ-10 | Benachrichtigungen | Planned | [PROJ-10-benachrichtigungen.md](PROJ-10-benachrichtigungen.md) | 2026-03-18 |
 | PROJ-11 | Bild-Upload im Chat | Planned | [PROJ-11-chat-bild-upload.md](PROJ-11-chat-bild-upload.md) | 2026-03-18 |
 | PROJ-12 | iCloud Kalender Integration | Planned | [PROJ-12-icloud-kalender-integration.md](PROJ-12-icloud-kalender-integration.md) | 2026-03-18 |
+| PROJ-13 | Familien-Timer | In Review | [PROJ-13-familien-timer.md](PROJ-13-familien-timer.md) | 2026-03-30 |
 
 <!-- Add features above this line -->
 
-## Next Available ID: PROJ-13
+## Next Available ID: PROJ-14

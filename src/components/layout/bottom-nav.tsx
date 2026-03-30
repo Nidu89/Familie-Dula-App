@@ -7,7 +7,7 @@ import {
   Calendar,
   Plus,
   CheckSquare,
-  Users,
+  Timer,
 } from "lucide-react"
 
 const BOTTOM_LINKS = [
@@ -15,7 +15,7 @@ const BOTTOM_LINKS = [
   { href: "/calendar", label: "Kalender", icon: Calendar },
   // FAB placeholder (rendered separately)
   { href: "/tasks", label: "Aufgaben", icon: CheckSquare },
-  { href: "/family/settings", label: "Familie", icon: Users },
+  { href: "/timer", label: "Timer", icon: Timer },
 ]
 
 export function BottomNav() {

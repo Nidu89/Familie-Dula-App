@@ -7,6 +7,7 @@ import {
   Calendar,
   CheckSquare,
   Trophy,
+  Timer,
   Users,
   HelpCircle,
   LogOut,
@@ -25,6 +26,7 @@ const NAV_LINKS = [
   { href: "/calendar", label: "Kalender", icon: Calendar },
   { href: "/tasks", label: "Aufgaben", icon: CheckSquare },
   { href: "/rewards", label: "Belohnungen", icon: Trophy },
+  { href: "/timer", label: "Timer", icon: Timer },
   { href: "/family/settings", label: "Familie", icon: Users },
 ]
 
