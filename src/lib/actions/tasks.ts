@@ -9,6 +9,7 @@ import {
   type SeriesMode,
   type GetTasksFilterValues,
 } from "@/lib/validations/tasks"
+import { checkAndAwardAchievementsAction } from "@/lib/actions/rewards"
 
 // ============================================================
 // PROJ-5: Aufgaben & To-Dos – Server Actions
@@ -521,6 +522,7 @@ export type CompleteTaskResult = {
   pointsAwarded: boolean
   points?: number
   newBalance?: number
+  awardedBadges: string[]
 }
 
 export async function completeTaskAction(
@@ -562,10 +564,34 @@ export async function completeTaskAction(
     new_balance?: number
   }
 
+  // Check and award any newly earned achievements
+  let awardedBadges: string[] = []
+  try {
+    const assigneeId = await (async () => {
+      const supabase2 = await createClient()
+      const { data: taskData } = await supabase2
+        .from("tasks")
+        .select("assigned_to")
+        .eq("id", taskId)
+        .single()
+      return taskData?.assigned_to
+    })()
+
+    if (assigneeId) {
+      const badgeResult = await checkAndAwardAchievementsAction(assigneeId)
+      if (!("error" in badgeResult)) {
+        awardedBadges = badgeResult.awarded
+      }
+    }
+  } catch {
+    // Achievement check is best-effort, don't fail the main action
+  }
+
   return {
     status: "done",
     pointsAwarded: result.points_awarded,
     points: result.points,
     newBalance: result.new_balance,
+    awardedBadges,
   }
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Star, CheckCircle2, PenLine } from "lucide-react"
+import { Star, CheckCircle2, PenLine, Gift, Target } from "lucide-react"
 
 import {
   Sheet,
@@ -42,6 +42,16 @@ const TYPE_CONFIG = {
     label: "Manuell abgezogen",
     icon: PenLine,
     className: "text-destructive",
+  },
+  reward_redemption: {
+    label: "Belohnung eingeloest",
+    icon: Gift,
+    className: "text-secondary",
+  },
+  goal_contribution: {
+    label: "Familienziel-Beitrag",
+    icon: Target,
+    className: "text-secondary",
   },
 }
 

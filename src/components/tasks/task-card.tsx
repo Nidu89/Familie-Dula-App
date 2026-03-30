@@ -96,6 +96,15 @@ export function TaskCard({
           description: "Die Aufgabe wurde als erledigt markiert.",
         })
       }
+      // Show badge earned toasts
+      if (result.awardedBadges && result.awardedBadges.length > 0) {
+        for (const badge of result.awardedBadges) {
+          toast({
+            title: "Neues Abzeichen!",
+            description: `Du hast das Abzeichen "${badge}" verdient!`,
+          })
+        }
+      }
       onCompleted()
     } catch {
       toast({
