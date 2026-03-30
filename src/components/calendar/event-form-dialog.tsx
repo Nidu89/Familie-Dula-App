@@ -464,7 +464,7 @@ export function EventFormDialog({
 
             {/* Participants */}
             <div>
-              <FormLabel>Teilnehmende</FormLabel>
+              <label className="text-sm font-medium leading-none">Teilnehmende</label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {members.map((m) => {
                   const isSelected = form
@@ -548,7 +548,7 @@ export function EventFormDialog({
 
             {isEditing && isRecurring && (
               <div className="rounded-md border p-3 space-y-2">
-                <FormLabel>Welche Termine bearbeiten?</FormLabel>
+                <label className="text-sm font-medium leading-none">Welche Termine bearbeiten?</label>
                 <RadioGroup
                   value={seriesMode}
                   onValueChange={(v) => setSeriesMode(v as SeriesMode)}
@@ -561,9 +561,9 @@ export function EventFormDialog({
                   ].map((opt) => (
                     <div key={opt.value} className="flex items-center gap-2">
                       <RadioGroupItem value={opt.value} id={`series-${opt.value}`} />
-                      <FormLabel htmlFor={`series-${opt.value}`} className="font-normal cursor-pointer">
+                      <label htmlFor={`series-${opt.value}`} className="text-sm font-normal leading-none cursor-pointer">
                         {opt.label}
-                      </FormLabel>
+                      </label>
                     </div>
                   ))}
                 </RadioGroup>
