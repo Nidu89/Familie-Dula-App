@@ -4,9 +4,6 @@ import { getDashboardDataAction } from "@/lib/actions/dashboard"
 import { getEventsForRangeAction } from "@/lib/actions/calendar"
 import { getFamilyDataAction } from "@/lib/actions/family"
 import { CalendarView } from "@/components/calendar/calendar-view"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
 
 export default async function CalendarPage() {
   const dashResult = await getDashboardDataAction()
@@ -51,20 +48,13 @@ export default async function CalendarPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard" aria-label="Zurueck zum Dashboard">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Familienkalender
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Alle Termine der Familie auf einen Blick
-          </p>
-        </div>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Familienkalender
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Alle Termine der Familie auf einen Blick
+        </p>
       </div>
 
       <CalendarView

@@ -3,9 +3,6 @@ import { redirect } from "next/navigation"
 import { ShoppingCart } from "lucide-react"
 
 import { getDashboardDataAction } from "@/lib/actions/dashboard"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { AppTopBar } from "@/components/layout/app-top-bar"
-import { BottomNav } from "@/components/layout/bottom-nav"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import {
   CalendarWidget,
@@ -47,19 +44,7 @@ export default async function DashboardPage() {
   const isChild = role === "child"
 
   return (
-    <>
-      <AppSidebar
-        familyName={family.name}
-        displayName={user.displayName}
-        isAdmin={isAdmin}
-      />
-      <AppTopBar
-        displayName={user.displayName}
-        familyName={family.name}
-        isAdmin={isAdmin}
-      />
-
-      <main className="md:ml-72 pt-20 pb-24 md:pb-8 px-4 sm:px-6 md:px-10">
+      <main className="px-4 sm:px-6 md:px-10">
         {/* Header */}
         <header className="mb-10 pt-6 md:pt-10">
           <DashboardHeader
@@ -161,8 +146,5 @@ export default async function DashboardPage() {
           </div>
         </div>
       </main>
-
-      <BottomNav />
-    </>
   )
 }

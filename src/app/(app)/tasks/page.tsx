@@ -4,9 +4,6 @@ import { getDashboardDataAction } from "@/lib/actions/dashboard"
 import { getTasksAction } from "@/lib/actions/tasks"
 import { getFamilyDataAction } from "@/lib/actions/family"
 import { TasksList } from "@/components/tasks/tasks-list"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
 
 export default async function TasksPage() {
   const dashResult = await getDashboardDataAction()
@@ -43,20 +40,13 @@ export default async function TasksPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard" aria-label="Zurueck zum Dashboard">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Aufgaben
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Alle Aufgaben der Familie verwalten
-          </p>
-        </div>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Aufgaben
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Alle Aufgaben der Familie verwalten
+        </p>
       </div>
 
       <TasksList

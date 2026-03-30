@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation"
-import { ArrowLeft, Settings } from "lucide-react"
-import Link from "next/link"
+import { Settings } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import { FamilyNameSection } from "@/components/family/family-name-section"
 import { MemberListSection } from "@/components/family/member-list-section"
 import { InviteSection } from "@/components/family/invite-section"
@@ -26,13 +24,6 @@ export default async function FamilySettingsPage() {
     <div className="mx-auto max-w-2xl px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <Button variant="ghost" size="sm" className="mb-4 gap-2" asChild>
-          <Link href="/dashboard">
-            <ArrowLeft className="h-4 w-4" />
-            Zurueck zum Dashboard
-          </Link>
-        </Button>
-
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
             <Settings className="h-5 w-5" />

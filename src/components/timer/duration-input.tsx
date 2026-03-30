@@ -96,9 +96,17 @@ export function DurationInput({ onStart }: DurationInputProps) {
           <div className="flex items-center gap-1">
             <button
               type="button"
-              onClick={() =>
-                setSeconds((s) => (s <= 0 ? 55 : s - 5))
-              }
+              onClick={() => {
+                if (seconds <= 0) {
+                  if (minutes > 0) {
+                    setMinutes((m) => m - 1)
+                    setSeconds(55)
+                  }
+                } else {
+                  setSeconds((s) => s - 5)
+                }
+                setError(null)
+              }}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground font-bold text-lg transition-colors hover:bg-muted/70"
               aria-label="Sekunden verringern"
             >
@@ -123,9 +131,17 @@ export function DurationInput({ onStart }: DurationInputProps) {
             />
             <button
               type="button"
-              onClick={() =>
-                setSeconds((s) => (s >= 55 ? 0 : s + 5))
-              }
+              onClick={() => {
+                if (seconds >= 55) {
+                  if (minutes < 60) {
+                    setMinutes((m) => m + 1)
+                    setSeconds(0)
+                  }
+                } else {
+                  setSeconds((s) => s + 5)
+                }
+                setError(null)
+              }}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground font-bold text-lg transition-colors hover:bg-muted/70"
               aria-label="Sekunden erhoehen"
             >

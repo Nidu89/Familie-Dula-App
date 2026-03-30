@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
 
 import { getDashboardDataAction } from "@/lib/actions/dashboard"
-import { Button } from "@/components/ui/button"
 import { TimerPageClient } from "@/components/timer/timer-page-client"
 
 export default async function TimerPage() {
@@ -23,20 +20,13 @@ export default async function TimerPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-8 flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard" aria-label="Zurueck zum Dashboard">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Familien-Timer
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Countdown-Timer fuer die ganze Familie
-          </p>
-        </div>
+      <div className="mb-8">
+        <h1 className="font-display text-2xl font-bold tracking-tight">
+          Familien-Timer
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Countdown-Timer fuer die ganze Familie
+        </p>
       </div>
 
       <TimerPageClient />

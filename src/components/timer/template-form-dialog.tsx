@@ -111,7 +111,7 @@ export function TemplateFormDialog({
               value={minutes}
               onChange={(e) => {
                 const v = parseInt(e.target.value, 10)
-                if (!isNaN(v)) setMinutes(v)
+                if (!isNaN(v)) setMinutes(Math.max(1, Math.min(60, v)))
               }}
               className="rounded-2xl"
             />

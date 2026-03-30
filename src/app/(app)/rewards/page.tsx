@@ -3,9 +3,6 @@ import { redirect } from "next/navigation"
 import { getDashboardDataAction } from "@/lib/actions/dashboard"
 import { getRewardsOverviewAction } from "@/lib/actions/rewards"
 import { RewardsOverview } from "@/components/rewards/rewards-overview"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
 
 export default async function RewardsPage() {
   const dashResult = await getDashboardDataAction()
@@ -33,20 +30,13 @@ export default async function RewardsPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-6 flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard" aria-label="Zurueck zum Dashboard">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Belohnungen
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Punktestand und Verlauf fuer alle Kinder
-          </p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Belohnungen
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Punktestand und Verlauf fuer alle Kinder
+        </p>
       </div>
 
       <RewardsOverview
