@@ -17,7 +17,7 @@
 | PROJ-3 | Familien-Dashboard | Deployed | [PROJ-3-familien-dashboard.md](PROJ-3-familien-dashboard.md) | 2026-03-18 |
 | PROJ-4 | Familienkalender | Deployed | [PROJ-4-familienkalender.md](PROJ-4-familienkalender.md) | 2026-03-18 |
 | PROJ-5 | Aufgaben & To-Dos | Deployed | [PROJ-5-aufgaben-todos.md](PROJ-5-aufgaben-todos.md) | 2026-03-18 |
-| PROJ-6 | Belohnungssystem | In Review | [PROJ-6-belohnungssystem.md](PROJ-6-belohnungssystem.md) | 2026-03-18 |
+| PROJ-6 | Belohnungssystem | Deployed | [PROJ-6-belohnungssystem.md](PROJ-6-belohnungssystem.md) | 2026-03-18 |
 | PROJ-7 | Einkaufslisten | Planned | [PROJ-7-einkaufslisten.md](PROJ-7-einkaufslisten.md) | 2026-03-18 |
 | PROJ-8 | Essens- & Rezeptplanung | Planned | [PROJ-8-essens-rezeptplanung.md](PROJ-8-essens-rezeptplanung.md) | 2026-03-18 |
 | PROJ-9 | Chat & Kommunikation | Planned | [PROJ-9-chat-kommunikation.md](PROJ-9-chat-kommunikation.md) | 2026-03-18 |
