@@ -63,22 +63,22 @@ export async function getDashboardDataAction(): Promise<
     return { error: "Du gehoerst keiner Familie an." }
   }
 
-  // Load family name
-  const { data: family } = await supabase
-    .from("families")
-    .select("id, name")
-    .eq("id", profile.family_id)
-    .single()
+  // Load family name and member count in parallel
+  const [{ data: family }, { count }] = await Promise.all([
+    supabase
+      .from("families")
+      .select("id, name")
+      .eq("id", profile.family_id)
+      .single(),
+    supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("family_id", profile.family_id),
+  ])
 
   if (!family) {
     return { error: "Familie nicht gefunden." }
   }
-
-  // Count family members
-  const { count } = await supabase
-    .from("profiles")
-    .select("id", { count: "exact", head: true })
-    .eq("family_id", profile.family_id)
 
   return {
     user: {

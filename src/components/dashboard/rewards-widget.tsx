@@ -1,6 +1,3 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { Star, Trophy } from "lucide-react"
 import Link from "next/link"
 
@@ -28,29 +25,15 @@ interface RewardsWidgetProps {
   currentUserId: string
 }
 
-export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
-  const [children, setChildren] = useState<ChildPointsSummary[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const result = await getRewardsOverviewAction()
-        if (!("error" in result)) {
-          setChildren(result.children)
-        }
-      } catch {
-        // Silent fail
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    load()
-  }, [])
+export async function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
+  const result = await getRewardsOverviewAction()
+  const allChildren: ChildPointsSummary[] = !("error" in result)
+    ? result.children
+    : []
 
   const displayChildren = isAdmin
-    ? children
-    : children.filter((c) => c.id === currentUserId)
+    ? allChildren
+    : allChildren.filter((c) => c.id === currentUserId)
 
   return (
     <section className="flex flex-col rounded-[2rem] bg-card p-8 shadow-sm">
@@ -63,13 +46,7 @@ export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
       </div>
 
       {/* Content */}
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
-      ) : displayChildren.length === 0 ? (
+      {displayChildren.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-4 text-center">
           <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-primary">
             <span className="text-3xl font-black text-primary-foreground">
@@ -134,6 +111,22 @@ export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
       >
         Alle Belohnungen
       </Link>
+    </section>
+  )
+}
+
+export function RewardsWidgetSkeleton() {
+  return (
+    <section className="flex flex-col rounded-[2rem] bg-card p-8 shadow-sm">
+      <div className="mb-6 flex items-center justify-between">
+        <Skeleton className="h-7 w-32" />
+        <Skeleton className="h-5 w-5 rounded" />
+      </div>
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <Skeleton key={i} className="h-14 w-full rounded-lg" />
+        ))}
+      </div>
     </section>
   )
 }

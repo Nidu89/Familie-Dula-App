@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { ShoppingCart } from "lucide-react"
 
@@ -6,11 +7,20 @@ import { AppSidebar } from "@/components/layout/app-sidebar"
 import { AppTopBar } from "@/components/layout/app-top-bar"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { CalendarWidget } from "@/components/dashboard/calendar-widget"
-import { TasksWidget } from "@/components/dashboard/tasks-widget"
-import { RewardsWidget } from "@/components/dashboard/rewards-widget"
+import {
+  CalendarWidget,
+  CalendarWidgetSkeleton,
+} from "@/components/dashboard/calendar-widget"
+import {
+  TasksWidget,
+  TasksWidgetSkeleton,
+} from "@/components/dashboard/tasks-widget"
+import {
+  RewardsWidget,
+  RewardsWidgetSkeleton,
+} from "@/components/dashboard/rewards-widget"
 import { MealPlanWidget } from "@/components/dashboard/meal-plan-widget"
-import { KidsView } from "@/components/dashboard/kids-view"
+import { KidsView, KidsViewSkeleton } from "@/components/dashboard/kids-view"
 
 export default async function DashboardPage() {
   const result = await getDashboardDataAction()
@@ -62,15 +72,23 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           {/* Left column — 8 cols */}
           <div className="md:col-span-8 space-y-6">
-            <CalendarWidget />
+            <Suspense fallback={<CalendarWidgetSkeleton />}>
+              <CalendarWidget />
+            </Suspense>
 
             {isChild && (
-              <KidsView displayName={user.displayName} userId={user.id} />
+              <Suspense fallback={<KidsViewSkeleton />}>
+                <KidsView displayName={user.displayName} userId={user.id} />
+              </Suspense>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <TasksWidget />
-              <RewardsWidget isAdmin={isAdmin} currentUserId={user.id} />
+              <Suspense fallback={<TasksWidgetSkeleton />}>
+                <TasksWidget />
+              </Suspense>
+              <Suspense fallback={<RewardsWidgetSkeleton />}>
+                <RewardsWidget isAdmin={isAdmin} currentUserId={user.id} />
+              </Suspense>
             </div>
 
             {/* Family Highlight placeholder */}

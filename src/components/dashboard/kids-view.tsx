@@ -1,6 +1,3 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { Star, ListChecks } from "lucide-react"
 import Link from "next/link"
 
@@ -12,7 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { getTasksAction, type Task } from "@/lib/actions/tasks"
+import { Skeleton } from "@/components/ui/skeleton"
+import { getTasksAction } from "@/lib/actions/tasks"
 import { getRewardsOverviewAction, type ChildPointsSummary } from "@/lib/actions/rewards"
 
 interface KidsViewProps {
@@ -20,35 +18,19 @@ interface KidsViewProps {
   userId: string
 }
 
-export function KidsView({ displayName, userId }: KidsViewProps) {
-  const [myTasks, setMyTasks] = useState<Task[]>([])
-  const [points, setPoints] = useState(0)
-  const [loaded, setLoaded] = useState(false)
+export async function KidsView({ displayName, userId }: KidsViewProps) {
+  const [tasksResult, rewardsResult] = await Promise.all([
+    getTasksAction({ assignedTo: userId, status: "open" }),
+    getRewardsOverviewAction(),
+  ])
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [tasksResult, rewardsResult] = await Promise.all([
-          getTasksAction({ assignedTo: userId, status: "open" }),
-          getRewardsOverviewAction(),
-        ])
+  const myTasks = !("error" in tasksResult)
+    ? tasksResult.tasks.filter((t) => t.status !== "done").slice(0, 3)
+    : []
 
-        if (!("error" in tasksResult)) {
-          setMyTasks(tasksResult.tasks.filter((t) => t.status !== "done").slice(0, 3))
-        }
-
-        if (!("error" in rewardsResult)) {
-          const me = rewardsResult.children.find((c: ChildPointsSummary) => c.id === userId)
-          if (me) setPoints(me.pointsBalance)
-        }
-      } catch {
-        // Silent fail for dashboard widget
-      } finally {
-        setLoaded(true)
-      }
-    }
-    load()
-  }, [userId])
+  const points = !("error" in rewardsResult)
+    ? (rewardsResult.children.find((c: ChildPointsSummary) => c.id === userId)?.pointsBalance ?? 0)
+    : 0
 
   return (
     <Card className="border-0 bg-primary/8 shadow-sm">
@@ -64,7 +46,7 @@ export function KidsView({ displayName, userId }: KidsViewProps) {
           </div>
           <Badge variant="secondary" className="gap-1">
             <Star className="h-3 w-3" />
-            {loaded ? `${points} Punkte` : "..."}
+            {points} Punkte
           </Badge>
         </div>
       </CardHeader>
@@ -81,11 +63,7 @@ export function KidsView({ displayName, userId }: KidsViewProps) {
             <div>
               <p className="text-sm font-medium">Meine Aufgaben</p>
               <p className="text-xs text-muted-foreground">
-                {loaded
-                  ? myTasks.length > 0
-                    ? `${myTasks.length} offen`
-                    : "Alles erledigt!"
-                  : "Laden..."}
+                {myTasks.length > 0 ? `${myTasks.length} offen` : "Alles erledigt!"}
               </p>
             </div>
           </Link>
@@ -101,14 +79,34 @@ export function KidsView({ displayName, userId }: KidsViewProps) {
             <div>
               <p className="text-sm font-medium">Meine Punkte</p>
               <p className="text-xs text-muted-foreground">
-                {loaded
-                  ? points > 0
-                    ? `${points} Punkte gesammelt`
-                    : "Erledige Aufgaben, um Punkte zu sammeln!"
-                  : "Laden..."}
+                {points > 0
+                  ? `${points} Punkte gesammelt`
+                  : "Erledige Aufgaben, um Punkte zu sammeln!"}
               </p>
             </div>
           </Link>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function KidsViewSkeleton() {
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-3 w-44" />
+          </div>
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Skeleton className="h-16 rounded-2xl" />
+          <Skeleton className="h-16 rounded-2xl" />
         </div>
       </CardContent>
     </Card>

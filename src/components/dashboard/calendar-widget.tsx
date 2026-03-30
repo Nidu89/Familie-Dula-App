@@ -1,6 +1,3 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { CalendarDays, Calendar } from "lucide-react"
 import Link from "next/link"
 
@@ -54,36 +51,19 @@ function formatEventDate(startAt: string): string {
   })
 }
 
-export function CalendarWidget() {
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+export async function CalendarWidget() {
+  const now = new Date()
+  const endOfDay = new Date(now)
+  endOfDay.setDate(endOfDay.getDate() + 3)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const now = new Date()
-        const endOfDay = new Date(now)
-        endOfDay.setDate(endOfDay.getDate() + 3)
+  const result = await getEventsForRangeAction(
+    now.toISOString(),
+    endOfDay.toISOString()
+  )
 
-        const result = await getEventsForRangeAction(
-          now.toISOString(),
-          endOfDay.toISOString()
-        )
-
-        if (!("error" in result)) {
-          const upcoming = result.events
-            .filter((e) => e.title !== "__DELETED__")
-            .slice(0, 6)
-          setEvents(upcoming)
-        }
-      } catch {
-        // Silent fail for dashboard widget
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    load()
-  }, [])
+  const events: CalendarEvent[] = !("error" in result)
+    ? result.events.filter((e) => e.title !== "__DELETED__").slice(0, 6)
+    : []
 
   return (
     <section className="rounded-[2rem] bg-card p-8 shadow-sm">
@@ -98,16 +78,7 @@ export function CalendarWidget() {
         </Link>
       </div>
 
-      {isLoading ? (
-        <div className="flex gap-4 overflow-hidden">
-          {[1, 2].map((i) => (
-            <Skeleton
-              key={i}
-              className="min-w-[220px] h-36 rounded-[1.5rem] shrink-0"
-            />
-          ))}
-        </div>
-      ) : events.length === 0 ? (
+      {events.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <Calendar className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
@@ -140,6 +111,25 @@ export function CalendarWidget() {
           ))}
         </div>
       )}
+    </section>
+  )
+}
+
+export function CalendarWidgetSkeleton() {
+  return (
+    <section className="rounded-[2rem] bg-card p-8 shadow-sm">
+      <div className="mb-6 flex items-center justify-between">
+        <Skeleton className="h-7 w-40" />
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+      <div className="flex gap-4 overflow-hidden">
+        {[1, 2].map((i) => (
+          <Skeleton
+            key={i}
+            className="min-w-[220px] h-36 rounded-[1.5rem] shrink-0"
+          />
+        ))}
+      </div>
     </section>
   )
 }

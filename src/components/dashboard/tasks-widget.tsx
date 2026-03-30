@@ -1,6 +1,3 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { AlertTriangle, Square, Clock, Star } from "lucide-react"
 import Link from "next/link"
 
@@ -14,33 +11,19 @@ function isOverdue(dueDate: string | null): boolean {
   return new Date(dueDate) < today
 }
 
-export function TasksWidget() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+export async function TasksWidget() {
+  const result = await getTasksAction()
+  const todayStr = new Date().toISOString().split("T")[0]
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const result = await getTasksAction()
-        if (!("error" in result)) {
-          const todayStr = new Date().toISOString().split("T")[0]
-          const relevant = result.tasks
-            .filter(
-              (t) =>
-                t.status !== "done" &&
-                (isOverdue(t.dueDate) || t.dueDate === todayStr || !t.dueDate)
-            )
-            .slice(0, 4)
-          setTasks(relevant)
-        }
-      } catch {
-        // Silent fail for dashboard widget
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    load()
-  }, [])
+  const tasks: Task[] = !("error" in result)
+    ? result.tasks
+        .filter(
+          (t) =>
+            t.status !== "done" &&
+            (isOverdue(t.dueDate) || t.dueDate === todayStr || !t.dueDate)
+        )
+        .slice(0, 4)
+    : []
 
   const overdueCount = tasks.filter((t) => isOverdue(t.dueDate)).length
 
@@ -49,7 +32,7 @@ export function TasksWidget() {
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <h3 className="font-display text-xl font-bold">Top Aufgaben</h3>
-        {!isLoading && overdueCount > 0 && (
+        {overdueCount > 0 && (
           <span className="rounded-full bg-destructive/10 px-2 py-1 text-[10px] font-black text-destructive">
             {overdueCount} UEBERFAELLIG
           </span>
@@ -57,13 +40,7 @@ export function TasksWidget() {
       </div>
 
       {/* Content */}
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : tasks.length === 0 ? (
+      {tasks.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <Square className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
@@ -124,6 +101,21 @@ export function TasksWidget() {
       >
         Alle Aufgaben ansehen
       </Link>
+    </section>
+  )
+}
+
+export function TasksWidgetSkeleton() {
+  return (
+    <section className="flex flex-col rounded-[2rem] bg-card p-8 shadow-sm">
+      <div className="mb-6 flex items-center gap-3">
+        <Skeleton className="h-7 w-36" />
+      </div>
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <Skeleton key={i} className="h-16 w-full rounded-xl" />
+        ))}
+      </div>
     </section>
   )
 }
