@@ -1,6 +1,6 @@
 # PROJ-13: Familien-Timer
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-03-30
 **Last Updated:** 2026-03-30
 
@@ -420,4 +420,20 @@ No new npm packages needed. All required primitives are already in the project:
 - **Recommendation:** Fix the 3 high-priority bugs (BUG-1, BUG-8, BUG-9) and 3 medium-priority bugs (BUG-3, BUG-7, BUG-10) before deployment. BUG-1 and BUG-9 are architecturally related (timer state not persisted across navigation) and should be addressed together. BUG-3 is a quick fix. BUG-8 is a quick fix (remove duplicate audio in useTimer hook). BUG-7 needs a touch-friendly alternative for edit/delete actions.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-03-30
+**Commit:** `66eb70e`
+**Branch:** main → Vercel auto-deploy
+
+### What was shipped
+- Full timer feature (16/16 acceptance criteria met after bug fixes)
+- All 10 QA bugs resolved before deployment
+- `TimerProvider` lifted to `(app)/layout.tsx` — timer persists across navigation
+- `/api/session` route for lightweight session data
+- Dashboard widget shows live active timer
+- Mobile bottom-nav includes Timer link
+- Template edit/delete buttons touch-friendly
+- Alarm sound deduplication (single Audio instance in `TimerAlarmDialog`)
+- iOS Safari `pageshow` handler for bfcache recovery
+- Client-side rate limiting (1s) on template CRUD
+- Error message when 60 min + seconds exceeds maximum
