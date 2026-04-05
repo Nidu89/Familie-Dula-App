@@ -6,34 +6,38 @@ import { useTimerContext } from "@/context/timer-context"
 import { Bell } from "lucide-react"
 
 export function TimerAlarmDialog() {
-  const { timer, isAdult } = useTimerContext()
+  const { timer, isAdult, alarmAudioRef } = useTimerContext()
   const isFinished = timer.state.status === "finished"
   const [audioBlocked, setAudioBlocked] = useState(false)
 
   useEffect(() => {
     if (!isFinished) return
 
-    let audio: HTMLAudioElement | null = null
+    setAudioBlocked(false)
 
-    async function playAlarm() {
-      try {
-        audio = new Audio("/timer-alarm.mp3")
-        audio.loop = true
-        await audio.play()
-      } catch {
-        setAudioBlocked(true)
-      }
+    // Use the pre-primed audio element (unlocked during user gesture in start())
+    const audio = alarmAudioRef.current
+    if (audio) {
+      audio.currentTime = 0
+      audio.volume = 1
+      audio.loop = true
+      audio.play().catch(() => setAudioBlocked(true))
+    } else {
+      // Fallback: create new audio (will likely be blocked, but try)
+      const fallback = new Audio("/timer-alarm.mp3")
+      fallback.loop = true
+      fallback.play().catch(() => setAudioBlocked(true))
+      alarmAudioRef.current = fallback
     }
-
-    void playAlarm()
 
     return () => {
-      if (audio) {
-        audio.pause()
-        audio.currentTime = 0
+      const a = alarmAudioRef.current
+      if (a) {
+        a.pause()
+        a.currentTime = 0
       }
     }
-  }, [isFinished])
+  }, [isFinished, alarmAudioRef])
 
   if (!isFinished) return null
 

@@ -3,6 +3,8 @@
 import {
   createContext,
   useContext,
+  useRef,
+  useCallback,
   type ReactNode,
 } from "react"
 import { useTimer, type TimerState, type UseTimerReturn } from "@/hooks/use-timer"
@@ -22,6 +24,7 @@ interface TimerContextValue {
   refetchTemplates: () => Promise<void>
   isAdult: boolean
   familyId: string | null
+  alarmAudioRef: React.RefObject<HTMLAudioElement | null>
 }
 
 const TimerContext = createContext<TimerContextValue | null>(null)
@@ -34,6 +37,7 @@ interface TimerProviderProps {
 
 export function TimerProvider({ children, familyId, role }: TimerProviderProps) {
   const timer = useTimer()
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null)
   const {
     templates,
     loading: templatesLoading,
@@ -46,10 +50,41 @@ export function TimerProvider({ children, familyId, role }: TimerProviderProps) 
 
   const isAdult = role === "admin" || role === "adult"
 
+  // Prime alarm audio on user gesture (called during click → allowed by browser)
+  const primeAlarm = useCallback(() => {
+    if (!alarmAudioRef.current) {
+      alarmAudioRef.current = new Audio("/timer-alarm.mp3")
+      alarmAudioRef.current.loop = true
+    }
+    const audio = alarmAudioRef.current
+    if (audio.paused) {
+      audio.volume = 0
+      audio.play().then(() => {
+        audio.pause()
+        audio.currentTime = 0
+        audio.volume = 1
+      }).catch(() => {})
+    }
+  }, [])
+
+  // Wrap timer.start to auto-prime alarm during the user gesture
+  const startWithAlarm = useCallback((duration: number) => {
+    primeAlarm()
+    timer.start(duration)
+  }, [primeAlarm, timer.start])
+
+  const wrappedTimer: UseTimerReturn = {
+    state: timer.state,
+    start: startWithAlarm,
+    pause: timer.pause,
+    resume: timer.resume,
+    reset: timer.reset,
+  }
+
   return (
     <TimerContext.Provider
       value={{
-        timer,
+        timer: wrappedTimer,
         templates,
         templatesLoading,
         templatesError,
@@ -59,6 +94,7 @@ export function TimerProvider({ children, familyId, role }: TimerProviderProps) 
         refetchTemplates,
         isAdult,
         familyId,
+        alarmAudioRef,
       }}
     >
       {children}
