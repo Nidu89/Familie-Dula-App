@@ -1,6 +1,6 @@
 # PROJ-14: Familien-Rituale
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-04-05
 **Last Updated:** 2026-04-05
 
@@ -551,4 +551,15 @@ All Critical, High, and Medium bugs have been fixed:
 **Remaining Low bugs (non-blocking):** BUG-02 (widget shows by sort_order, not frequency), BUG-07 (no JSONB schema constraint), BUG-10 (eslint-disable), BUG-11 (dead timer_expired status), BUG-12 (widget error swallowing)
 
 ## Deployment
-_To be added by /deploy_
+
+**Status:** Deployed to Production
+**Date:** 2026-04-05
+**Production URL:** https://familie-dula-app.vercel.app/rituals
+**Commit:** `a39a17f` — feat(PROJ-14): Familien-Rituale — full implementation
+
+**Deployed components:**
+- `/rituals` page with full ritual management
+- Dashboard widget (RitualsWidget) in right column
+- Sidebar navigation link
+- Supabase migrations: `rituals` table + `award_ritual_completion` RPC
+- 3 system templates seeded for all existing families
