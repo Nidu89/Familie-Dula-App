@@ -1,58 +1,78 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Clock, Star, ChevronDown, ChevronRight } from "lucide-react"
+import { Check, CheckCheck, Timer, BadgeCheck } from "lucide-react"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { useToast } from "@/hooks/use-toast"
 import { completeTaskAction, type Task } from "@/lib/actions/tasks"
 
-const PRIORITY_CONFIG = {
-  high: { label: "Hoch", className: "bg-destructive/10 text-destructive border-destructive/20" },
-  medium: { label: "Mittel", className: "bg-chart-4/10 text-chart-4 border-chart-4/20" },
-  low: { label: "Niedrig", className: "bg-chart-3/10 text-chart-3 border-chart-3/20" },
+/* ── avatar helpers ────────────────────────────────────── */
+
+const AVATAR_COLORS = [
+  "bg-secondary/15 text-secondary",
+  "bg-primary/20 text-primary-foreground",
+  "bg-chart-3/15 text-chart-3",
+  "bg-chart-5/15 text-chart-5",
+  "bg-tertiary-container/50 text-foreground",
+]
+
+function getAvatarColor(name: string | null): string {
+  if (!name) return AVATAR_COLORS[0]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
-const STATUS_CONFIG = {
-  open: { label: "Offen", className: "bg-muted text-muted-foreground" },
-  in_progress: { label: "In Bearbeitung", className: "bg-primary/10 text-primary" },
-  done: { label: "Erledigt", className: "bg-chart-3/10 text-chart-3" },
+function getInitials(name: string | null): string {
+  if (!name) return "?"
+  const parts = name.trim().split(" ")
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return parts[0].slice(0, 2).toUpperCase()
 }
+
+/* ── time helpers ──────────────────────────────────────── */
+
+function getTimeInfo(
+  dueDate: string | null
+): { text: string; isOverdue: boolean } | null {
+  if (!dueDate) return null
+
+  const now = new Date()
+  const todayStr = now.toISOString().split("T")[0]
+
+  if (dueDate < todayStr) {
+    return { text: "Ueberfaellig", isOverdue: true }
+  }
+
+  if (dueDate === todayStr) {
+    const endOfDay = new Date(dueDate + "T23:59:59")
+    const diffMs = endOfDay.getTime() - now.getTime()
+    const hours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)))
+    return { text: `Noch ${hours} Stunden`, isOverdue: false }
+  }
+
+  const due = new Date(dueDate)
+  const days = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  return {
+    text: `Noch ${days} ${days === 1 ? "Tag" : "Tage"}`,
+    isOverdue: false,
+  }
+}
+
+/* ── component ─────────────────────────────────────────── */
 
 interface TaskCardProps {
   task: Task
+  variant: "haushalt" | "eigene"
   isAdultOrAdmin: boolean
   currentUserId: string
   onEdit: (task: Task) => void
   onCompleted: () => void
 }
 
-function isOverdue(dueDate: string | null): boolean {
-  if (!dueDate) return false
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return new Date(dueDate) < today
-}
-
-function formatDueDate(dueDate: string | null): string {
-  if (!dueDate) return ""
-  return new Date(dueDate).toLocaleDateString("de-DE", {
-    day: "numeric",
-    month: "short",
-  })
-}
-
 export function TaskCard({
   task,
+  variant,
   isAdultOrAdmin,
   currentUserId,
   onEdit,
@@ -60,20 +80,17 @@ export function TaskCard({
 }: TaskCardProps) {
   const { toast } = useToast()
   const [isCompleting, setIsCompleting] = useState(false)
-  const [subtasksOpen, setSubtasksOpen] = useState(false)
 
-  const overdue = task.status !== "done" && isOverdue(task.dueDate)
+  const isDone = task.status === "done"
   const canComplete =
-    task.status !== "done" &&
-    (isAdultOrAdmin || task.assignedTo === currentUserId)
+    !isDone && (isAdultOrAdmin || task.assignedTo === currentUserId)
   const canEdit = isAdultOrAdmin
+  const timeInfo = !isDone ? getTimeInfo(task.dueDate) : null
+  const isEigene = variant === "eigene"
 
-  const subtasksDone = task.subtasks.filter((s) => s.isDone).length
-  const subtasksTotal = task.subtasks.length
-  const subtaskProgress =
-    subtasksTotal > 0 ? (subtasksDone / subtasksTotal) * 100 : 0
-
-  async function handleComplete() {
+  async function handleComplete(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!canComplete || isCompleting) return
     setIsCompleting(true)
     try {
       const result = await completeTaskAction(task.id)
@@ -88,20 +105,19 @@ export function TaskCard({
       if (result.pointsAwarded && result.points) {
         toast({
           title: "Aufgabe erledigt!",
-          description: `+${result.points} Punkte erhalten! Neuer Stand: ${result.newBalance} Punkte.`,
+          description: `+${result.points} Punkte! Stand: ${result.newBalance}`,
         })
       } else {
         toast({
           title: "Aufgabe erledigt!",
-          description: "Die Aufgabe wurde als erledigt markiert.",
+          description: "Aufgabe als erledigt markiert.",
         })
       }
-      // Show badge earned toasts
-      if (result.awardedBadges && result.awardedBadges.length > 0) {
+      if (result.awardedBadges?.length) {
         for (const badge of result.awardedBadges) {
           toast({
             title: "Neues Abzeichen!",
-            description: `Du hast das Abzeichen "${badge}" verdient!`,
+            description: `"${badge}" verdient!`,
           })
         }
       }
@@ -109,7 +125,7 @@ export function TaskCard({
     } catch {
       toast({
         title: "Fehler",
-        description: "Aufgabe konnte nicht als erledigt markiert werden.",
+        description: "Konnte nicht als erledigt markiert werden.",
         variant: "destructive",
       })
     } finally {
@@ -117,135 +133,116 @@ export function TaskCard({
     }
   }
 
+  /* ── done state ─────────────────────────────────────── */
+
+  if (isDone) {
+    return (
+      <div
+        className={`bg-card p-6 rounded-lg shadow-sm opacity-60 ${canEdit ? "cursor-pointer" : ""}`}
+        onClick={() => canEdit && onEdit(task)}
+      >
+        <div className="flex justify-between items-start mb-4">
+          <div
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold grayscale ${getAvatarColor(task.assignedToName)}`}
+          >
+            {getInitials(task.assignedToName)}
+          </div>
+          <BadgeCheck className="h-5 w-5 text-secondary" />
+        </div>
+        <h4 className="font-display font-bold text-lg mb-1 line-through text-muted-foreground">
+          {task.title}
+        </h4>
+        {task.description && (
+          <p className="text-muted-foreground text-sm line-clamp-2">
+            {task.description}
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  /* ── active state ───────────────────────────────────── */
+
   return (
-    <Card
-      className={`transition-colors ${task.status === "done" ? "opacity-60" : ""} ${canEdit ? "cursor-pointer hover:border-primary/30" : ""}`}
+    <div
+      className={`bg-card p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden ${
+        isEigene ? "border-l-[6px] border-l-chart-3" : ""
+      } ${canEdit ? "cursor-pointer" : ""}`}
       onClick={() => canEdit && onEdit(task)}
     >
-      <CardContent className="flex items-start gap-3 p-4">
-        {/* Checkbox */}
+      {/* activity bubble (haushalt only) */}
+      {!isEigene && (
         <div
-          className="pt-0.5"
-          onClick={(e) => e.stopPropagation()}
+          className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 transition-transform group-hover:scale-110"
+          style={{
+            borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%",
+          }}
+        />
+      )}
+
+      {/* avatar + points */}
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div
+          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold border-2 border-card shadow-sm ${getAvatarColor(task.assignedToName)}`}
         >
-          <Checkbox
-            checked={task.status === "done"}
-            disabled={!canComplete || isCompleting}
-            onCheckedChange={() => canComplete && handleComplete()}
-            aria-label={`Aufgabe "${task.title}" als erledigt markieren`}
+          {getInitials(task.assignedToName)}
+        </div>
+        {task.points != null && task.points > 0 && (
+          <span
+            className={`font-display font-black text-lg ${isEigene ? "text-chart-3" : "text-primary-foreground"}`}
+          >
+            +{task.points} Pkt.
+          </span>
+        )}
+      </div>
+
+      {/* title */}
+      <h4 className="font-display font-bold text-lg mb-2">{task.title}</h4>
+
+      {/* description */}
+      {task.description && (
+        <p className="text-muted-foreground text-sm line-clamp-2">
+          {task.description}
+        </p>
+      )}
+
+      {/* timer / overdue chip */}
+      {timeInfo && (
+        <div
+          className={`flex items-center gap-2 px-4 py-2 rounded-full w-fit mt-4 ${
+            timeInfo.isOverdue ? "bg-destructive/10" : "bg-muted"
+          }`}
+        >
+          <Timer
+            className={`h-4 w-4 ${timeInfo.isOverdue ? "text-destructive" : "text-chart-3"}`}
           />
+          <span
+            className={`text-xs font-bold uppercase ${timeInfo.isOverdue ? "text-destructive" : "text-chart-3"}`}
+          >
+            {timeInfo.text}
+          </span>
         </div>
+      )}
 
-        {/* Content */}
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3
-              className={`text-sm font-medium ${task.status === "done" ? "line-through text-muted-foreground" : ""}`}
-            >
-              {task.title}
-            </h3>
-
-            <Badge
-              variant="outline"
-              className={`text-[10px] ${PRIORITY_CONFIG[task.priority].className}`}
-            >
-              {PRIORITY_CONFIG[task.priority].label}
-            </Badge>
-
-            <Badge
-              variant="outline"
-              className={`text-[10px] ${STATUS_CONFIG[task.status].className}`}
-            >
-              {STATUS_CONFIG[task.status].label}
-            </Badge>
-          </div>
-
-          {task.description && (
-            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-              {task.description}
-            </p>
+      {/* action button */}
+      {canComplete && (
+        <button
+          onClick={handleComplete}
+          disabled={isCompleting}
+          className={`w-full mt-6 font-bold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 active:scale-95 ${
+            isEigene
+              ? "bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-md"
+              : "border-2 border-primary text-primary-foreground hover:bg-primary/10"
+          }`}
+        >
+          {isEigene ? (
+            <CheckCheck className="h-5 w-5" />
+          ) : (
+            <Check className="h-5 w-5" />
           )}
-
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            {task.dueDate && (
-              <span
-                className={`flex items-center gap-1 ${overdue ? "font-semibold text-destructive" : ""}`}
-              >
-                <Clock className="h-3 w-3" />
-                {formatDueDate(task.dueDate)}
-                {overdue && " (ueberfaellig)"}
-              </span>
-            )}
-
-            {task.assignedToName && (
-              <span className="flex items-center gap-1">
-                {task.assignedToName}
-              </span>
-            )}
-
-            {task.points != null && task.points > 0 && (
-              <span className="flex items-center gap-1 text-chart-4">
-                <Star className="h-3 w-3" />
-                {task.points} Punkte
-                {task.pointsAwarded && (
-                  <Check className="h-3 w-3 text-chart-3" />
-                )}
-              </span>
-            )}
-          </div>
-
-          {/* Subtasks */}
-          {subtasksTotal > 0 && (
-            <Collapsible
-              open={subtasksOpen}
-              onOpenChange={setSubtasksOpen}
-              className="mt-2"
-            >
-              <CollapsibleTrigger
-                asChild
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto gap-1 p-0 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  {subtasksOpen ? (
-                    <ChevronDown className="h-3 w-3" />
-                  ) : (
-                    <ChevronRight className="h-3 w-3" />
-                  )}
-                  {subtasksDone}/{subtasksTotal} Unteraufgaben
-                </Button>
-              </CollapsibleTrigger>
-              <div className="mt-1">
-                <Progress value={subtaskProgress} className="h-1.5" />
-              </div>
-              <CollapsibleContent
-                className="mt-2 space-y-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {task.subtasks.map((sub) => (
-                  <div key={sub.id} className="flex items-center gap-2 text-xs">
-                    <Checkbox
-                      checked={sub.isDone}
-                      disabled
-                      className="h-3.5 w-3.5"
-                    />
-                    <span
-                      className={
-                        sub.isDone ? "line-through text-muted-foreground" : ""
-                      }
-                    >
-                      {sub.title}
-                    </span>
-                  </div>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          {isEigene ? "Fertig!" : "Erledigt!"}
+        </button>
+      )}
+    </div>
   )
 }

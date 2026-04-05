@@ -1,25 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2, Trash2, Shield, UserRound, Baby } from "lucide-react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import {
+  Loader2,
+  Trash2,
+  Shield,
+  UserRound,
+  Baby,
+  ChevronRight,
+  UserPlus,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import {
   Select,
   SelectContent,
@@ -35,9 +29,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { useRouter } from "next/navigation"
-
 import { updateMemberRoleAction, removeMemberAction } from "@/lib/actions/family"
+import { InviteSection } from "./invite-section"
+
+/* ── types ─────────────────────────────────────────────── */
 
 export type FamilyRole = "admin" | "adult" | "child"
 
@@ -52,7 +47,11 @@ interface MemberListSectionProps {
   members: FamilyMember[]
   currentUserId: string
   isAdmin: boolean
+  existingCode?: string | null
+  existingCodeExpiresAt?: string | null
 }
+
+/* ── role config ───────────────────────────────────────── */
 
 const roleLabels: Record<FamilyRole, string> = {
   admin: "Admin",
@@ -61,38 +60,68 @@ const roleLabels: Record<FamilyRole, string> = {
 }
 
 const roleIcons: Record<FamilyRole, React.ReactNode> = {
-  admin: <Shield className="h-3.5 w-3.5" />,
-  adult: <UserRound className="h-3.5 w-3.5" />,
-  child: <Baby className="h-3.5 w-3.5" />,
+  admin: <Shield className="h-4 w-4" />,
+  adult: <UserRound className="h-4 w-4" />,
+  child: <Baby className="h-4 w-4" />,
 }
 
-const roleBadgeVariants: Record<FamilyRole, "default" | "secondary" | "outline"> = {
-  admin: "default",
-  adult: "secondary",
-  child: "outline",
+const ROLE_STYLES: Record<
+  FamilyRole,
+  { border: string; badgeBg: string; avatarBg: string; corner: string }
+> = {
+  admin: {
+    border: "border-secondary",
+    badgeBg: "bg-secondary",
+    avatarBg: "bg-secondary/15 text-secondary",
+    corner: "bg-secondary/10",
+  },
+  adult: {
+    border: "border-primary-foreground",
+    badgeBg: "bg-primary-foreground",
+    avatarBg: "bg-primary/20 text-primary-foreground",
+    corner: "bg-primary/15",
+  },
+  child: {
+    border: "border-chart-3",
+    badgeBg: "bg-chart-3",
+    avatarBg: "bg-chart-3/15 text-chart-3",
+    corner: "bg-chart-3/15",
+  },
 }
+
+/* ── helpers ───────────────────────────────────────────── */
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(" ")
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return parts[0].slice(0, 2).toUpperCase()
+}
+
+/* ── component ─────────────────────────────────────────── */
 
 export function MemberListSection({
   members,
   currentUserId,
   isAdmin,
+  existingCode,
+  existingCodeExpiresAt,
 }: MemberListSectionProps) {
   const router = useRouter()
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [editMember, setEditMember] = useState<FamilyMember | null>(null)
   const [confirmRemove, setConfirmRemove] = useState<FamilyMember | null>(null)
-
-  const adminCount = members.filter((m) => m.role === "admin").length
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
 
   async function handleRoleChange(memberId: string, newRole: string) {
     setLoadingMemberId(memberId)
     setErrorMessage(null)
-
     try {
       const result = await updateMemberRoleAction(memberId, newRole)
       if (result?.error) {
         setErrorMessage(result.error)
       } else {
+        setEditMember(null)
         router.refresh()
       }
     } catch {
@@ -104,10 +133,8 @@ export function MemberListSection({
 
   async function handleRemoveMember() {
     if (!confirmRemove) return
-
     setLoadingMemberId(confirmRemove.id)
     setErrorMessage(null)
-
     try {
       const result = await removeMemberAction(confirmRemove.id)
       if (result?.error) {
@@ -120,38 +147,128 @@ export function MemberListSection({
     } finally {
       setLoadingMemberId(null)
       setConfirmRemove(null)
+      setEditMember(null)
     }
-  }
-
-  if (members.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Mitglieder</CardTitle>
-          <CardDescription>Noch keine Mitglieder vorhanden.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Lade Familienmitglieder ein, um loszulegen.
-          </p>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Mitglieder</CardTitle>
-          <CardDescription>
-            {members.length} {members.length === 1 ? "Mitglied" : "Mitglieder"} in deiner Familie.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Member Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        {members.map((member) => {
+          const isSelf = member.id === currentUserId
+          const style = ROLE_STYLES[member.role]
+
+          return (
+            <div
+              key={member.id}
+              className="group relative bg-card p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center overflow-hidden"
+            >
+              {/* Corner decoration */}
+              <div
+                className={`absolute top-0 right-0 w-24 h-24 ${style.corner} rounded-bl-[4rem]`}
+              />
+
+              {/* Avatar */}
+              <div className="relative mb-6">
+                <div
+                  className={`w-28 h-28 rounded-full border-4 ${style.border} p-1 group-hover:scale-105 transition-transform`}
+                >
+                  <div
+                    className={`w-full h-full rounded-full ${style.avatarBg} flex items-center justify-center`}
+                  >
+                    <span className="text-3xl font-bold">
+                      {getInitials(member.displayName)}
+                    </span>
+                  </div>
+                </div>
+                {/* Role icon badge */}
+                <div
+                  className={`absolute -bottom-2 -right-2 w-10 h-10 ${style.badgeBg} text-white rounded-full flex items-center justify-center shadow-lg`}
+                >
+                  {roleIcons[member.role]}
+                </div>
+              </div>
+
+              {/* Name */}
+              <h3 className="font-display text-2xl font-bold mb-1">
+                {member.displayName}
+                {isSelf && (
+                  <span className="text-xs text-muted-foreground ml-2">
+                    (Du)
+                  </span>
+                )}
+              </h3>
+
+              {/* Role chip */}
+              <p className="text-secondary font-semibold text-sm mb-6 px-4 py-1 bg-muted rounded-full">
+                {roleLabels[member.role]}
+              </p>
+
+              {/* Action buttons */}
+              <div className="w-full space-y-3 mt-auto">
+                <Link
+                  href="/calendar"
+                  className="block w-full py-3 rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white font-bold text-center active:scale-[0.98] transition-all shadow-lg"
+                >
+                  Zeitplan ansehen
+                </Link>
+                {isAdmin && !isSelf && (
+                  <button
+                    onClick={() => setEditMember(member)}
+                    className="w-full py-3 rounded-full bg-muted text-foreground font-medium hover:bg-surface-high transition-colors active:scale-[0.98]"
+                  >
+                    Profil bearbeiten
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Add Member Card (admin only) */}
+        {isAdmin && (
+          <button
+            onClick={() => setInviteDialogOpen(true)}
+            className="group relative h-full min-h-[320px] bg-surface-container border-2 border-dashed border-muted-foreground/20 rounded-xl p-8 flex flex-col items-center justify-center hover:bg-surface-high transition-all duration-300 active:scale-[0.99]"
+          >
+            <div className="w-20 h-20 rounded-full bg-card flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
+              <UserPlus className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h3 className="font-display text-xl font-bold mb-2">
+              Neues Mitglied?
+            </h3>
+            <p className="text-muted-foreground text-sm max-w-[180px]">
+              Erweitere die Sandbox und lade jemanden ein
+            </p>
+            <div className="mt-8 flex items-center gap-2 text-primary-foreground font-bold">
+              <span>Mitglied einladen</span>
+              <ChevronRight className="h-4 w-4" />
+            </div>
+          </button>
+        )}
+      </div>
+
+      {/* Edit Member Dialog */}
+      <Dialog
+        open={!!editMember}
+        onOpenChange={() => {
+          setEditMember(null)
+          setErrorMessage(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Profil bearbeiten</DialogTitle>
+            <DialogDescription>
+              Rolle von <strong>{editMember?.displayName}</strong> aendern oder
+              Mitglied entfernen.
+            </DialogDescription>
+          </DialogHeader>
+
           {errorMessage && (
             <div
-              className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
               role="alert"
               aria-live="polite"
             >
@@ -159,167 +276,53 @@ export function MemberListSection({
             </div>
           )}
 
-          {/* Desktop: Tabelle */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>E-Mail</TableHead>
-                  <TableHead>Rolle</TableHead>
-                  {isAdmin && <TableHead className="w-[80px]">Aktion</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => {
-                  const isSelf = member.id === currentUserId
-                  const isLastAdmin = member.role === "admin" && adminCount <= 1
-                  const isDisabled = loadingMemberId === member.id
-
-                  return (
-                    <TableRow key={member.id}>
-                      <TableCell className="font-medium">
-                        {member.displayName}
-                        {isSelf && (
-                          <span className="ml-2 text-xs text-muted-foreground">(Du)</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {member.email}
-                      </TableCell>
-                      <TableCell>
-                        {isAdmin && !isSelf ? (
-                          <Select
-                            defaultValue={member.role}
-                            onValueChange={(value) => handleRoleChange(member.id, value)}
-                            disabled={isDisabled}
-                          >
-                            <SelectTrigger className="w-[140px]" aria-label="Rolle aendern">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="adult">Erwachsener</SelectItem>
-                              <SelectItem value="child">Kind</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Badge variant={roleBadgeVariants[member.role]} className="gap-1">
-                            {roleIcons[member.role]}
-                            {roleLabels[member.role]}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      {isAdmin && (
-                        <TableCell>
-                          {!isSelf && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                              onClick={() => setConfirmRemove(member)}
-                              disabled={isDisabled}
-                              aria-label={`${member.displayName} entfernen`}
-                            >
-                              {isDisabled ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
-                            </Button>
-                          )}
-                          {isSelf && isLastAdmin && (
-                            <span className="text-xs text-muted-foreground">
-                              Letzter Admin
-                            </span>
-                          )}
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Mobile: Karten */}
-          <div className="space-y-3 md:hidden">
-            {members.map((member) => {
-              const isSelf = member.id === currentUserId
-              const isDisabled = loadingMemberId === member.id
-
-              return (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
+          {editMember && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Rolle</label>
+                <Select
+                  defaultValue={editMember.role}
+                  onValueChange={(value) =>
+                    handleRoleChange(editMember.id, value)
+                  }
+                  disabled={loadingMemberId === editMember.id}
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">
-                      {member.displayName}
-                      {isSelf && (
-                        <span className="ml-1 text-xs text-muted-foreground">(Du)</span>
-                      )}
-                    </p>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {member.email}
-                    </p>
-                    <Badge
-                      variant={roleBadgeVariants[member.role]}
-                      className="mt-1 gap-1"
-                    >
-                      {roleIcons[member.role]}
-                      {roleLabels[member.role]}
-                    </Badge>
-                  </div>
+                  <SelectTrigger aria-label="Rolle aendern">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="adult">Erwachsener</SelectItem>
+                    <SelectItem value="child">Kind</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  {isAdmin && !isSelf && (
-                    <div className="ml-2 flex flex-col gap-1">
-                      <Select
-                        defaultValue={member.role}
-                        onValueChange={(value) => handleRoleChange(member.id, value)}
-                        disabled={isDisabled}
-                      >
-                        <SelectTrigger className="h-8 w-[120px] text-xs" aria-label="Rolle aendern">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="adult">Erwachsener</SelectItem>
-                          <SelectItem value="child">Kind</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => setConfirmRemove(member)}
-                        disabled={isDisabled}
-                      >
-                        {isDisabled ? (
-                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                        ) : (
-                          <Trash2 className="mr-1 h-3 w-3" />
-                        )}
-                        Entfernen
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="pt-4 border-t">
+                <Button
+                  variant="destructive"
+                  onClick={() => setConfirmRemove(editMember)}
+                  disabled={loadingMemberId === editMember.id}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Mitglied entfernen
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-      {/* Bestaetigung: Mitglied entfernen */}
+      {/* Confirm Remove Dialog */}
       <Dialog open={!!confirmRemove} onOpenChange={() => setConfirmRemove(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Mitglied entfernen</DialogTitle>
             <DialogDescription>
-              Moechtest du <strong>{confirmRemove?.displayName}</strong> wirklich aus
-              der Familie entfernen? Diese Person verliert sofort den Zugriff auf alle
-              Familiendaten.
+              Moechtest du <strong>{confirmRemove?.displayName}</strong> wirklich
+              aus der Familie entfernen? Diese Person verliert sofort den Zugriff
+              auf alle Familiendaten.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -345,6 +348,23 @@ export function MemberListSection({
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mitglied einladen</DialogTitle>
+            <DialogDescription>
+              Lade neue Mitglieder per E-Mail oder Einladungscode ein.
+            </DialogDescription>
+          </DialogHeader>
+          <InviteSection
+            existingCode={existingCode}
+            existingCodeExpiresAt={existingCodeExpiresAt}
+            embedded
+          />
         </DialogContent>
       </Dialog>
     </>
