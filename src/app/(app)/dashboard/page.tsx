@@ -18,6 +18,7 @@ import {
 } from "@/components/dashboard/rewards-widget"
 import { MealPlanWidget } from "@/components/dashboard/meal-plan-widget"
 import { TimerWidget } from "@/components/dashboard/timer-widget"
+import { RitualsWidget } from "@/components/dashboard/rituals-widget"
 import { KidsView, KidsViewSkeleton } from "@/components/dashboard/kids-view"
 
 export default async function DashboardPage() {
@@ -97,6 +98,7 @@ export default async function DashboardPage() {
           {/* Right column — 4 cols */}
           <div className="md:col-span-4 space-y-6">
             <TimerWidget familyId={family.id} isAdult={isAdmin || role === "adult"} />
+            <RitualsWidget isAdult={isAdmin || role === "adult"} />
             <MealPlanWidget />
 
             {/* Shopping list placeholder */}

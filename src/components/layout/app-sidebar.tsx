@@ -8,6 +8,7 @@ import {
   CheckSquare,
   Trophy,
   Timer,
+  ListChecks,
   Users,
   HelpCircle,
   LogOut,
@@ -27,6 +28,7 @@ const NAV_LINKS = [
   { href: "/tasks", label: "Aufgaben", icon: CheckSquare },
   { href: "/rewards", label: "Belohnungen", icon: Trophy },
   { href: "/timer", label: "Timer", icon: Timer },
+  { href: "/rituals", label: "Rituale", icon: ListChecks },
   { href: "/family/settings", label: "Familie", icon: Users },
 ]
 
