@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect, useMemo } from "react"
+import { useSearchParams } from "next/navigation"
 import { Home, User, Star, ListChecks, Plus, Trophy } from "lucide-react"
 import { RRule } from "rrule"
 
@@ -64,10 +65,20 @@ export function TasksList({
   goalContributions,
 }: TasksListProps) {
   const { toast } = useToast()
+  const searchParams = useSearchParams()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [isLoading, setIsLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+
+  // Auto-open create dialog when ?new=1 is in the URL
+  useEffect(() => {
+    if (searchParams.get("new") === "1" && isAdultOrAdmin) {
+      setSelectedTask(null)
+      setDialogOpen(true)
+      window.history.replaceState(null, "", "/tasks")
+    }
+  }, [searchParams, isAdultOrAdmin])
 
   /* ── data fetching ──────────────────────────────────── */
 

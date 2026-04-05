@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   Calendar as BigCalendar,
   dateFnsLocalizer,
@@ -72,12 +73,22 @@ export function CalendarView({
   currentUserId,
 }: CalendarViewProps) {
   const { toast } = useToast()
+  const searchParams = useSearchParams()
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
   const [view, setView] = useState<CalendarViewType>("month")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isLoading, setIsLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+
+  // Auto-open create dialog when ?new=1 is in the URL
+  useEffect(() => {
+    if (searchParams.get("new") === "1" && isAdultOrAdmin) {
+      setSelectedEvent(null)
+      setDialogOpen(true)
+      window.history.replaceState(null, "", "/calendar")
+    }
+  }, [searchParams, isAdultOrAdmin])
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [dialogDefaultDate, setDialogDefaultDate] = useState<
     Date | undefined
