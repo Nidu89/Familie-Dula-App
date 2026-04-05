@@ -142,6 +142,16 @@
   }
 }
 
+/* Hide native number input spinners (use custom +/- buttons instead) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* Hide scrollbar utility */
 .hide-scrollbar {
   scrollbar-width: none;

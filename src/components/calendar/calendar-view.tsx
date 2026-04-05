@@ -20,6 +20,9 @@ import {
   CalendarHeader,
   type CalendarViewType,
 } from "@/components/calendar/calendar-header"
+import { CustomMonthGrid } from "@/components/calendar/custom-month-grid"
+import { DayFocusPanel } from "@/components/calendar/day-focus-panel"
+import { WeatherWidget } from "@/components/calendar/weather-widget"
 import { EventFormDialog } from "@/components/calendar/event-form-dialog"
 import {
   getEventsForRangeAction,
@@ -75,7 +78,10 @@ export function CalendarView({
   const [isLoading, setIsLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [dialogDefaultDate, setDialogDefaultDate] = useState<
+    Date | undefined
+  >()
 
   // Filters
   const [selectedMember, setSelectedMember] = useState("all")
@@ -138,11 +144,19 @@ export function CalendarView({
     })
   }, [events, selectedMember, selectedCategory])
 
-  // Map to react-big-calendar events, expanding RRULE recurring events into occurrences
-  const rbcEvents: CalendarEventRBC[] = useMemo(() => {
-    const result: CalendarEventRBC[] = []
-    const rangeStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-    const rangeEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0)
+  // Expand recurring events into occurrences
+  const expandedEvents: CalendarEvent[] = useMemo(() => {
+    const result: CalendarEvent[] = []
+    const rangeStart = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    )
+    const rangeEnd = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 2,
+      0
+    )
 
     // Track deleted exception dates per parent (from raw events incl. __DELETED__ markers)
     const deletedDatesByParent: Record<string, Set<string>> = {}
@@ -151,7 +165,9 @@ export function CalendarView({
         if (!deletedDatesByParent[e.recurrenceParentId]) {
           deletedDatesByParent[e.recurrenceParentId] = new Set()
         }
-        deletedDatesByParent[e.recurrenceParentId].add(new Date(e.startAt).toDateString())
+        deletedDatesByParent[e.recurrenceParentId].add(
+          new Date(e.startAt).toDateString()
+        )
       }
     }
 
@@ -162,28 +178,26 @@ export function CalendarView({
         if (!overriddenDatesByParent[e.recurrenceParentId]) {
           overriddenDatesByParent[e.recurrenceParentId] = new Set()
         }
-        overriddenDatesByParent[e.recurrenceParentId].add(new Date(e.startAt).toDateString())
+        overriddenDatesByParent[e.recurrenceParentId].add(
+          new Date(e.startAt).toDateString()
+        )
       }
     }
 
     for (const e of filteredEvents) {
       if (e.recurrenceParentId) {
-        // Exception record – show directly (already filtered for __DELETED__)
-        result.push({
-          title: e.title,
-          start: new Date(e.startAt),
-          end: new Date(e.endAt),
-          allDay: e.allDay,
-          resource: e,
-        })
+        // Exception record - show directly
+        result.push(e)
         continue
       }
 
       if (e.recurrenceRule) {
         const startDate = new Date(e.startAt)
         const duration = new Date(e.endAt).getTime() - startDate.getTime()
-        const deletedDates = deletedDatesByParent[e.id] ?? new Set<string>()
-        const overriddenDates = overriddenDatesByParent[e.id] ?? new Set<string>()
+        const deletedDates =
+          deletedDatesByParent[e.id] ?? new Set<string>()
+        const overriddenDates =
+          overriddenDatesByParent[e.id] ?? new Set<string>()
 
         try {
           const ruleOptions = RRule.parseString(e.recurrenceRule)
@@ -192,44 +206,43 @@ export function CalendarView({
 
           for (const occStart of occurrences) {
             const dateStr = occStart.toDateString()
-            if (deletedDates.has(dateStr) || overriddenDates.has(dateStr)) continue
+            if (deletedDates.has(dateStr) || overriddenDates.has(dateStr))
+              continue
             const occEnd = new Date(occStart.getTime() + duration)
             result.push({
-              title: e.title,
-              start: occStart,
-              end: occEnd,
-              allDay: e.allDay,
-              resource: { ...e, startAt: occStart.toISOString(), endAt: occEnd.toISOString() },
+              ...e,
+              startAt: occStart.toISOString(),
+              endAt: occEnd.toISOString(),
             })
           }
         } catch {
           // Fallback: show original event
-          result.push({
-            title: e.title,
-            start: new Date(e.startAt),
-            end: new Date(e.endAt),
-            allDay: e.allDay,
-            resource: e,
-          })
+          result.push(e)
         }
       } else {
-        result.push({
-          title: e.title,
-          start: new Date(e.startAt),
-          end: new Date(e.endAt),
-          allDay: e.allDay,
-          resource: e,
-        })
+        result.push(e)
       }
     }
 
     return result
   }, [events, filteredEvents, currentDate])
 
+  // Map expanded events to react-big-calendar format (used for non-month views)
+  const rbcEvents: CalendarEventRBC[] = useMemo(() => {
+    return expandedEvents.map((e) => ({
+      title: e.title,
+      start: new Date(e.startAt),
+      end: new Date(e.endAt),
+      allDay: e.allDay,
+      resource: e,
+    }))
+  }, [expandedEvents])
+
   function handleNavigate(action: "PREV" | "NEXT" | "TODAY") {
     const d = new Date(currentDate)
     if (action === "TODAY") {
       setCurrentDate(new Date())
+      setSelectedDate(new Date())
     } else if (action === "PREV") {
       if (view === "month") d.setMonth(d.getMonth() - 1)
       else if (view === "week") d.setDate(d.getDate() - 7)
@@ -243,7 +256,21 @@ export function CalendarView({
     }
   }
 
-  function handleRBCNavigate(newDate: Date, _view: View, _action: NavigateAction) {
+  function handleMonthNavigate(action: "PREV" | "NEXT") {
+    const d = new Date(currentDate)
+    if (action === "PREV") {
+      d.setMonth(d.getMonth() - 1)
+    } else {
+      d.setMonth(d.getMonth() + 1)
+    }
+    setCurrentDate(d)
+  }
+
+  function handleRBCNavigate(
+    newDate: Date,
+    _view: View,
+    _action: NavigateAction
+  ) {
     setCurrentDate(newDate)
   }
 
@@ -254,17 +281,34 @@ export function CalendarView({
     }
   }
 
-  function handleSelectSlot(slotInfo: { start: Date }) {
+  function handleSelectCalendarEvent(event: CalendarEvent) {
     if (isAdultOrAdmin) {
-      setSelectedEvent(null)
-      setSelectedDate(slotInfo.start)
+      setSelectedEvent(event)
       setDialogOpen(true)
     }
   }
 
+  function handleSelectSlot(slotInfo: { start: Date }) {
+    if (isAdultOrAdmin) {
+      setSelectedEvent(null)
+      setDialogDefaultDate(slotInfo.start)
+      setDialogOpen(true)
+    }
+  }
+
+  function handleSelectDay(date: Date) {
+    setSelectedDate(date)
+  }
+
   function handleNewEvent() {
     setSelectedEvent(null)
-    setSelectedDate(new Date())
+    setDialogDefaultDate(selectedDate || new Date())
+    setDialogOpen(true)
+  }
+
+  function handleAddEventFromPanel() {
+    setSelectedEvent(null)
+    setDialogDefaultDate(selectedDate || new Date())
     setDialogOpen(true)
   }
 
@@ -335,6 +379,8 @@ export function CalendarView({
     showMore: (total: number) => `+${total} weitere`,
   }
 
+  const isMonthView = view === "month"
+
   return (
     <div className="flex flex-col gap-4">
       <CalendarHeader
@@ -352,11 +398,40 @@ export function CalendarView({
       />
 
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
           <Skeleton className="h-[500px] w-full rounded-lg" />
+          <Skeleton className="hidden h-[500px] w-full rounded-lg lg:block" />
+        </div>
+      ) : isMonthView ? (
+        /* Custom month view: grid + day focus panel */
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+          {/* Left: Custom month grid */}
+          <div className="rounded-lg bg-card p-4 sm:p-6">
+            <CustomMonthGrid
+              currentDate={currentDate}
+              selectedDate={selectedDate}
+              events={expandedEvents}
+              onSelectDate={handleSelectDay}
+              onNavigate={handleMonthNavigate}
+            />
+          </div>
+
+          {/* Right: Day focus panel + weather */}
+          <div className="flex flex-col gap-6">
+            <DayFocusPanel
+              selectedDate={selectedDate}
+              events={expandedEvents}
+              members={members}
+              isAdultOrAdmin={isAdultOrAdmin}
+              onAddEvent={handleAddEventFromPanel}
+              onSelectEvent={handleSelectCalendarEvent}
+            />
+            <WeatherWidget />
+          </div>
         </div>
       ) : (
-        <div className="rounded-lg border bg-card p-2 sm:p-4 [&_.rbc-header]:border-border [&_.rbc-header]:bg-muted/50 [&_.rbc-header]:py-2 [&_.rbc-header]:text-xs [&_.rbc-header]:font-medium [&_.rbc-header]:text-muted-foreground [&_.rbc-month-row]:border-border [&_.rbc-day-bg]:border-border [&_.rbc-off-range-bg]:bg-muted/20 [&_.rbc-today]:bg-primary/5 [&_.rbc-time-view]:border-border [&_.rbc-timeslot-group]:border-border [&_.rbc-time-content]:border-border [&_.rbc-day-slot_.rbc-time-slot]:border-border/30 [&_.rbc-agenda-view_table]:border-border [&_.rbc-agenda-view_table_td]:border-border [&_.rbc-agenda-view_table_th]:border-border">
+        /* Non-month views: use react-big-calendar */
+        <div className="rounded-lg bg-card p-2 sm:p-4 [&_.rbc-header]:border-border [&_.rbc-header]:bg-muted/50 [&_.rbc-header]:py-2 [&_.rbc-header]:text-xs [&_.rbc-header]:font-medium [&_.rbc-header]:text-muted-foreground [&_.rbc-month-row]:border-border [&_.rbc-day-bg]:border-border [&_.rbc-off-range-bg]:bg-muted/20 [&_.rbc-today]:bg-primary/5 [&_.rbc-time-view]:border-border [&_.rbc-timeslot-group]:border-border [&_.rbc-time-content]:border-border [&_.rbc-day-slot_.rbc-time-slot]:border-border/30 [&_.rbc-agenda-view_table]:border-border [&_.rbc-agenda-view_table_td]:border-border [&_.rbc-agenda-view_table_th]:border-border">
           <BigCalendar<CalendarEventRBC>
             localizer={localizer}
             events={rbcEvents}
@@ -393,11 +468,7 @@ export function CalendarView({
                     ? "Gesundheit"
                     : "Sonstiges"
           return (
-            <Badge
-              key={key}
-              variant="outline"
-              className="gap-1.5 text-xs"
-            >
+            <Badge key={key} variant="outline" className="gap-1.5 text-xs">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: color }}
@@ -413,7 +484,7 @@ export function CalendarView({
         onOpenChange={setDialogOpen}
         event={selectedEvent}
         members={members}
-        defaultDate={selectedDate}
+        defaultDate={dialogDefaultDate}
         onSuccess={handleSuccess}
       />
     </div>

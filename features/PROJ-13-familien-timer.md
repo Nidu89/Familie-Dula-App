@@ -594,3 +594,22 @@ No new npm packages needed. All required primitives are already in the project:
 - **Security:** PASS -- no critical or high security issues
 - **Regression:** No regressions detected on PROJ-1 through PROJ-6
 - **Production Ready:** YES -- all acceptance criteria met, no critical or high bugs. Medium/low bugs are UX polish and can be addressed in future sprints.
+
+## Automated Tests
+
+**Added:** 2026-04-05
+
+### Unit Tests (Vitest)
+- `src/lib/validations/timer.test.ts` — 18 tests covering all 3 Zod schemas (create, update, delete) with boundary values
+- `src/hooks/use-timer.test.ts` — 12 tests covering start, pause, resume, reset, finish, edge cases (replace running timer, unmount cleanup)
+
+### E2E Tests (Playwright)
+- `tests/PROJ-13-familien-timer.spec.ts` — 13 tests covering all 5 acceptance criteria groups + edge case EC-6
+  - AC-1: Duration input, start/pause/resume/reset, MM:SS display, progress ring
+  - AC-2: System templates loaded, create/edit/delete custom templates, template quick-start
+  - AC-3: Alarm dialog on timer finish
+  - AC-4: Adult controls visibility
+  - AC-5: Timer page route, dashboard widget link
+  - EC-6: Confirmation dialog when replacing running timer
+
+Run: `npm test` (unit) | `npm run test:e2e` (E2E) | `npm run test:all` (both)

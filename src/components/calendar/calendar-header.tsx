@@ -1,9 +1,11 @@
 "use client"
 
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { useState } from "react"
+import { format } from "date-fns"
+import { de } from "date-fns/locale"
+import { Filter, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Select,
   SelectContent,
@@ -42,16 +44,6 @@ interface CalendarHeaderProps {
   onCategoryChange: (category: string) => void
 }
 
-function formatDateLabel(date: Date, view: CalendarViewType): string {
-  const opts: Intl.DateTimeFormatOptions =
-    view === "month"
-      ? { month: "long", year: "numeric" }
-      : view === "week"
-        ? { day: "numeric", month: "long", year: "numeric" }
-        : { weekday: "long", day: "numeric", month: "long", year: "numeric" }
-  return date.toLocaleDateString("de-DE", opts)
-}
-
 export function CalendarHeader({
   currentDate,
   view,
@@ -65,93 +57,164 @@ export function CalendarHeader({
   selectedCategory,
   onCategoryChange,
 }: CalendarHeaderProps) {
+  const [filtersOpen, setFiltersOpen] = useState(false)
+
+  const monthYearLabel = format(currentDate, "MMMM yyyy", { locale: de }).toUpperCase()
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Row 1: Title + Navigation + New Event */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onNavigate("PREV")}
-            aria-label="Zurueck"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate("TODAY")}
-          >
-            Heute
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onNavigate("NEXT")}
-            aria-label="Vorwaerts"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <h2 className="ml-2 text-lg font-semibold">
-            {formatDateLabel(currentDate, view)}
-          </h2>
+      {/* Row 1: Page title + actions */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-display text-xs font-bold uppercase tracking-widest text-secondary">
+            {monthYearLabel}
+          </p>
+          <h1 className="font-display text-3xl font-extrabold text-foreground">
+            Familienkalender
+          </h1>
         </div>
 
         <div className="flex items-center gap-2">
-          <Tabs
-            value={view}
-            onValueChange={(v) => onViewChange(v as CalendarViewType)}
-          >
-            <TabsList>
-              <TabsTrigger value="month">Monat</TabsTrigger>
-              <TabsTrigger value="week">Woche</TabsTrigger>
-              <TabsTrigger value="day">Tag</TabsTrigger>
-              <TabsTrigger value="agenda">Liste</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* View tabs (pill style) */}
+          <div className="hidden items-center gap-1 rounded-full bg-muted p-1 sm:flex">
+            {(
+              [
+                { value: "month", label: "Monat" },
+                { value: "week", label: "Woche" },
+                { value: "day", label: "Tag" },
+                { value: "agenda", label: "Liste" },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => onViewChange(tab.value)}
+                className={[
+                  "rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  view === tab.value
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
+          {/* Filters toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-full"
+            onClick={() => setFiltersOpen((prev) => !prev)}
+            aria-expanded={filtersOpen}
+            aria-controls="calendar-filters"
+          >
+            <Filter className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Filter</span>
+          </Button>
+
+          {/* New event button */}
           {isAdultOrAdmin && (
-            <Button size="sm" className="gap-1.5" onClick={onNewEvent}>
+            <button
+              type="button"
+              onClick={onNewEvent}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{
+                background: "linear-gradient(135deg, #6c5a00, #ffd709)",
+              }}
+            >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Neuer Termin</span>
-            </Button>
+            </button>
           )}
         </div>
       </div>
 
-      {/* Row 2: Filters */}
-      <div className="flex flex-wrap gap-2">
-        <Select value={selectedMember} onValueChange={onMemberChange}>
-          <SelectTrigger className="w-[180px]" aria-label="Nach Person filtern">
-            <SelectValue placeholder="Alle Personen" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle Personen</SelectItem>
-            {members.map((m) => (
-              <SelectItem key={m.id} value={m.id}>
-                {m.displayName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedCategory} onValueChange={onCategoryChange}>
-          <SelectTrigger
-            className="w-[180px]"
-            aria-label="Nach Kategorie filtern"
+      {/* Mobile view selector */}
+      <div className="flex items-center gap-1 rounded-full bg-muted p-1 sm:hidden">
+        {(
+          [
+            { value: "month", label: "Monat" },
+            { value: "week", label: "Woche" },
+            { value: "day", label: "Tag" },
+            { value: "agenda", label: "Liste" },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            onClick={() => onViewChange(tab.value)}
+            className={[
+              "flex-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              view === tab.value
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
-            <SelectValue placeholder="Alle Kategorien" />
-          </SelectTrigger>
-          <SelectContent>
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
-                {c.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            {tab.label}
+          </button>
+        ))}
       </div>
+
+      {/* Collapsible filter row */}
+      {filtersOpen && (
+        <div
+          id="calendar-filters"
+          className="flex flex-wrap gap-2 rounded-lg bg-surface-low p-3"
+        >
+          <Select value={selectedMember} onValueChange={onMemberChange}>
+            <SelectTrigger
+              className="w-[180px] rounded-full"
+              aria-label="Nach Person filtern"
+            >
+              <SelectValue placeholder="Alle Personen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Personen</SelectItem>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.displayName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedCategory} onValueChange={onCategoryChange}>
+            <SelectTrigger
+              className="w-[180px] rounded-full"
+              aria-label="Nach Kategorie filtern"
+            >
+              <SelectValue placeholder="Alle Kategorien" />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {(selectedMember !== "all" || selectedCategory !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full text-xs text-muted-foreground"
+              onClick={() => {
+                onMemberChange("all")
+                onCategoryChange("all")
+              }}
+            >
+              Filter zuruecksetzen
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

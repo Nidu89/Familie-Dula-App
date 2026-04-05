@@ -16,7 +16,14 @@
       "Bash(kill:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npx vitest:*)",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__execute_sql",
+      "Bash(npx playwright:*)",
+      "mcp__supabase__get_project_url",
+      "Bash(python3 -m json.tool)",
+      "Read(//Users/niklasdula/Desktop/**)"
     ]
   }
 }

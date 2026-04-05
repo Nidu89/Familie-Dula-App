@@ -13,7 +13,7 @@ export default async function CalendarPage() {
     if (dashResult.error === "Du gehoerst keiner Familie an.")
       redirect("/onboarding")
     return (
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <p className="text-sm text-muted-foreground">
           Kalender konnte nicht geladen werden. Bitte Seite neu laden.
         </p>
@@ -47,16 +47,7 @@ export default async function CalendarPage() {
         }))
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Familienkalender
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Alle Termine der Familie auf einen Blick
-        </p>
-      </div>
-
+    <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
       <CalendarView
         initialEvents={initialEvents}
         members={members}

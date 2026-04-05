@@ -55,6 +55,11 @@ npm run dev        # Development server (localhost:3000)
 npm run build      # Production build
 npm run lint       # ESLint
 npm run start      # Production server
+npm test           # Vitest: unit/integration tests
+npm run test:watch # Vitest in watch mode
+npm run test:e2e   # Playwright: E2E tests
+npm run test:e2e:ui # Playwright with interactive UI
+npm run test:all   # Run all tests (unit + E2E)
 ```
 
 ## Product Context
