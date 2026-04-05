@@ -1,6 +1,6 @@
 # PROJ-5: Aufgaben & To-Dos
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-22
 

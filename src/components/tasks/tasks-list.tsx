@@ -361,9 +361,8 @@ export function TasksList({
 
       {/* ─── Bottom Progress Bar ─────────────────────── */}
       {totalTasks > 0 && (
-        <div className="fixed bottom-24 md:bottom-0 left-0 right-0 md:left-72 z-30 p-4 md:p-8 pointer-events-none">
-          <div className="max-w-7xl mx-auto pointer-events-auto">
-            <div className="bg-card/80 backdrop-blur-2xl p-5 md:p-6 rounded-lg shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+        <div className="mt-8 mb-28 md:mb-8">
+            <div className="bg-card p-5 md:p-6 rounded-lg flex flex-col md:flex-row items-center gap-4 md:gap-6">
               {/* icon + text */}
               <div className="flex items-center gap-4 shrink-0">
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-primary rounded-full flex items-center justify-center shadow-inner">
@@ -400,7 +399,6 @@ export function TasksList({
                 </span>
               </div>
             </div>
-          </div>
         </div>
       )}
 

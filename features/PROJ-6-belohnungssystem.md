@@ -790,9 +790,14 @@ Keine – alle benötigten shadcn-Komponenten (Avatar, Badge, Progress, Sheet, D
 
 ## Deployment
 
-**Deployed:** 2026-03-22
+**Basis-System Deployed:** 2026-03-22
 **Tag:** v1.4.0-PROJ-4-5-6
 **DB Migration:** `proj4_proj5_proj6_backend` – applied to `fmmorvmshvgqatnefkpf`
+
+**Expansion Deployed:** 2026-03-30
+**Commit:** `bc0598f` — feat(PROJ-6): Rewards & Achievements expansion
+**Inhalt:** Leaderboard, Shop, Badges, Family Goal
+
 **Status:** PROJ-6 → Deployed in INDEX.md
 
 ## Frontend Implementation Notes (Expansion 2026-03-30)

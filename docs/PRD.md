@@ -17,20 +17,20 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 
 | Priority | Feature | Status |
 |----------|---------|--------|
-| P0 (MVP) | PROJ-1: Authentifizierung & Onboarding | Planned |
-| P0 (MVP) | PROJ-2: Familienverwaltung | Planned |
-| P0 (MVP) | PROJ-3: Familien-Dashboard | Planned |
-| P0 (MVP) | PROJ-4: Familienkalender | Planned |
-| P0 (MVP) | PROJ-5: Aufgaben & To-Dos | Planned |
-| P0 (MVP) | PROJ-6: Belohnungssystem | Planned |
+| P0 (MVP) | PROJ-1: Authentifizierung & Onboarding | Deployed |
+| P0 (MVP) | PROJ-2: Familienverwaltung | Deployed |
+| P0 (MVP) | PROJ-3: Familien-Dashboard | Deployed |
+| P0 (MVP) | PROJ-4: Familienkalender | Deployed |
+| P0 (MVP) | PROJ-5: Aufgaben & To-Dos | Deployed |
+| P0 (MVP) | PROJ-6: Belohnungssystem | Deployed |
 | P1 | PROJ-7: Einkaufslisten | Planned |
 | P1 | PROJ-8: Essens- & Rezeptplanung | Planned |
 | P1 | PROJ-9: Chat & Kommunikation | Planned |
 | P1 | PROJ-10: Benachrichtigungen | Planned |
 | P2 | PROJ-11: Bild-Upload im Chat | Planned |
 | P2 | PROJ-12: iCloud Kalender Integration | Planned |
-| P1 | PROJ-13: Familien-Timer | Planned |
-| P1 | PROJ-14: Familien-Rituale | Planned |
+| P1 | PROJ-13: Familien-Timer | Deployed |
+| P1 | PROJ-14: Familien-Rituale | Deployed |
 
 ## Success Metrics
 - Alle Familienmitglieder nutzen die App täglich (Dashboard, Kalender, Aufgaben).
