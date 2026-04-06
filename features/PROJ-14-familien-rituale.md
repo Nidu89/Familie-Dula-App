@@ -557,6 +557,14 @@ All Critical, High, and Medium bugs have been fixed:
 **Production URL:** https://familie-dula-app.vercel.app/rituals
 **Commit:** `a39a17f` — feat(PROJ-14): Familien-Rituale — full implementation
 
+## Security Patch (2026-04-06)
+
+**Commit:** `90b9f31` — fix(security): Full-app security hardening
+
+- **SEC-03 (CRITICAL):** `award_ritual_completion` RPC hardened — role check, 100-point cap, child-only target. Migration: `20260406_security_fixes.sql`
+- **SEC-08 (MEDIUM):** `awardRitualCompletionAction` now validates input via `awardRitualCompletionSchema` (Zod)
+- **SEC-06 (HIGH):** Rate limiting added to `createRitualAction`, `awardRitualCompletionAction` via shared `rate-limit.ts`
+
 **Deployed components:**
 - `/rituals` page with full ritual management
 - Dashboard widget (RitualsWidget) in right column

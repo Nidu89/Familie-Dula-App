@@ -7,6 +7,7 @@
 ## Dependencies
 - Requires: PROJ-1 (Authentifizierung & Onboarding)
 - Requires: PROJ-2 (Familienverwaltung)
+- Requires: PROJ-15 (Mehrsprachigkeit) – Alle UI-Texte müssen über das i18n-System laufen.
 - Required by: PROJ-11 (Bild-Upload im Chat) – Basis-Chat muss existieren.
 
 ## User Stories

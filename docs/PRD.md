@@ -28,11 +28,11 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 | P1 | PROJ-9: Chat & Kommunikation | Planned |
 | P1 | PROJ-10: Benachrichtigungen | Planned |
 | P2 | PROJ-11: Bild-Upload im Chat | Planned |
-| P2 | PROJ-12: iCloud Kalender Integration | Planned |
+| P2 | PROJ-12: Kalender-Integrationen (iCloud, Google & mehr) | Planned |
 | P1 | PROJ-13: Familien-Timer | Deployed |
 | P1 | PROJ-14: Familien-Rituale | Deployed |
-| P1 | PROJ-15: Mehrsprachigkeit (i18n) | Planned |
-| P1 | PROJ-16: Wochen-Challenge als pinnable Aufgabe | Planned |
+| P1 | PROJ-15: Mehrsprachigkeit (i18n) | Deployed |
+| P1 | PROJ-16: Wochen-Challenge als pinnable Aufgabe | Deployed |
 
 ## Success Metrics
 - Alle Familienmitglieder nutzen die App täglich (Dashboard, Kalender, Aufgaben).
@@ -47,7 +47,7 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 
 ## Non-Goals
 - Keine offene öffentliche API für Drittanbieter (v1).
-- Kein Google Kalender Import (nur iCloud als P2).
+- Kalender-Integrationen (iCloud, Google etc.) sind als P2 geplant, nicht Teil des MVP.
 - Kein Social Login (Google etc.) in v1.
 - Keine nativen Mobile Apps (iOS/Android) – nur responsive Web.
 - Keine finanziellen Features (Budget, Ausgaben) in v1.

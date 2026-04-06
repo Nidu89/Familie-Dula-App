@@ -8,6 +8,7 @@
 - Requires: PROJ-1 (Authentifizierung & Onboarding)
 - Requires: PROJ-2 (Familienverwaltung)
 - Requires: PROJ-9 (Chat & Kommunikation) – Bild-Upload erweitert den bestehenden Chat.
+- Requires: PROJ-15 (Mehrsprachigkeit) – Alle UI-Texte müssen über das i18n-System laufen.
 
 ## User Stories
 - Als Familienmitglied möchte ich Bilder im Familienchat und in Direktnachrichten teilen können.

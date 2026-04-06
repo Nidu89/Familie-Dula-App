@@ -8,6 +8,7 @@
 - Requires: PROJ-1 (Authentifizierung & Onboarding)
 - Requires: PROJ-2 (Familienverwaltung)
 - Requires: PROJ-7 (Einkaufslisten) – Zutaten können direkt in eine Einkaufsliste übertragen werden.
+- Requires: PROJ-15 (Mehrsprachigkeit) – Alle UI-Texte müssen über das i18n-System laufen.
 
 ## User Stories
 - Als Elternteil möchte ich Rezepte mit Titel, Beschreibung, Zutaten und Tags verwalten.
