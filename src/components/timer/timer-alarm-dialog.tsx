@@ -8,38 +8,19 @@ import { Bell } from "lucide-react"
 
 export function TimerAlarmDialog() {
   const t = useTranslations("timer.alarm")
-  const { timer, isAdult, alarmAudioRef } = useTimerContext()
+  const { timer, isAdult, playAlarm, stopAlarm } = useTimerContext()
   const isFinished = timer.state.status === "finished"
   const [audioBlocked, setAudioBlocked] = useState(false)
 
   useEffect(() => {
     if (!isFinished) return
 
-    setAudioBlocked(false)
-
-    // Use the pre-primed audio element (unlocked during user gesture in start())
-    const audio = alarmAudioRef.current
-    if (audio) {
-      audio.currentTime = 0
-      audio.volume = 1
-      audio.loop = true
-      audio.play().catch(() => setAudioBlocked(true))
-    } else {
-      // Fallback: create new audio (will likely be blocked, but try)
-      const fallback = new Audio("/timer-alarm.mp3")
-      fallback.loop = true
-      fallback.play().catch(() => setAudioBlocked(true))
-      alarmAudioRef.current = fallback
-    }
+    playAlarm().then((ok) => setAudioBlocked(!ok))
 
     return () => {
-      const a = alarmAudioRef.current
-      if (a) {
-        a.pause()
-        a.currentTime = 0
-      }
+      stopAlarm()
     }
-  }, [isFinished, alarmAudioRef])
+  }, [isFinished, playAlarm, stopAlarm])
 
   if (!isFinished) return null
 

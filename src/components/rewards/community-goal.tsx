@@ -72,7 +72,7 @@ export function CommunityGoal({
         variant: "destructive",
       })
     }
-  }, [toast])
+  }, [toast, tc, t])
 
   async function handleComplete() {
     if (!goal) return

@@ -133,7 +133,7 @@ export function CalendarView({
         setIsLoading(false)
       }
     },
-    [toast]
+    [toast, tc, t]
   )
 
   useEffect(() => {

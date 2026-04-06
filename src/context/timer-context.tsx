@@ -3,10 +3,12 @@
 import {
   createContext,
   useContext,
-  useRef,
   useCallback,
   type ReactNode,
 } from "react"
+
+// Module-level audio element (single instance, "use client" only)
+let alarmAudio: HTMLAudioElement | null = null
 import { useTimer, type TimerState, type UseTimerReturn } from "@/hooks/use-timer"
 import {
   useTimerTemplates,
@@ -24,7 +26,9 @@ interface TimerContextValue {
   refetchTemplates: () => Promise<void>
   isAdult: boolean
   familyId: string | null
-  alarmAudioRef: React.RefObject<HTMLAudioElement | null>
+  playAlarm: () => Promise<boolean>
+  stopAlarm: () => void
+  resetAlarm: () => void
 }
 
 const TimerContext = createContext<TimerContextValue | null>(null)
@@ -37,7 +41,6 @@ interface TimerProviderProps {
 
 export function TimerProvider({ children, familyId, role }: TimerProviderProps) {
   const timer = useTimer()
-  const alarmAudioRef = useRef<HTMLAudioElement | null>(null)
   const {
     templates,
     loading: templatesLoading,
@@ -52,26 +55,54 @@ export function TimerProvider({ children, familyId, role }: TimerProviderProps) 
 
   // Prime alarm audio on user gesture (called during click → allowed by browser)
   const primeAlarm = useCallback(() => {
-    if (!alarmAudioRef.current) {
-      alarmAudioRef.current = new Audio("/timer-alarm.mp3")
-      alarmAudioRef.current.loop = true
+    if (!alarmAudio) {
+      alarmAudio = new Audio("/timer-alarm.mp3")
+      alarmAudio.loop = true
     }
-    const audio = alarmAudioRef.current
-    if (audio.paused) {
-      audio.volume = 0
-      audio.play().then(() => {
-        audio.pause()
-        audio.currentTime = 0
-        audio.volume = 1
+    if (alarmAudio.paused) {
+      alarmAudio.volume = 0
+      alarmAudio.play().then(() => {
+        alarmAudio!.pause()
+        alarmAudio!.currentTime = 0
+        alarmAudio!.volume = 1
       }).catch(() => {})
     }
   }, [])
+
+  // Play alarm sound — returns true if playback started, false if blocked
+  const playAlarm = useCallback(async (): Promise<boolean> => {
+    if (!alarmAudio) {
+      alarmAudio = new Audio("/timer-alarm.mp3")
+    }
+    alarmAudio.currentTime = 0
+    alarmAudio.volume = 1
+    alarmAudio.loop = true
+    try {
+      await alarmAudio.play()
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
+  // Stop alarm sound
+  const stopAlarm = useCallback(() => {
+    if (alarmAudio) {
+      alarmAudio.pause()
+      alarmAudio.currentTime = 0
+    }
+  }, [])
+
+  // Reset alarm (for timer reset button)
+  const resetAlarm = useCallback(() => {
+    stopAlarm()
+  }, [stopAlarm])
 
   // Wrap timer.start to auto-prime alarm during the user gesture
   const startWithAlarm = useCallback((duration: number) => {
     primeAlarm()
     timer.start(duration)
-  }, [primeAlarm, timer.start])
+  }, [primeAlarm, timer])
 
   const wrappedTimer: UseTimerReturn = {
     state: timer.state,
@@ -94,7 +125,9 @@ export function TimerProvider({ children, familyId, role }: TimerProviderProps) 
         refetchTemplates,
         isAdult,
         familyId,
-        alarmAudioRef,
+        playAlarm,
+        stopAlarm,
+        resetAlarm,
       }}
     >
       {children}

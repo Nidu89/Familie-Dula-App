@@ -101,7 +101,7 @@ export function PointsHistorySheet({
     } finally {
       setIsLoading(false)
     }
-  }, [childId, toast])
+  }, [childId, toast, tc, t])
 
   useEffect(() => {
     if (open && childId) {

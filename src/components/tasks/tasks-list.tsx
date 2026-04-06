@@ -109,7 +109,7 @@ export function TasksList({
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
+  }, [toast, tc, t])
 
   /* ── realtime ───────────────────────────────────────── */
 

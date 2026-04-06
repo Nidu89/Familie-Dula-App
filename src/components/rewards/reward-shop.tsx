@@ -60,7 +60,7 @@ export function RewardShop({
         variant: "destructive",
       })
     }
-  }, [toast])
+  }, [toast, tc, t])
 
   function handleEdit(reward: Reward) {
     setEditReward(reward)

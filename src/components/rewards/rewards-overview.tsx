@@ -57,7 +57,7 @@ export function RewardsOverview({
         variant: "destructive",
       })
     }
-  }, [toast])
+  }, [toast, tc, t])
 
   function handleShowHistory(childId: string) {
     const child = children.find((c) => c.id === childId)
