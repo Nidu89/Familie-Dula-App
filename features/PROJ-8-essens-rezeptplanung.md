@@ -1,6 +1,6 @@
 # PROJ-8: Essens- & Rezeptplanung
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-04-06
 
@@ -210,4 +210,8 @@ Keine neuen Packages nötig — Supabase Storage ist bereits im Projekt konfigur
 **READY** — No Critical or High bugs. The 2 Low bugs are edge cases with minimal user impact (noisy server logs and a theoretical atomicity issue). All 10 acceptance criteria pass. Security audit clean.
 
 ## Deployment
-_To be added by /deploy_
+
+- **Date:** 2026-04-06
+- **Production URL:** https://familie-dula-app.vercel.app/recipes
+- **Migration applied:** `supabase/migrations/20260406_proj8_essens_rezeptplanung.sql` (recipes + recipe_ingredients + meal_plan_entries, RLS, Realtime, Storage bucket)
+- **Commit:** `deploy(PROJ-8): Deploy Essens- & Rezeptplanung to production`
