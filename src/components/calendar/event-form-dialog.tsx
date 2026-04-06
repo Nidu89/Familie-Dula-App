@@ -90,6 +90,15 @@ function toLocalTimeString(date: Date): string {
   return `${h}:${min}`
 }
 
+function getTimezoneOffsetString(): string {
+  const offset = new Date().getTimezoneOffset()
+  const sign = offset <= 0 ? "+" : "-"
+  const absOffset = Math.abs(offset)
+  const hours = String(Math.floor(absOffset / 60)).padStart(2, "0")
+  const minutes = String(absOffset % 60).padStart(2, "0")
+  return `${sign}${hours}:${minutes}`
+}
+
 export function EventFormDialog({
   open,
   onOpenChange,
@@ -197,12 +206,13 @@ export function EventFormDialog({
   async function onSubmit(values: EventFormValues) {
     setIsSubmitting(true)
     try {
+      const tz = getTimezoneOffsetString()
       const startAt = values.allDay
-        ? `${values.startDate}T00:00:00`
-        : `${values.startDate}T${values.startTime}:00`
+        ? `${values.startDate}T00:00:00${tz}`
+        : `${values.startDate}T${values.startTime}:00${tz}`
       const endAt = values.allDay
-        ? `${values.endDate}T23:59:59`
-        : `${values.endDate}T${values.endTime}:00`
+        ? `${values.endDate}T23:59:59${tz}`
+        : `${values.endDate}T${values.endTime}:00${tz}`
 
       const reminderMinutes =
         values.reminderMinutes === "none"
