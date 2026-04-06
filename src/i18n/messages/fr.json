@@ -34,7 +34,9 @@
     "descriptionPlaceholder": "Description facultative...",
     "continue": "Continuer",
     "confirm": "Confirmer",
-    "family": "Famille"
+    "family": "Famille",
+    "edit": "Modifier",
+    "actions": "Actions"
   },
 
   "auth": {
@@ -389,9 +391,17 @@
       "reached": "atteint",
       "noChallenge": "Aucun défi de la semaine en cours",
       "createGoalHint": "Crée un objectif familial dans les récompenses",
-      "weeklyProgress": "Progression de la semaine",
-      "percentDone": "% des tâches terminées !",
-      "percentRemaining": "Encore {percent}% avant l'objectif !"
+      "percentDone": "des taches terminees !",
+      "percentRemaining": "Encore {percent}% avant l'objectif !",
+      "pinAsChallenge": "Epingler comme defi de la semaine",
+      "unpinChallenge": "Retirer le defi de la semaine",
+      "weekProgress": "Progres hebdomadaire",
+      "noChallengeTitle": "Pas de defi hebdomadaire",
+      "noChallengeDescription": "Epinglez une tache comme defi via le menu.",
+      "challengeCompleted": "Termine",
+      "challengeOpen": "En cours",
+      "assignedTo": "Attribue a",
+      "completedBy": "Termine par"
     },
 
     "card": {

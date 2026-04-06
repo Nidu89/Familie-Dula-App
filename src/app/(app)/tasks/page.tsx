@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { getDashboardDataAction } from "@/lib/actions/dashboard"
 import { getTasksAction } from "@/lib/actions/tasks"
 import { getFamilyDataAction } from "@/lib/actions/family"
-import { getFamilyGoalAction } from "@/lib/actions/rewards"
 import { TasksList } from "@/components/tasks/tasks-list"
 
 export default async function TasksPage() {
@@ -25,11 +24,10 @@ export default async function TasksPage() {
   const { role } = dashResult
   const isAdultOrAdmin = role === "admin" || role === "adult"
 
-  // Load tasks, members, and family goal in parallel
-  const [tasksResult, familyResult, goalResult] = await Promise.all([
+  // Load tasks and members in parallel
+  const [tasksResult, familyResult] = await Promise.all([
     getTasksAction(),
     getFamilyDataAction(),
-    getFamilyGoalAction(),
   ])
 
   const initialTasks = "error" in tasksResult ? [] : tasksResult.tasks
@@ -40,9 +38,8 @@ export default async function TasksPage() {
           id: m.id,
           displayName: m.displayName,
         }))
-  const familyGoal = "error" in goalResult ? null : goalResult.goal
-  const goalContributions =
-    "error" in goalResult ? [] : goalResult.contributions
+  const weekChallengeTaskId =
+    "error" in familyResult ? null : familyResult.weekChallengeTaskId
 
   return (
     <main className="mx-auto max-w-7xl px-4 pt-6 pb-48 sm:px-6 sm:pt-8 md:pb-40">
@@ -64,8 +61,7 @@ export default async function TasksPage() {
         members={members}
         isAdultOrAdmin={isAdultOrAdmin}
         currentUserId={dashResult.user.id}
-        familyGoal={familyGoal}
-        goalContributions={goalContributions}
+        weekChallengeTaskId={weekChallengeTaskId}
       />
     </main>
   )

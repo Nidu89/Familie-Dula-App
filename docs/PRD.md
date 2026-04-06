@@ -32,6 +32,7 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 | P1 | PROJ-13: Familien-Timer | Deployed |
 | P1 | PROJ-14: Familien-Rituale | Deployed |
 | P1 | PROJ-15: Mehrsprachigkeit (i18n) | Planned |
+| P1 | PROJ-16: Wochen-Challenge als pinnable Aufgabe | Planned |
 
 ## Success Metrics
 - Alle Familienmitglieder nutzen die App täglich (Dashboard, Kalender, Aufgaben).

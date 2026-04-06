@@ -28,6 +28,8 @@
 | PROJ-14 | Familien-Rituale | Deployed | [PROJ-14-familien-rituale.md](PROJ-14-familien-rituale.md) | 2026-04-05 |
 | PROJ-15 | Mehrsprachigkeit (i18n) | Deployed | [PROJ-15-mehrsprachigkeit-i18n.md](PROJ-15-mehrsprachigkeit-i18n.md) | 2026-04-05 |
 
+| PROJ-16 | Wochen-Challenge als pinnable Aufgabe | In Review | [PROJ-16-wochen-challenge-aufgabe.md](PROJ-16-wochen-challenge-aufgabe.md) | 2026-04-06 |
+
 <!-- Add features above this line -->
 
-## Next Available ID: PROJ-16
+## Next Available ID: PROJ-17

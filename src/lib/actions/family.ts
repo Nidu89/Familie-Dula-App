@@ -536,10 +536,10 @@ export async function getFamilyDataAction() {
     return { error: "Du gehoerst keiner Familie an." }
   }
 
-  // Load family name
+  // Load family name and week challenge task id
   const { data: family } = await supabase
     .from("families")
-    .select("id, name")
+    .select("id, name, week_challenge_task_id")
     .eq("id", profile.family_id)
     .single()
 
@@ -591,5 +591,6 @@ export async function getFamilyDataAction() {
     currentUserId: user.id,
     isAdmin: profile.role === "admin",
     activeInviteCode,
+    weekChallengeTaskId: (family.week_challenge_task_id as string | null) ?? null,
   }
 }

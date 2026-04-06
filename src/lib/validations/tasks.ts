@@ -72,6 +72,15 @@ export const getTasksFilterSchema = z.object({
 
 export type GetTasksFilterValues = z.infer<typeof getTasksFilterSchema>
 
+export const pinWeekChallengeSchema = z.object({
+  taskId: z
+    .string()
+    .uuid("Ungueltige Aufgaben-ID")
+    .nullable(),
+})
+
+export type PinWeekChallengeValues = z.infer<typeof pinWeekChallengeSchema>
+
 export const manualPointsSchema = z.object({
   profileId: z.string().uuid("Ungueltige Profil-ID"),
   amount: z

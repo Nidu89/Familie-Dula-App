@@ -34,7 +34,9 @@
     "descriptionPlaceholder": "Optionale Beschreibung...",
     "continue": "Fortfahren",
     "confirm": "Bestaetigen",
-    "family": "Familie"
+    "family": "Familie",
+    "edit": "Bearbeiten",
+    "actions": "Aktionen"
   },
 
   "auth": {
@@ -389,9 +391,17 @@
       "reached": "erreicht",
       "noChallenge": "Keine aktive Wochen-Challenge",
       "createGoalHint": "Erstelle ein Familienziel unter Belohnungen",
-      "weeklyProgress": "Wochen-Fortschritt",
-      "percentDone": "% der Aufgaben erledigt!",
-      "percentRemaining": "Noch {percent}% bis zum Ziel!"
+      "percentDone": "der Aufgaben erledigt!",
+      "percentRemaining": "Noch {percent}% bis zum Ziel!",
+      "pinAsChallenge": "Als Wochen-Challenge anpinnen",
+      "unpinChallenge": "Wochen-Challenge entfernen",
+      "weekProgress": "Wochen-Fortschritt",
+      "noChallengeTitle": "Keine Wochen-Challenge",
+      "noChallengeDescription": "Pinne eine Aufgabe ueber das Menue als Wochen-Challenge.",
+      "challengeCompleted": "Erledigt",
+      "challengeOpen": "Offen",
+      "assignedTo": "Zugewiesen an",
+      "completedBy": "Erledigt von"
     },
 
     "card": {

@@ -34,7 +34,9 @@
     "descriptionPlaceholder": "Optional description...",
     "continue": "Continue",
     "confirm": "Confirm",
-    "family": "Family"
+    "family": "Family",
+    "edit": "Edit",
+    "actions": "Actions"
   },
 
   "auth": {
@@ -389,9 +391,17 @@
       "reached": "reached",
       "noChallenge": "No active weekly challenge",
       "createGoalHint": "Create a family goal under Rewards",
-      "weeklyProgress": "Weekly Progress",
-      "percentDone": "% of tasks completed!",
-      "percentRemaining": "Still {percent}% to go!"
+      "percentDone": "of tasks completed!",
+      "percentRemaining": "Still {percent}% to go!",
+      "pinAsChallenge": "Pin as weekly challenge",
+      "unpinChallenge": "Remove weekly challenge",
+      "weekProgress": "Weekly progress",
+      "noChallengeTitle": "No weekly challenge",
+      "noChallengeDescription": "Pin a task as weekly challenge via the menu.",
+      "challengeCompleted": "Completed",
+      "challengeOpen": "Open",
+      "assignedTo": "Assigned to",
+      "completedBy": "Completed by"
     },
 
     "card": {

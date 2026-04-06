@@ -1,11 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { Check, CheckCheck, Timer, BadgeCheck } from "lucide-react"
+import { Check, CheckCheck, Timer, BadgeCheck, MoreVertical, Pin, PinOff, Pencil } from "lucide-react"
 import { useTranslations } from "next-intl"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
-import { completeTaskAction, type Task } from "@/lib/actions/tasks"
+import { completeTaskAction, pinWeekChallengeAction, type Task } from "@/lib/actions/tasks"
 
 /* ── avatar helpers ────────────────────────────────────── */
 
@@ -83,6 +89,8 @@ interface TaskCardProps {
   currentUserId: string
   onEdit: (task: Task) => void
   onCompleted: () => void
+  weekChallengeTaskId?: string | null
+  onChallengeChanged?: () => void
 }
 
 export function TaskCard({
@@ -92,11 +100,14 @@ export function TaskCard({
   currentUserId,
   onEdit,
   onCompleted,
+  weekChallengeTaskId,
+  onChallengeChanged,
 }: TaskCardProps) {
   const t = useTranslations("tasks")
   const tc = useTranslations("common")
   const { toast } = useToast()
   const [isCompleting, setIsCompleting] = useState(false)
+  const [isPinning, setIsPinning] = useState(false)
 
   const isDone = task.status === "done"
   const canComplete =
@@ -104,6 +115,7 @@ export function TaskCard({
   const canEdit = isAdultOrAdmin
   const timeInfo = !isDone ? getTimeInfo(task.dueDate) : null
   const isEigene = variant === "eigene"
+  const isPinned = weekChallengeTaskId === task.id
 
   async function handleComplete(e: React.MouseEvent) {
     e.stopPropagation()
@@ -147,6 +159,36 @@ export function TaskCard({
       })
     } finally {
       setIsCompleting(false)
+    }
+  }
+
+  async function handleTogglePin(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (isPinning) return
+    setIsPinning(true)
+    try {
+      const newId = isPinned ? null : task.id
+      const result = await pinWeekChallengeAction(newId)
+      if ("error" in result) {
+        toast({
+          title: tc("error"),
+          description: result.error,
+          variant: "destructive",
+        })
+        return
+      }
+      toast({
+        title: isPinned ? t("list.unpinChallenge") : t("list.pinAsChallenge"),
+      })
+      onChallengeChanged?.()
+    } catch {
+      toast({
+        title: tc("error"),
+        description: t("card.completeFailed"),
+        variant: "destructive",
+      })
+    } finally {
+      setIsPinning(false)
     }
   }
 
@@ -197,20 +239,62 @@ export function TaskCard({
         />
       )}
 
-      {/* avatar + points */}
+      {/* avatar + points + context menu */}
       <div className="flex justify-between items-start mb-4 relative z-10">
         <div
           className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold border-2 border-card shadow-sm ${getAvatarColor(task.assignedToName)}`}
         >
           {getInitials(task.assignedToName)}
         </div>
-        {task.points != null && task.points > 0 && (
-          <span
-            className={`font-display font-black text-lg ${isEigene ? "text-chart-3" : "text-primary-foreground"}`}
-          >
-            {t("card.pointsShort", { points: task.points })}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {task.points != null && task.points > 0 && (
+            <span
+              className={`font-display font-black text-lg ${isEigene ? "text-chart-3" : "text-primary-foreground"}`}
+            >
+              {t("card.pointsShort", { points: task.points })}
+            </span>
+          )}
+          {isAdultOrAdmin && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                  aria-label={tc("actions")}
+                >
+                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onEdit(task)
+                  }}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {tc("edit")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleTogglePin}
+                  disabled={isPinning}
+                >
+                  {isPinned ? (
+                    <>
+                      <PinOff className="mr-2 h-4 w-4" />
+                      {t("list.unpinChallenge")}
+                    </>
+                  ) : (
+                    <>
+                      <Pin className="mr-2 h-4 w-4" />
+                      {t("list.pinAsChallenge")}
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
 
       {/* title */}

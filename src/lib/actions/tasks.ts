@@ -6,6 +6,7 @@ import {
   updateTaskSchema,
   deleteTaskSchema,
   getTasksFilterSchema,
+  pinWeekChallengeSchema,
   type SeriesMode,
   type GetTasksFilterValues,
 } from "@/lib/validations/tasks"
@@ -594,4 +595,42 @@ export async function completeTaskAction(
     newBalance: result.new_balance,
     awardedBadges,
   }
+}
+
+// ============================================================
+// PROJ-16: pinWeekChallengeAction – pin/unpin a task as the
+// family's week challenge via SECURITY DEFINER RPC
+// ============================================================
+
+export async function pinWeekChallengeAction(
+  taskId: string | null
+): Promise<{ success: true } | { error: string }> {
+  const parsed = pinWeekChallengeSchema.safeParse({ taskId })
+  if (!parsed.success) {
+    return { error: "Ungueltige Eingaben." }
+  }
+
+  const { error: authError, profile } = await verifyAdultOrAdmin()
+  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc("pin_week_challenge", {
+    p_task_id: parsed.data.taskId,
+  })
+
+  if (error) {
+    if (error.message.includes("Not authorized")) {
+      return { error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren." }
+    }
+    if (error.message.includes("Task not found")) {
+      return { error: "Aufgabe nicht gefunden." }
+    }
+    if (error.message.includes("does not belong")) {
+      return { error: "Diese Aufgabe gehoert nicht zu deiner Familie." }
+    }
+    return { error: "Wochen-Challenge konnte nicht aktualisiert werden." }
+  }
+
+  return { success: true }
 }

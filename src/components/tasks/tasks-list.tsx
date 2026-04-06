@@ -2,15 +2,16 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
-import { Home, User, Star, ListChecks, Plus, Trophy } from "lucide-react"
+import { Home, User, Star, ListChecks, Plus, Trophy, CheckCircle2, CircleDashed, Pin } from "lucide-react"
 import { RRule } from "rrule"
 import { useTranslations } from "next-intl"
 
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 import { TaskCard } from "@/components/tasks/task-card"
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog"
 import { getTasksAction, type Task } from "@/lib/actions/tasks"
-import type { FamilyGoal, GoalContribution } from "@/lib/actions/rewards"
+import { getFamilyDataAction } from "@/lib/actions/family"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -51,8 +52,7 @@ interface TasksListProps {
   members: FamilyMember[]
   isAdultOrAdmin: boolean
   currentUserId: string
-  familyGoal: FamilyGoal | null
-  goalContributions: GoalContribution[]
+  weekChallengeTaskId?: string | null
 }
 
 /* ── component ─────────────────────────────────────────── */
@@ -62,8 +62,7 @@ export function TasksList({
   members,
   isAdultOrAdmin,
   currentUserId,
-  familyGoal,
-  goalContributions,
+  weekChallengeTaskId: initialWeekChallengeTaskId,
 }: TasksListProps) {
   const t = useTranslations("tasks")
   const tc = useTranslations("common")
@@ -73,6 +72,9 @@ export function TasksList({
   const [isLoading, setIsLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [weekChallengeTaskId, setWeekChallengeTaskId] = useState<string | null>(
+    initialWeekChallengeTaskId ?? null
+  )
 
   // Auto-open create dialog when ?new=1 is in the URL
   useEffect(() => {
@@ -153,20 +155,25 @@ export function TasksList({
   const completionPercent =
     totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0
 
-  const contributionsByMember = useMemo(() => {
-    if (!familyGoal) return []
-    const map = new Map<string, { name: string; total: number }>()
-    for (const c of goalContributions) {
-      const existing = map.get(c.contributedBy)
-      if (existing) existing.total += c.amount
-      else
-        map.set(c.contributedBy, {
-          name: c.contributedByName || "?",
-          total: c.amount,
-        })
+  // Find the pinned challenge task object
+  const challengeTask = useMemo(() => {
+    if (!weekChallengeTaskId) return null
+    return adjustedTasks.find((t) => t.id === weekChallengeTaskId) ?? null
+  }, [weekChallengeTaskId, adjustedTasks])
+
+  // Refresh week challenge id from server
+  const refreshWeekChallenge = useCallback(async () => {
+    try {
+      const result = await getFamilyDataAction()
+      if (!("error" in result)) {
+        setWeekChallengeTaskId(result.weekChallengeTaskId ?? null)
+      }
+    } catch {
+      // best-effort
     }
-    return Array.from(map.entries()).map(([id, data]) => ({ id, ...data }))
-  }, [goalContributions, familyGoal])
+    // Also re-fetch tasks so the UI is fully in sync
+    fetchTasks()
+  }, [fetchTasks])
 
   /* ── handlers ───────────────────────────────────────── */
 
@@ -245,6 +252,8 @@ export function TasksList({
                 currentUserId={currentUserId}
                 onEdit={handleEditTask}
                 onCompleted={fetchTasks}
+                weekChallengeTaskId={weekChallengeTaskId}
+                onChallengeChanged={refreshWeekChallenge}
               />
             ))
           )}
@@ -275,6 +284,8 @@ export function TasksList({
                 currentUserId={currentUserId}
                 onEdit={handleEditTask}
                 onCompleted={fetchTasks}
+                weekChallengeTaskId={weekChallengeTaskId}
+                onChallengeChanged={refreshWeekChallenge}
               />
             ))
           )}
@@ -289,8 +300,8 @@ export function TasksList({
             </h3>
           </div>
 
-          {familyGoal ? (
-            <div className="bg-secondary text-secondary-foreground p-8 rounded-xl shadow-xl relative overflow-hidden min-h-[400px]">
+          {challengeTask ? (
+            <div className="bg-secondary text-secondary-foreground p-8 rounded-xl shadow-xl relative overflow-hidden min-h-[280px]">
               {/* decorative bubble */}
               <div
                 className="absolute bottom-0 right-0 w-48 h-48 bg-white/10 -mr-12 -mb-12"
@@ -300,62 +311,73 @@ export function TasksList({
               />
 
               <div className="relative z-10">
-                <span className="bg-white/20 text-white px-4 py-1 rounded-full text-xs font-bold uppercase mb-6 inline-block">
-                  {t("list.groupTask")}
-                </span>
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="bg-white/20 text-white px-4 py-1 rounded-full text-xs font-bold uppercase inline-flex items-center gap-1.5">
+                    <Pin className="h-3 w-3" />
+                    {t("list.weeklyChallenge")}
+                  </span>
+                </div>
 
-                <h4 className="font-display font-extrabold text-3xl mb-4 leading-tight">
-                  {familyGoal.emoji && `${familyGoal.emoji} `}
-                  {familyGoal.title}
+                <h4 className="font-display font-extrabold text-3xl mb-3 leading-tight">
+                  {challengeTask.title}
                 </h4>
 
-                {familyGoal.description && (
-                  <p className="text-white/80 mb-8">{familyGoal.description}</p>
+                {challengeTask.description && (
+                  <p className="text-white/80 mb-6 line-clamp-3">
+                    {challengeTask.description}
+                  </p>
                 )}
 
-                {/* per-member progress */}
-                {contributionsByMember.length > 0 && (
-                  <div className="space-y-4 mb-8">
-                    {contributionsByMember.map((member) => (
-                      <div key={member.id} className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full border-2 border-white/50 bg-white/20 flex items-center justify-center shrink-0">
-                          <span className="text-xs font-bold text-white">
-                            {getInitials(member.name)}
-                          </span>
-                        </div>
-                        <div className="flex-1 h-3 bg-white/20 rounded-full overflow-hidden">
-                          <div
-                            className="bg-primary h-full rounded-full transition-all duration-1000"
-                            style={{
-                              width: `${Math.min(100, (member.total / familyGoal.targetPoints) * 100)}%`,
-                            }}
-                          />
-                        </div>
+                {/* status + points row */}
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  {challengeTask.status === "done" ? (
+                    <Badge className="bg-green-500/20 text-green-200 hover:bg-green-500/30 border-0 gap-1.5 py-1 px-3 text-sm">
+                      <CheckCircle2 className="h-4 w-4" />
+                      {t("list.challengeCompleted")}
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-white/20 text-white hover:bg-white/30 border-0 gap-1.5 py-1 px-3 text-sm">
+                      <CircleDashed className="h-4 w-4" />
+                      {t("list.challengeOpen")}
+                    </Badge>
+                  )}
+                  {challengeTask.points != null && challengeTask.points > 0 && (
+                    <Badge className="bg-primary/20 text-primary hover:bg-primary/30 border-0 py-1 px-3 text-sm font-bold">
+                      {t("card.pointsShort", { points: challengeTask.points })}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* assigned to info */}
+                {challengeTask.assignedToName && (
+                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-lg">
+                    <p className="text-xs text-white/60 mb-1">
+                      {challengeTask.status === "done"
+                        ? t("list.completedBy")
+                        : t("list.assignedTo")}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <span className="text-xs font-bold text-white">
+                          {getInitials(challengeTask.assignedToName)}
+                        </span>
                       </div>
-                    ))}
+                      <span className="font-bold text-white text-sm">
+                        {challengeTask.assignedToName}
+                      </span>
+                    </div>
                   </div>
                 )}
-
-                <div className="bg-white/10 backdrop-blur-md p-4 rounded-md border border-white/10">
-                  <p className="font-display font-bold text-xl text-primary">
-                    +{familyGoal.targetPoints - familyGoal.collectedPoints}{" "}
-                    Familien-Punkte
-                  </p>
-                  <p className="text-xs text-white/60">
-                    {familyGoal.collectedPoints} / {familyGoal.targetPoints}{" "}
-                    erreicht
-                  </p>
-                </div>
               </div>
             </div>
           ) : (
             <div className="bg-secondary/5 p-8 rounded-xl text-center min-h-[200px] flex flex-col items-center justify-center gap-3">
               <Trophy className="h-10 w-10 text-secondary/30" />
-              <p className="text-muted-foreground text-sm">
-                Keine aktive Wochen-Challenge
+              <p className="text-muted-foreground text-sm font-medium">
+                {t("list.noChallengeTitle")}
               </p>
               <p className="text-muted-foreground/70 text-xs">
-                Erstelle ein Familienziel unter Belohnungen
+                {t("list.noChallengeDescription")}
               </p>
             </div>
           )}
@@ -369,18 +391,14 @@ export function TasksList({
               {/* icon + text */}
               <div className="flex items-center gap-4 shrink-0">
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-primary rounded-full flex items-center justify-center shadow-inner">
-                  {familyGoal?.emoji ? (
-                    <span className="text-2xl">{familyGoal.emoji}</span>
-                  ) : (
-                    <ListChecks className="h-7 w-7 md:h-8 md:w-8 text-primary-foreground" />
-                  )}
+                  <ListChecks className="h-7 w-7 md:h-8 md:w-8 text-primary-foreground" />
                 </div>
                 <div>
                   <p className="font-display font-bold text-secondary text-sm md:text-base">
-                    {familyGoal ? familyGoal.title : "Wochen-Fortschritt"}
+                    {t("list.weekProgress")}
                   </p>
                   <p className="text-xs md:text-sm text-muted-foreground font-medium">
-                    {completionPercent}% der Aufgaben erledigt!
+                    {completionPercent}% {t("list.percentDone")}
                   </p>
                 </div>
               </div>
@@ -398,7 +416,7 @@ export function TasksList({
               {/* remaining badge */}
               <div className="bg-accent px-5 py-2 rounded-full shrink-0">
                 <span className="font-display font-bold text-secondary text-xs md:text-sm">
-                  Noch {100 - completionPercent}% bis zum Ziel!
+                  {t("list.percentRemaining", { percent: 100 - completionPercent })}
                 </span>
               </div>
             </div>
