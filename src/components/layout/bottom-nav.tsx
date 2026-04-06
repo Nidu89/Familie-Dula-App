@@ -14,6 +14,7 @@ import {
   Timer,
   ListChecks,
   ShoppingCart,
+  UtensilsCrossed,
   Users,
   CalendarPlus,
   ClipboardPlus,
@@ -42,6 +43,7 @@ const MORE_LINKS = [
   { href: "/timer", labelKey: "timer" as const, icon: Timer },
   { href: "/rituals", labelKey: "rituals" as const, icon: ListChecks },
   { href: "/shopping", labelKey: "shopping" as const, icon: ShoppingCart },
+  { href: "/recipes", labelKey: "recipes" as const, icon: UtensilsCrossed },
   { href: "/family/settings", labelKey: "family" as const, icon: Users },
 ]
 

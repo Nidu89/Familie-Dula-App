@@ -19,7 +19,7 @@
 | PROJ-5 | Aufgaben & To-Dos | Deployed | [PROJ-5-aufgaben-todos.md](PROJ-5-aufgaben-todos.md) | 2026-03-18 |
 | PROJ-6 | Belohnungssystem | Deployed | [PROJ-6-belohnungssystem.md](PROJ-6-belohnungssystem.md) | 2026-03-18 |
 | PROJ-7 | Einkaufslisten | Deployed | [PROJ-7-einkaufslisten.md](PROJ-7-einkaufslisten.md) | 2026-03-18 |
-| PROJ-8 | Essens- & Rezeptplanung | In Progress | [PROJ-8-essens-rezeptplanung.md](PROJ-8-essens-rezeptplanung.md) | 2026-03-18 |
+| PROJ-8 | Essens- & Rezeptplanung | In Review | [PROJ-8-essens-rezeptplanung.md](PROJ-8-essens-rezeptplanung.md) | 2026-03-18 |
 | PROJ-9 | Chat & Kommunikation | In Progress | [PROJ-9-chat-kommunikation.md](PROJ-9-chat-kommunikation.md) | 2026-03-18 |
 | PROJ-10 | Benachrichtigungen | In Progress | [PROJ-10-benachrichtigungen.md](PROJ-10-benachrichtigungen.md) | 2026-03-18 |
 | PROJ-11 | Bild-Upload im Chat | In Progress | [PROJ-11-chat-bild-upload.md](PROJ-11-chat-bild-upload.md) | 2026-03-18 |
