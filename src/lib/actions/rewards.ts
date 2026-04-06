@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { checkRateLimit, getIP } from "@/lib/rate-limit"
 import { manualPointsSchema } from "@/lib/validations/tasks"
 import {
   createRewardSchema,
@@ -259,6 +260,11 @@ export async function manualPointsAction(
     return { error: "Ungueltige Eingaben." }
   }
 
+  const ip = await getIP()
+  if (!checkRateLimit(`manualPoints:${ip}`, 30, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+  }
+
   const profile = await getCurrentProfile()
   if (!profile) return { error: "Nicht angemeldet." }
   if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
@@ -508,6 +514,11 @@ export async function redeemRewardAction(
   const parsed = redeemRewardSchema.safeParse({ rewardId })
   if (!parsed.success) {
     return { error: "Ungueltige Belohnungs-ID." }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`redeemReward:${ip}`, 30, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
   }
 
   const profile = await getCurrentProfile()

@@ -62,15 +62,15 @@ export async function middleware(request: NextRequest) {
       console.error('[middleware] profile query failed:', profileError.message)
     }
 
-    const hasFamiliy = !!profile?.family_id
+    const hasFamily = !!profile?.family_id
 
     // Eingeloggt ohne Familie → /onboarding (ausser bereits dort)
-    if (!hasFamiliy && !pathname.startsWith('/onboarding')) {
+    if (!hasFamily && !pathname.startsWith('/onboarding')) {
       return NextResponse.redirect(new URL('/onboarding', request.url))
     }
 
     // Eingeloggt mit Familie auf oeffentlicher/onboarding Route → /dashboard
-    if (hasFamiliy && (isPublicRoute(pathname) || pathname.startsWith('/onboarding'))) {
+    if (hasFamily && (isPublicRoute(pathname) || pathname.startsWith('/onboarding'))) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }

@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { checkRateLimit, getIP } from "@/lib/rate-limit"
 import {
   createTaskSchema,
   updateTaskSchema,
@@ -531,6 +532,11 @@ export async function completeTaskAction(
 ): Promise<CompleteTaskResult | { error: string }> {
   if (!taskId || typeof taskId !== "string") {
     return { error: "Ungueltige Aufgaben-ID." }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`completeTask:${ip}`, 60, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
   }
 
   const profile = await getCurrentProfile()

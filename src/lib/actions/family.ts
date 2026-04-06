@@ -577,6 +577,8 @@ export async function getFamilyDataAction() {
     }
   }
 
+  const isAdultOrAdmin = profile.role === "admin" || profile.role === "adult"
+
   return {
     family: {
       id: family.id,
@@ -585,7 +587,8 @@ export async function getFamilyDataAction() {
     members: (members || []).map((m) => ({
       id: m.id,
       displayName: m.display_name || "Unbekannt",
-      email: m.email || "",
+      // Only expose emails to adults/admins, not children
+      email: isAdultOrAdmin ? (m.email || "") : "",
       role: m.role as "admin" | "adult" | "child",
     })),
     currentUserId: user.id,

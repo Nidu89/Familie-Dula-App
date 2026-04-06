@@ -85,3 +85,16 @@ export const deleteRitualSchema = z.object({
 })
 
 export type DeleteRitualValues = z.infer<typeof deleteRitualSchema>
+
+export const awardRitualCompletionSchema = z.object({
+  childProfileId: z.string().uuid("Ungueltige Profil-ID"),
+  points: z
+    .number()
+    .int("Punkte muessen eine ganze Zahl sein")
+    .min(1, "Mindestens 1 Punkt")
+    .max(100, "Maximal 100 Punkte"),
+  ritualName: z
+    .string()
+    .min(1, "Ritual-Name ist erforderlich")
+    .max(100, "Ritual-Name darf maximal 100 Zeichen lang sein"),
+})

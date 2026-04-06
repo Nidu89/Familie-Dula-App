@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { checkRateLimit, getIP } from "@/lib/rate-limit"
 import {
   createTimerTemplateSchema,
   updateTimerTemplateSchema,
@@ -106,6 +107,11 @@ export async function createTimerTemplateAction(data: {
   const parsed = createTimerTemplateSchema.safeParse(data)
   if (!parsed.success) {
     return { error: "Ungueltige Eingaben." }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`timerTemplate:${ip}`, 20, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()

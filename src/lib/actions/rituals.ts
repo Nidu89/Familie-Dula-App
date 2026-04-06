@@ -1,10 +1,12 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { checkRateLimit, getIP } from "@/lib/rate-limit"
 import {
   createRitualSchema,
   updateRitualSchema,
   deleteRitualSchema,
+  awardRitualCompletionSchema,
   type RitualStep,
 } from "@/lib/validations/rituals"
 
@@ -276,11 +278,18 @@ export async function awardRitualCompletionAction(
   points: number,
   ritualName: string
 ): Promise<{ newBalance: number } | { error: string }> {
-  if (!childProfileId || typeof childProfileId !== "string") {
-    return { error: "Ungueltige Profil-ID." }
+  const parsed = awardRitualCompletionSchema.safeParse({
+    childProfileId,
+    points,
+    ritualName,
+  })
+  if (!parsed.success) {
+    return { error: "Ungueltige Eingaben." }
   }
-  if (points <= 0) {
-    return { error: "Punkte muessen positiv sein." }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`awardRitual:${ip}`, 30, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
   }
 
   const profile = await getCurrentProfile()
@@ -290,14 +299,20 @@ export async function awardRitualCompletionAction(
   const supabase = await createClient()
 
   const { data, error } = await supabase.rpc("award_ritual_completion", {
-    p_child_profile_id: childProfileId,
-    p_points: points,
-    p_ritual_name: `Ritual abgeschlossen: ${ritualName}`,
+    p_child_profile_id: parsed.data.childProfileId,
+    p_points: parsed.data.points,
+    p_ritual_name: `Ritual abgeschlossen: ${parsed.data.ritualName}`,
   })
 
   if (error) {
     if (error.message.includes("same family")) {
       return { error: "Nicht berechtigt – anderes Familienmitglied." }
+    }
+    if (error.message.includes("Not authorized")) {
+      return { error: "Nicht berechtigt." }
+    }
+    if (error.message.includes("exceed maximum")) {
+      return { error: "Punktezahl ueberschreitet das Maximum." }
     }
     return { error: "Punkte konnten nicht vergeben werden." }
   }

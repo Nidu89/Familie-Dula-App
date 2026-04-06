@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { checkRateLimit, getIP } from "@/lib/rate-limit"
 import {
   createEventSchema,
   updateEventSchema,
@@ -176,6 +177,11 @@ export async function createEventAction(data: {
     return { error: "Ungueltige Eingaben." }
   }
 
+  const ip = await getIP()
+  if (!checkRateLimit(`createEvent:${ip}`, 30, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+  }
+
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
 
@@ -204,20 +210,26 @@ export async function createEventAction(data: {
     return { error: "Termin konnte nicht erstellt werden." }
   }
 
-  // Insert participants
+  // Insert participants (validate they belong to the same family)
   if (parsed.data.participantIds.length > 0) {
-    const participantRows = parsed.data.participantIds.map((pid) => ({
-      event_id: event.id,
-      profile_id: pid,
-    }))
+    const { data: validMembers } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("family_id", profile.family_id)
+      .in("id", parsed.data.participantIds)
 
-    const { error: partError } = await supabase
-      .from("event_participants")
-      .insert(participantRows)
+    const validIds = new Set((validMembers || []).map((m) => m.id))
+    const filteredParticipants = parsed.data.participantIds.filter((pid) =>
+      validIds.has(pid)
+    )
 
-    if (partError) {
-      // Event was created but participants failed – non-fatal
-      console.error("Failed to insert participants:", partError)
+    if (filteredParticipants.length > 0) {
+      const participantRows = filteredParticipants.map((pid) => ({
+        event_id: event.id,
+        profile_id: pid,
+      }))
+
+      await supabase.from("event_participants").insert(participantRows)
     }
   }
 
@@ -361,14 +373,27 @@ export async function updateEventAction(
     // Delete existing participants
     await supabase.from("event_participants").delete().eq("event_id", id)
 
-    // Insert new participants
+    // Insert new participants (validate they belong to the same family)
     if (parsed.data.participantIds.length > 0) {
-      await supabase.from("event_participants").insert(
-        parsed.data.participantIds.map((pid) => ({
-          event_id: id,
-          profile_id: pid,
-        }))
+      const { data: validMembers } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("family_id", profile.family_id)
+        .in("id", parsed.data.participantIds)
+
+      const validIds = new Set((validMembers || []).map((m) => m.id))
+      const filteredParticipants = parsed.data.participantIds.filter((pid) =>
+        validIds.has(pid)
       )
+
+      if (filteredParticipants.length > 0) {
+        await supabase.from("event_participants").insert(
+          filteredParticipants.map((pid) => ({
+            event_id: id,
+            profile_id: pid,
+          }))
+        )
+      }
     }
   }
 
