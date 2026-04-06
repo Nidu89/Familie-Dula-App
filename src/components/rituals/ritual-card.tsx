@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   Play,
@@ -28,6 +29,9 @@ export function RitualCard({
   onEdit,
   onDelete,
 }: RitualCardProps) {
+  const t = useTranslations("rituals.card")
+  const tc = useTranslations("common")
+
   return (
     <div className="rounded-[2rem] bg-card p-6 transition-shadow hover:shadow-md sm:p-8">
       <div className="flex items-start justify-between gap-4">
@@ -44,7 +48,7 @@ export function RitualCard({
 
         {ritual.isSystemTemplate && (
           <span className="shrink-0 rounded-full bg-secondary-container px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-secondary">
-            Vorlage
+            {t("template")}
           </span>
         )}
       </div>
@@ -53,21 +57,21 @@ export function RitualCard({
       <div className="mt-4 flex flex-wrap gap-3">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <ListChecks className="h-3.5 w-3.5" />
-          <span>{ritual.steps.length} Schritte</span>
+          <span>{ritual.steps.length} {tc("steps")}</span>
         </div>
 
         {ritual.timerDurationMinutes !== null &&
           ritual.timerDurationMinutes > 0 && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
-              <span>{ritual.timerDurationMinutes} Min.</span>
+              <span>{ritual.timerDurationMinutes} {tc("min")}</span>
             </div>
           )}
 
         {ritual.rewardPoints !== null && ritual.rewardPoints > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Star className="h-3.5 w-3.5" />
-            <span>{ritual.rewardPoints} Punkte</span>
+            <span>{ritual.rewardPoints} {tc("points")}</span>
           </div>
         )}
       </div>
@@ -87,7 +91,7 @@ export function RitualCard({
         ))}
         {ritual.steps.length > 3 && (
           <p className="pl-7 text-xs text-muted-foreground">
-            +{ritual.steps.length - 3} weitere Schritte
+            +{ritual.steps.length - 3} {t("moreSteps")}
           </p>
         )}
       </div>
@@ -102,7 +106,7 @@ export function RitualCard({
             aria-label={`Ritual "${ritual.name}" starten`}
           >
             <Play className="mr-2 h-4 w-4" />
-            Starten
+            {t("start")}
           </Button>
         )}
 
@@ -114,11 +118,11 @@ export function RitualCard({
               variant="ghost"
               size="icon"
               className="h-10 w-10 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
-              aria-label={`Ritual "${ritual.name}" bearbeiten`}
+              aria-label={t("edit")}
               title={
                 isActiveRunning
-                  ? "Ritual zuerst beenden"
-                  : "Ritual bearbeiten"
+                  ? t("finishFirst")
+                  : t("edit")
               }
             >
               <Pencil className="h-4 w-4" />
@@ -129,11 +133,11 @@ export function RitualCard({
               variant="ghost"
               size="icon"
               className="h-10 w-10 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
-              aria-label={`Ritual "${ritual.name}" loeschen`}
+              aria-label={t("delete")}
               title={
                 isActiveRunning
-                  ? "Ritual zuerst beenden"
-                  : "Ritual loeschen"
+                  ? t("finishFirst")
+                  : t("delete")
               }
             >
               <Trash2 className="h-4 w-4" />

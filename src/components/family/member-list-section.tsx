@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import {
   Loader2,
   Trash2,
@@ -53,10 +54,10 @@ interface MemberListSectionProps {
 
 /* ── role config ───────────────────────────────────────── */
 
-const roleLabels: Record<FamilyRole, string> = {
-  admin: "Admin",
-  adult: "Erwachsener",
-  child: "Kind",
+const roleLabelKeys: Record<FamilyRole, "roleAdmin" | "roleAdult" | "roleChild"> = {
+  admin: "roleAdmin",
+  adult: "roleAdult",
+  child: "roleChild",
 }
 
 const roleIcons: Record<FamilyRole, React.ReactNode> = {
@@ -106,6 +107,8 @@ export function MemberListSection({
   existingCode,
   existingCodeExpiresAt,
 }: MemberListSectionProps) {
+  const t = useTranslations("family.memberList")
+  const tc = useTranslations("common")
   const router = useRouter()
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -125,7 +128,7 @@ export function MemberListSection({
         router.refresh()
       }
     } catch {
-      setErrorMessage("Rolle konnte nicht geaendert werden.")
+      setErrorMessage(t("roleChangeError"))
     } finally {
       setLoadingMemberId(null)
     }
@@ -143,7 +146,7 @@ export function MemberListSection({
         router.refresh()
       }
     } catch {
-      setErrorMessage("Mitglied konnte nicht entfernt werden.")
+      setErrorMessage(t("removeError"))
     } finally {
       setLoadingMemberId(null)
       setConfirmRemove(null)
@@ -195,14 +198,14 @@ export function MemberListSection({
                 {member.displayName}
                 {isSelf && (
                   <span className="text-xs text-muted-foreground ml-2">
-                    (Du)
+                    {t("you")}
                   </span>
                 )}
               </h3>
 
               {/* Role chip */}
               <p className="text-secondary font-semibold text-sm mb-6 px-4 py-1 bg-muted rounded-full">
-                {roleLabels[member.role]}
+                {t(roleLabelKeys[member.role])}
               </p>
 
               {/* Action buttons */}
@@ -211,14 +214,14 @@ export function MemberListSection({
                   href="/calendar"
                   className="block w-full py-3 rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white font-bold text-center active:scale-[0.98] transition-all shadow-lg"
                 >
-                  Zeitplan ansehen
+                  {t("viewSchedule")}
                 </Link>
                 {isAdmin && !isSelf && (
                   <button
                     onClick={() => setEditMember(member)}
                     className="w-full py-3 rounded-full bg-muted text-foreground font-medium hover:bg-surface-high transition-colors active:scale-[0.98]"
                   >
-                    Profil bearbeiten
+                    {t("editProfile")}
                   </button>
                 )}
               </div>
@@ -236,13 +239,13 @@ export function MemberListSection({
               <UserPlus className="h-8 w-8 text-primary-foreground" />
             </div>
             <h3 className="font-display text-xl font-bold mb-2">
-              Neues Mitglied?
+              {t("addMemberTitle")}
             </h3>
             <p className="text-muted-foreground text-sm max-w-[180px]">
-              Erweitere die Sandbox und lade jemanden ein
+              {t("addMemberDescription")}
             </p>
             <div className="mt-8 flex items-center gap-2 text-primary-foreground font-bold">
-              <span>Mitglied einladen</span>
+              <span>{t("addMemberButton")}</span>
               <ChevronRight className="h-4 w-4" />
             </div>
           </button>
@@ -259,10 +262,9 @@ export function MemberListSection({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Profil bearbeiten</DialogTitle>
+            <DialogTitle>{t("editDialogTitle")}</DialogTitle>
             <DialogDescription>
-              Rolle von <strong>{editMember?.displayName}</strong> aendern oder
-              Mitglied entfernen.
+              {t("editDialogDescription", { name: editMember?.displayName ?? "" })}
             </DialogDescription>
           </DialogHeader>
 
@@ -279,7 +281,7 @@ export function MemberListSection({
           {editMember && (
             <div className="space-y-6 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Rolle</label>
+                <label className="text-sm font-medium">{t("roleLabel")}</label>
                 <Select
                   defaultValue={editMember.role}
                   onValueChange={(value) =>
@@ -291,9 +293,9 @@ export function MemberListSection({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="adult">Erwachsener</SelectItem>
-                    <SelectItem value="child">Kind</SelectItem>
+                    <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
+                    <SelectItem value="adult">{t("roleAdult")}</SelectItem>
+                    <SelectItem value="child">{t("roleChild")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -306,7 +308,7 @@ export function MemberListSection({
                   className="gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Mitglied entfernen
+                  {t("removeMember")}
                 </Button>
               </div>
             </div>
@@ -318,11 +320,9 @@ export function MemberListSection({
       <Dialog open={!!confirmRemove} onOpenChange={() => setConfirmRemove(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mitglied entfernen</DialogTitle>
+            <DialogTitle>{t("removeConfirmTitle")}</DialogTitle>
             <DialogDescription>
-              Moechtest du <strong>{confirmRemove?.displayName}</strong> wirklich
-              aus der Familie entfernen? Diese Person verliert sofort den Zugriff
-              auf alle Familiendaten.
+              {t("removeConfirmDescription", { name: confirmRemove?.displayName ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -331,7 +331,7 @@ export function MemberListSection({
               onClick={() => setConfirmRemove(null)}
               disabled={!!loadingMemberId}
             >
-              Abbrechen
+              {tc("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -341,10 +341,10 @@ export function MemberListSection({
               {loadingMemberId ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Entfernen...
+                  {t("removing")}
                 </>
               ) : (
-                "Entfernen"
+                t("remove")
               )}
             </Button>
           </DialogFooter>
@@ -355,9 +355,9 @@ export function MemberListSection({
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Mitglied einladen</DialogTitle>
+            <DialogTitle>{t("inviteDialogTitle")}</DialogTitle>
             <DialogDescription>
-              Lade neue Mitglieder per E-Mail oder Einladungscode ein.
+              {t("inviteDialogDescription")}
             </DialogDescription>
           </DialogHeader>
           <InviteSection

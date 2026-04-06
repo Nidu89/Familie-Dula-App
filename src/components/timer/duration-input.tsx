@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Play } from "lucide-react"
 
@@ -11,6 +12,7 @@ interface DurationInputProps {
 const QUICK_MINUTES = [5, 10, 15, 20, 30, 45]
 
 export function DurationInput({ onStart }: DurationInputProps) {
+  const t = useTranslations("timer.duration")
   const [minutes, setMinutes] = useState(10)
   const [seconds, setSeconds] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -20,11 +22,11 @@ export function DurationInput({ onStart }: DurationInputProps) {
 
   function handleStart() {
     if (total < 60) {
-      setError("Mindestdauer ist 1 Minute.")
+      setError(t("minDuration"))
       return
     }
     if (total > 3600) {
-      setError("Maximale Dauer ist 60 Minuten. Bitte Sekunden auf 0 setzen.")
+      setError(t("maxDuration"))
       return
     }
     setError(null)
@@ -44,14 +46,14 @@ export function DurationInput({ onStart }: DurationInputProps) {
             htmlFor="timer-minutes"
             className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground"
           >
-            Minuten
+            {t("minutesLabel")}
           </label>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setMinutes((m) => Math.max(0, m - 1))}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground font-bold text-lg transition-colors hover:bg-muted/70"
-              aria-label="Minuten verringern"
+              aria-label={t("decreaseMinutes")}
             >
               -
             </button>
@@ -69,13 +71,13 @@ export function DurationInput({ onStart }: DurationInputProps) {
                 }
               }}
               className="w-16 rounded-2xl bg-card text-center font-display text-3xl font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary py-3"
-              aria-label="Minuten"
+              aria-label={t("minutesLabel")}
             />
             <button
               type="button"
               onClick={() => setMinutes((m) => Math.min(60, m + 1))}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground font-bold text-lg transition-colors hover:bg-muted/70"
-              aria-label="Minuten erhoehen"
+              aria-label={t("increaseMinutes")}
             >
               +
             </button>
@@ -91,7 +93,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
             htmlFor="timer-seconds"
             className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground"
           >
-            Sekunden
+            {t("secondsLabel")}
           </label>
           <div className="flex items-center gap-1">
             <button
@@ -108,7 +110,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
                 setError(null)
               }}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground font-bold text-lg transition-colors hover:bg-muted/70"
-              aria-label="Sekunden verringern"
+              aria-label={t("decreaseSeconds")}
             >
               -
             </button>
@@ -127,7 +129,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
                 }
               }}
               className="w-16 rounded-2xl bg-card text-center font-display text-3xl font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary py-3"
-              aria-label="Sekunden"
+              aria-label={t("secondsLabel")}
             />
             <button
               type="button"
@@ -143,7 +145,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
                 setError(null)
               }}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground font-bold text-lg transition-colors hover:bg-muted/70"
-              aria-label="Sekunden erhoehen"
+              aria-label={t("increaseSeconds")}
             >
               +
             </button>
@@ -163,10 +165,10 @@ export function DurationInput({ onStart }: DurationInputProps) {
         onClick={handleStart}
         disabled={!isValid}
         className="h-14 w-full max-w-xs rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-base font-bold text-white shadow-lg hover:opacity-90 transition-opacity"
-        aria-label="Timer starten"
+        aria-label={t("start")}
       >
         <Play className="mr-2 h-5 w-5" />
-        Timer starten
+        {t("start")}
       </Button>
 
       {/* Quick start chips */}
@@ -178,7 +180,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
             onClick={() => handleQuickStart(m)}
             className="rounded-full bg-muted px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            {m} Min
+            {t("quickMin", { min: m })}
           </button>
         ))}
       </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Pause, Play, X, RotateCcw } from "lucide-react"
@@ -21,6 +22,8 @@ export function ActiveRitualView({
   activeRitual,
   isAdult,
 }: ActiveRitualViewProps) {
+  const t = useTranslations("rituals.active")
+  const tc = useTranslations("common")
   const {
     state,
     timer,
@@ -76,9 +79,9 @@ export function ActiveRitualView({
               : formatTime(timer.state.remainingSeconds)}
           </p>
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            {timerStatus === "running" && "Laeuft"}
-            {timerStatus === "paused" && "Pausiert"}
-            {isTimerExpired && "Zeit abgelaufen!"}
+            {timerStatus === "running" && t("running")}
+            {timerStatus === "paused" && t("paused")}
+            {isTimerExpired && t("timeUp")}
           </p>
         </div>
       )}
@@ -86,20 +89,20 @@ export function ActiveRitualView({
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium text-foreground">Fortschritt</span>
+          <span className="font-medium text-foreground">{t("progress")}</span>
           <span className="font-bold text-secondary">
-            {completedCount} von {totalSteps} Schritten
+            {completedCount} {t("of")} {totalSteps} {t("stepsLabel")}
           </span>
         </div>
         <Progress
           value={progressPercent}
           className="h-3 rounded-full"
-          aria-label={`${completedCount} von ${totalSteps} Schritten erledigt`}
+          aria-label={`${completedCount} ${t("of")} ${totalSteps} ${t("stepsLabel")} ${t("doneAria")}`}
         />
       </div>
 
       {/* Steps list */}
-      <div className="space-y-3" role="list" aria-label="Ritual-Schritte">
+      <div className="space-y-3" role="list" aria-label={t("stepsAria")}>
         {[...ritual.steps]
           .sort((a, b) => a.order - b.order)
           .map((step) => (
@@ -121,7 +124,7 @@ export function ActiveRitualView({
         <div className="flex items-center gap-2 rounded-2xl bg-primary/10 p-4">
           <span className="text-lg">&#11088;</span>
           <p className="text-sm font-medium text-foreground">
-            {ritual.rewardPoints} Punkte bei vollstaendigem Abschluss
+            {ritual.rewardPoints} {tc("points")} {t("fullCompletion")}
           </p>
         </div>
       )}
@@ -136,7 +139,7 @@ export function ActiveRitualView({
               className="flex-1 rounded-full py-3"
             >
               <Pause className="mr-2 h-4 w-4" />
-              Pausieren
+              {t("pause")}
             </Button>
           )}
           {isPaused && (
@@ -145,7 +148,7 @@ export function ActiveRitualView({
               className="flex-1 rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] py-3 font-bold text-white hover:opacity-90"
             >
               <Play className="mr-2 h-4 w-4" />
-              Fortsetzen
+              {t("resume")}
             </Button>
           )}
         </div>

@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import { Home, User, Star, ListChecks, Plus, Trophy } from "lucide-react"
 import { RRule } from "rrule"
+import { useTranslations } from "next-intl"
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { TaskCard } from "@/components/tasks/task-card"
@@ -64,6 +65,8 @@ export function TasksList({
   familyGoal,
   goalContributions,
 }: TasksListProps) {
+  const t = useTranslations("tasks")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const searchParams = useSearchParams()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
@@ -88,7 +91,7 @@ export function TasksList({
       const result = await getTasksAction()
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -97,8 +100,8 @@ export function TasksList({
       setTasks(result.tasks)
     } catch {
       toast({
-        title: "Fehler",
-        description: "Aufgaben konnten nicht geladen werden.",
+        title: tc("error"),
+        description: t("loadErrorToast"),
         variant: "destructive",
       })
     } finally {
@@ -205,7 +208,7 @@ export function TasksList({
             className="bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-primary/20 flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all"
           >
             <Plus className="h-5 w-5" />
-            Neue Aufgabe
+            {t("newTask")}
           </button>
         </div>
       )}
@@ -217,11 +220,11 @@ export function TasksList({
           <div className="flex items-center justify-between px-2">
             <h3 className="font-display font-bold text-xl flex items-center gap-2">
               <Home className="h-5 w-5 text-primary-foreground" />
-              Haushalt
+              {t("list.household")}
             </h3>
             {activeHaushalt.length > 0 && (
               <span className="bg-accent text-secondary px-3 py-1 rounded-full text-xs font-bold">
-                {activeHaushalt.length} Aktiv
+                {activeHaushalt.length} {t("list.active")}
               </span>
             )}
           </div>
@@ -229,7 +232,7 @@ export function TasksList({
           {haushaltsAufgaben.length === 0 ? (
             <div className="bg-card p-8 rounded-lg text-center">
               <p className="text-muted-foreground text-sm">
-                Keine Haushalts-Aufgaben
+                {t("list.noHouseholdTasks")}
               </p>
             </div>
           ) : (
@@ -252,14 +255,14 @@ export function TasksList({
           <div className="flex items-center justify-between px-2">
             <h3 className="font-display font-bold text-xl flex items-center gap-2">
               <User className="h-5 w-5 text-chart-3" />
-              Eigene To-dos
+              {t("list.ownTodos")}
             </h3>
           </div>
 
           {eigeneAufgaben.length === 0 ? (
             <div className="bg-card p-8 rounded-lg text-center">
               <p className="text-muted-foreground text-sm">
-                Keine eigenen Aufgaben
+                {t("list.noOwnTasks")}
               </p>
             </div>
           ) : (
@@ -282,7 +285,7 @@ export function TasksList({
           <div className="flex items-center justify-between px-2">
             <h3 className="font-display font-bold text-xl flex items-center gap-2">
               <Star className="h-5 w-5 text-secondary" />
-              Wochen-Challenge
+              {t("list.weeklyChallenge")}
             </h3>
           </div>
 
@@ -298,7 +301,7 @@ export function TasksList({
 
               <div className="relative z-10">
                 <span className="bg-white/20 text-white px-4 py-1 rounded-full text-xs font-bold uppercase mb-6 inline-block">
-                  Gruppen-Aufgabe
+                  {t("list.groupTask")}
                 </span>
 
                 <h4 className="font-display font-extrabold text-3xl mb-4 leading-tight">

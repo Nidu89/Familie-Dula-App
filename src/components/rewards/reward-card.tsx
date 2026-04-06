@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Gift, Lock, Pencil } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { redeemRewardAction, type Reward } from "@/lib/actions/rewards"
@@ -21,6 +22,8 @@ export function RewardCard({
   onRedeem,
   onEdit,
 }: RewardCardProps) {
+  const t = useTranslations("rewards.rewardCard")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [isRedeeming, setIsRedeeming] = useState(false)
   const canAfford = userBalance >= reward.pointsCost
@@ -32,21 +35,21 @@ export function RewardCard({
       const result = await redeemRewardAction(reward.id)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
         return
       }
       toast({
-        title: "Belohnung eingeloest!",
-        description: `${result.rewardTitle} fuer ${result.pointsSpent} Punkte. Neuer Stand: ${result.newBalance} Pkt.`,
+        title: t("redeemed"),
+        description: `${result.rewardTitle} fuer ${result.pointsSpent} ${tc("points")}. Neuer Stand: ${result.newBalance} ${tc("pts")}.`,
       })
       onRedeem()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Belohnung konnte nicht eingeloest werden.",
+        title: tc("error"),
+        description: t("redeemError"),
         variant: "destructive",
       })
     } finally {
@@ -69,7 +72,7 @@ export function RewardCard({
       {/* Deactivated badge for parents */}
       {isDeactivated && isAdultOrAdmin && (
         <span className="absolute left-3 top-3 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-          Deaktiviert
+          {t("disabled")}
         </span>
       )}
       {/* Edit button for parents */}
@@ -78,7 +81,7 @@ export function RewardCard({
           type="button"
           onClick={() => onEdit(reward)}
           className="absolute right-3 top-3 rounded-full p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-          aria-label={`${reward.title} bearbeiten`}
+          aria-label={t("editAria", { title: reward.title })}
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
@@ -105,7 +108,7 @@ export function RewardCard({
       {/* Points chip */}
       <div className="mt-auto pt-4">
         <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-          {reward.pointsCost} Pkt.
+          {reward.pointsCost} {tc("pts")}
         </span>
       </div>
 
@@ -119,7 +122,7 @@ export function RewardCard({
               onClick={handleRedeem}
               disabled={isRedeeming}
             >
-              {isRedeeming ? "Wird eingeloest..." : "Einloesen"}
+              {isRedeeming ? t("redeeming") : t("redeem")}
             </Button>
           ) : (
             <Button
@@ -129,7 +132,7 @@ export function RewardCard({
               disabled
             >
               <Lock className="mr-1.5 h-3 w-3" />
-              Noch {pointsNeeded} Pkt.
+              {t("pointsNeeded", { points: pointsNeeded })}
             </Button>
           )}
         </div>

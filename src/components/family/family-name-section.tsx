@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useTranslations } from "next-intl"
 import { Loader2, Pencil, Check, X } from "lucide-react"
 
 import { useRouter } from "next/navigation"
@@ -38,6 +39,8 @@ export function FamilyNameSection({
   familyName,
   isAdmin,
 }: FamilyNameSectionProps) {
+  const t = useTranslations("family.nameSection")
+  const tc = useTranslations("common")
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -63,7 +66,7 @@ export function FamilyNameSection({
         router.refresh()
       }
     } catch {
-      setErrorMessage("Ein unerwarteter Fehler ist aufgetreten.")
+      setErrorMessage(tc("unexpectedError"))
     } finally {
       setIsLoading(false)
     }
@@ -78,9 +81,9 @@ export function FamilyNameSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Familienname</CardTitle>
+        <CardTitle className="text-lg">{t("title")}</CardTitle>
         <CardDescription>
-          Der Name eurer Familiengruppe.
+          {t("description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -108,7 +111,7 @@ export function FamilyNameSection({
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder="Familienname"
+                        placeholder={t("placeholder")}
                         disabled={isLoading}
                         {...field}
                       />
@@ -121,7 +124,7 @@ export function FamilyNameSection({
                 type="submit"
                 size="icon"
                 disabled={isLoading}
-                aria-label="Speichern"
+                aria-label={t("saveAria")}
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -135,7 +138,7 @@ export function FamilyNameSection({
                 variant="outline"
                 onClick={onCancel}
                 disabled={isLoading}
-                aria-label="Abbrechen"
+                aria-label={t("cancelAria")}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -149,7 +152,7 @@ export function FamilyNameSection({
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsEditing(true)}
-                aria-label="Familienname bearbeiten"
+                aria-label={t("editAria")}
               >
                 <Pencil className="h-4 w-4" />
               </Button>

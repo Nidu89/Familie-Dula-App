@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useTranslations } from "next-intl"
 
 import {
   Dialog,
@@ -41,6 +42,8 @@ export function GoalFormDialog({
   onOpenChange,
   onSuccess,
 }: GoalFormDialogProps) {
+  const t = useTranslations("rewards")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -72,22 +75,22 @@ export function GoalFormDialog({
       const result = await createFamilyGoalAction(values)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
         return
       }
       toast({
-        title: "Familienziel erstellt",
-        description: `"${values.title}" ist jetzt das aktive Familienziel.`,
+        title: t("goalForm.success"),
+        description: t("goalForm.successDescription", { title: values.title }),
       })
       onOpenChange(false)
       onSuccess()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Familienziel konnte nicht erstellt werden.",
+        title: tc("error"),
+        description: t("goalForm.error"),
         variant: "destructive",
       })
     } finally {
@@ -99,9 +102,9 @@ export function GoalFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Neues Familienziel</DialogTitle>
+          <DialogTitle>{t("goalForm.title")}</DialogTitle>
           <DialogDescription>
-            Erstelle ein gemeinsames Ziel, auf das die ganze Familie hinarbeitet.
+            {t("goalForm.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -112,10 +115,10 @@ export function GoalFormDialog({
               name="emoji"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Emoji</FormLabel>
+                  <FormLabel>{t("goalForm.emojiLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="z.B. &#x1F3A2;"
+                      placeholder={t("goalForm.emojiPlaceholder")}
                       maxLength={4}
                       className="text-center text-2xl"
                       {...field}
@@ -131,10 +134,10 @@ export function GoalFormDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Zielname</FormLabel>
+                  <FormLabel>{t("goalForm.nameLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="z.B. Grosser Zoobesuch"
+                      placeholder={t("goalForm.namePlaceholder")}
                       maxLength={100}
                       {...field}
                     />
@@ -149,10 +152,10 @@ export function GoalFormDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beschreibung (optional)</FormLabel>
+                  <FormLabel>{t("goalForm.descriptionLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Worum geht es bei diesem Ziel?"
+                      placeholder={t("goalForm.descriptionPlaceholder")}
                       rows={2}
                       maxLength={200}
                       {...field}
@@ -168,7 +171,7 @@ export function GoalFormDialog({
               name="targetPoints"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Zielpunkte</FormLabel>
+                  <FormLabel>{t("goalForm.targetLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -189,7 +192,7 @@ export function GoalFormDialog({
                   </FormControl>
                   <FormMessage />
                   <p className="text-xs text-muted-foreground">
-                    Alle Familienmitglieder arbeiten gemeinsam auf dieses Ziel hin.
+                    {t("goalForm.hint")}
                   </p>
                 </FormItem>
               )}
@@ -201,10 +204,10 @@ export function GoalFormDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Abbrechen
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Erstellen..." : "Ziel starten"}
+                {isSubmitting ? t("goalForm.submitLoading") : t("goalForm.submit")}
               </Button>
             </DialogFooter>
           </form>

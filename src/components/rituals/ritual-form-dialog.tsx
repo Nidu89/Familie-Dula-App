@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,8 @@ export function RitualFormDialog({
   ritual,
   onSubmit,
 }: RitualFormDialogProps) {
+  const t = useTranslations("rituals.form")
+
   // Use a key to fully remount the inner form when the ritual changes
   // This avoids the need for an effect to reset state
   const formKey = ritual?.id ?? (open ? "new" : "closed")
@@ -49,7 +52,7 @@ export function RitualFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[2rem] sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-xl font-bold">
-            {ritual ? "Ritual bearbeiten" : "Neues Ritual erstellen"}
+            {ritual ? t("editTitle") : t("createTitle")}
           </DialogTitle>
         </DialogHeader>
 
@@ -81,6 +84,8 @@ interface RitualFormInnerProps {
 }
 
 function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
+  const t = useTranslations("rituals.form")
+  const tc = useTranslations("common")
   const isEditing = !!ritual
 
   const [name, setName] = useState(ritual?.name ?? "")
@@ -148,13 +153,13 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
     // Client-side validation
     const trimmedName = name.trim()
     if (!trimmedName) {
-      setError("Name ist erforderlich.")
+      setError(t("nameRequired"))
       return
     }
 
     const validSteps = steps.filter((s) => s.title.trim().length > 0)
     if (validSteps.length === 0) {
-      setError("Mindestens ein Schritt mit Name ist erforderlich.")
+      setError(t("stepsRequired"))
       return
     }
 
@@ -186,13 +191,13 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
       {/* Name */}
       <div className="space-y-2">
         <Label htmlFor="ritual-name" className="text-sm font-medium">
-          Name *
+          {t("nameLabel")}
         </Label>
         <Input
           id="ritual-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="z.B. Abendroutine"
+          placeholder={t("namePlaceholder")}
           maxLength={80}
           className="rounded-2xl"
           autoFocus
@@ -205,13 +210,13 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
           htmlFor="ritual-description"
           className="text-sm font-medium"
         >
-          Beschreibung (optional)
+          {t("descriptionLabel")}
         </Label>
         <Textarea
           id="ritual-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Was ist das Ziel dieses Rituals?"
+          placeholder={t("descriptionPlaceholder")}
           maxLength={300}
           className="min-h-[80px] rounded-2xl resize-none"
         />
@@ -220,7 +225,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
       {/* Steps */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">
-          Schritte * ({steps.length}/20)
+          {t("stepsLabel", { count: steps.length })}
         </Label>
         <div className="space-y-2">
           {steps.map((step, index) => (
@@ -231,10 +236,10 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
               <Input
                 value={step.title}
                 onChange={(e) => updateStepTitle(index, e.target.value)}
-                placeholder={`Schritt ${index + 1}`}
+                placeholder={t("stepPlaceholder", { index: index + 1 })}
                 maxLength={100}
                 className="flex-1 rounded-xl"
-                aria-label={`Schritt ${index + 1} Name`}
+                aria-label={t("stepAria", { index: index + 1 })}
               />
               <Button
                 type="button"
@@ -243,7 +248,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
                 onClick={() => moveStep(index, "up")}
                 disabled={index === 0}
                 className="h-8 w-8 shrink-0 rounded-full"
-                aria-label="Nach oben verschieben"
+                aria-label={t("moveUp")}
               >
                 <ArrowUp className="h-3.5 w-3.5" />
               </Button>
@@ -254,7 +259,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
                 onClick={() => moveStep(index, "down")}
                 disabled={index === steps.length - 1}
                 className="h-8 w-8 shrink-0 rounded-full"
-                aria-label="Nach unten verschieben"
+                aria-label={t("moveDown")}
               >
                 <ArrowDown className="h-3.5 w-3.5" />
               </Button>
@@ -265,7 +270,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
                 onClick={() => removeStep(index)}
                 disabled={steps.length <= 1}
                 className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
-                aria-label={`Schritt ${index + 1} entfernen`}
+                aria-label={t("removeStep", { index: index + 1 })}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -280,7 +285,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
             className="w-full rounded-xl text-sm font-medium text-secondary"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Schritt hinzufuegen
+            {t("addStep")}
           </Button>
         )}
       </div>
@@ -289,7 +294,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
       <div className="space-y-3 rounded-2xl bg-muted p-4">
         <div className="flex items-center justify-between">
           <Label htmlFor="ritual-timer-toggle" className="text-sm font-medium">
-            Gesamt-Timer
+            {t("timerToggle")}
           </Label>
           <Switch
             id="ritual-timer-toggle"
@@ -321,7 +326,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
               className="w-20 rounded-xl text-center"
               aria-label="Timer-Dauer in Minuten"
             />
-            <span className="text-sm text-muted-foreground">Minuten</span>
+            <span className="text-sm text-muted-foreground">{tc("minutes")}</span>
           </div>
         )}
       </div>
@@ -330,7 +335,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
       <div className="space-y-3 rounded-2xl bg-muted p-4">
         <div className="flex items-center justify-between">
           <Label htmlFor="ritual-reward-toggle" className="text-sm font-medium">
-            Belohnungspunkte
+            {t("pointsToggle")}
           </Label>
           <Switch
             id="ritual-reward-toggle"
@@ -362,7 +367,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
               className="w-20 rounded-xl text-center"
               aria-label="Belohnungspunkte"
             />
-            <span className="text-sm text-muted-foreground">Punkte</span>
+            <span className="text-sm text-muted-foreground">{tc("points")}</span>
           </div>
         )}
       </div>
@@ -381,7 +386,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
           onClick={onCancel}
           className="rounded-full"
         >
-          Abbrechen
+          {tc("cancel")}
         </Button>
         <Button
           type="submit"
@@ -391,12 +396,12 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Speichern...
+              {tc("saving")}
             </>
           ) : isEditing ? (
-            "Speichern"
+            tc("save")
           ) : (
-            "Erstellen"
+            tc("create")
           )}
         </Button>
       </DialogFooter>

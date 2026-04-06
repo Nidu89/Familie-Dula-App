@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { useTranslations } from "next-intl"
 
 import {
   Dialog,
@@ -43,50 +44,29 @@ import {
 
 type SeriesMode = "single" | "following" | "all"
 
-const CATEGORIES = [
-  { value: "school", label: "Schule" },
-  { value: "work", label: "Arbeit" },
-  { value: "leisure", label: "Freizeit" },
-  { value: "health", label: "Gesundheit" },
-  { value: "other", label: "Sonstiges" },
-]
-
-const RECURRENCE_OPTIONS = [
-  { value: "", label: "Keine Wiederholung" },
-  { value: "FREQ=DAILY", label: "Taeglich" },
-  { value: "FREQ=WEEKLY", label: "Woechentlich" },
-  { value: "FREQ=MONTHLY", label: "Monatlich" },
-  { value: "FREQ=YEARLY", label: "Jaehrlich" },
-]
-
-const REMINDER_OPTIONS = [
-  { value: "none", label: "Keine Erinnerung" },
-  { value: "15", label: "15 Minuten vorher" },
-  { value: "30", label: "30 Minuten vorher" },
-  { value: "60", label: "1 Stunde vorher" },
-]
-
 interface FamilyMember {
   id: string
   displayName: string
 }
 
-const eventFormSchema = z.object({
-  title: z.string().min(1, "Titel ist erforderlich").max(200),
-  description: z.string().max(2000).optional().or(z.literal("")),
-  location: z.string().max(200).optional().or(z.literal("")),
-  startDate: z.string().min(1, "Startdatum ist erforderlich"),
-  startTime: z.string().min(1, "Startzeit ist erforderlich"),
-  endDate: z.string().min(1, "Enddatum ist erforderlich"),
-  endTime: z.string().min(1, "Endzeit ist erforderlich"),
-  allDay: z.boolean(),
-  category: z.string(),
-  recurrenceRule: z.string().optional().or(z.literal("")),
-  reminderMinutes: z.string(),
-  participantIds: z.array(z.string()),
-})
+function createEventFormSchema(t: (key: string) => string) {
+  return z.object({
+    title: z.string().min(1, t("eventForm.titleRequired")).max(200),
+    description: z.string().max(2000).optional().or(z.literal("")),
+    location: z.string().max(200).optional().or(z.literal("")),
+    startDate: z.string().min(1, t("eventForm.startDateRequired")),
+    startTime: z.string().min(1, t("eventForm.startTimeRequired")),
+    endDate: z.string().min(1, t("eventForm.endDateRequired")),
+    endTime: z.string().min(1, t("eventForm.endTimeRequired")),
+    allDay: z.boolean(),
+    category: z.string(),
+    recurrenceRule: z.string().optional().or(z.literal("")),
+    reminderMinutes: z.string(),
+    participantIds: z.array(z.string()),
+  })
+}
 
-type EventFormValues = z.infer<typeof eventFormSchema>
+type EventFormValues = z.infer<ReturnType<typeof createEventFormSchema>>
 
 interface EventFormDialogProps {
   open: boolean
@@ -118,12 +98,39 @@ export function EventFormDialog({
   defaultDate,
   onSuccess,
 }: EventFormDialogProps) {
+  const t = useTranslations("calendar")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [seriesMode, setSeriesMode] = useState<SeriesMode>("single")
   const isEditing = !!event
   const isRecurring = !!(event?.recurrenceRule || event?.recurrenceParentId)
+
+  const eventFormSchema = createEventFormSchema(t)
+
+  const CATEGORIES = [
+    { value: "school", label: t("categories.school") },
+    { value: "work", label: t("categories.work") },
+    { value: "leisure", label: t("categories.leisure") },
+    { value: "health", label: t("categories.health") },
+    { value: "other", label: t("categories.other") },
+  ]
+
+  const RECURRENCE_OPTIONS = [
+    { value: "", label: t("eventForm.recurrenceNone") },
+    { value: "FREQ=DAILY", label: t("eventForm.recurrenceDaily") },
+    { value: "FREQ=WEEKLY", label: t("eventForm.recurrenceWeekly") },
+    { value: "FREQ=MONTHLY", label: t("eventForm.recurrenceMonthly") },
+    { value: "FREQ=YEARLY", label: t("eventForm.recurrenceYearly") },
+  ]
+
+  const REMINDER_OPTIONS = [
+    { value: "none", label: t("eventForm.reminderNone") },
+    { value: "15", label: t("eventForm.reminder15") },
+    { value: "30", label: t("eventForm.reminder30") },
+    { value: "60", label: t("eventForm.reminder60") },
+  ]
 
   const now = defaultDate || new Date()
   const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
@@ -224,7 +231,7 @@ export function EventFormDialog({
 
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -232,17 +239,17 @@ export function EventFormDialog({
       }
 
       toast({
-        title: isEditing ? "Termin aktualisiert" : "Termin erstellt",
+        title: isEditing ? t("eventForm.updated") : t("eventForm.created"),
         description: isEditing
-          ? "Der Termin wurde erfolgreich aktualisiert."
-          : "Der Termin wurde erfolgreich erstellt.",
+          ? t("eventForm.updatedDescription")
+          : t("eventForm.createdDescription"),
       })
       onOpenChange(false)
       onSuccess()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: tc("error"),
+        description: tc("unexpectedError"),
         variant: "destructive",
       })
     } finally {
@@ -257,22 +264,22 @@ export function EventFormDialog({
       const result = await deleteEventAction(event.id, seriesMode)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
         return
       }
       toast({
-        title: "Termin geloescht",
-        description: "Der Termin wurde erfolgreich geloescht.",
+        title: t("eventForm.deleted"),
+        description: t("eventForm.deletedDescription"),
       })
       onOpenChange(false)
       onSuccess()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: tc("error"),
+        description: tc("unexpectedError"),
         variant: "destructive",
       })
     } finally {
@@ -299,12 +306,12 @@ export function EventFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Termin bearbeiten" : "Neuer Termin"}
+            {isEditing ? t("eventForm.editTitle") : t("eventForm.createTitle")}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Aendere die Details dieses Termins."
-              : "Erstelle einen neuen Termin fuer die Familie."}
+              ? t("eventForm.editDescription")
+              : t("eventForm.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -315,9 +322,9 @@ export function EventFormDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Titel *</FormLabel>
+                  <FormLabel>{t("eventForm.titleLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="z.B. Elternabend" {...field} />
+                    <Input placeholder={t("eventForm.titlePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -329,10 +336,10 @@ export function EventFormDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beschreibung</FormLabel>
+                  <FormLabel>{tc("description")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Optionale Beschreibung..."
+                      placeholder={tc("descriptionPlaceholder")}
                       rows={2}
                       {...field}
                     />
@@ -347,9 +354,9 @@ export function EventFormDialog({
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ort</FormLabel>
+                  <FormLabel>{t("eventForm.locationLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="z.B. Schule, Raum 101" {...field} />
+                    <Input placeholder={t("eventForm.locationPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -367,7 +374,7 @@ export function EventFormDialog({
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <FormLabel className="font-normal">Ganztaegig</FormLabel>
+                  <FormLabel className="font-normal">{tc("allDay")}</FormLabel>
                 </FormItem>
               )}
             />
@@ -378,7 +385,7 @@ export function EventFormDialog({
                 name="startDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Startdatum *</FormLabel>
+                    <FormLabel>{t("eventForm.startDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -392,7 +399,7 @@ export function EventFormDialog({
                   name="startTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Startzeit *</FormLabel>
+                      <FormLabel>{t("eventForm.startTime")}</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -409,7 +416,7 @@ export function EventFormDialog({
                 name="endDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Enddatum *</FormLabel>
+                    <FormLabel>{t("eventForm.endDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -423,7 +430,7 @@ export function EventFormDialog({
                   name="endTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Endzeit *</FormLabel>
+                      <FormLabel>{t("eventForm.endTime")}</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -439,14 +446,14 @@ export function EventFormDialog({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kategorie</FormLabel>
+                  <FormLabel>{t("eventForm.category")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Kategorie waehlen" />
+                        <SelectValue placeholder={t("eventForm.categoryPlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -464,7 +471,7 @@ export function EventFormDialog({
 
             {/* Participants */}
             <div>
-              <label className="text-sm font-medium leading-none">Teilnehmende</label>
+              <label className="text-sm font-medium leading-none">{t("eventForm.participants")}</label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {members.map((m) => {
                   const isSelected = form
@@ -484,7 +491,7 @@ export function EventFormDialog({
                 })}
                 {members.length === 0 && (
                   <p className="text-xs text-muted-foreground">
-                    Keine Familienmitglieder gefunden.
+                    {t("eventForm.noMembers")}
                   </p>
                 )}
               </div>
@@ -495,14 +502,14 @@ export function EventFormDialog({
               name="recurrenceRule"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Wiederholung</FormLabel>
+                  <FormLabel>{t("eventForm.recurrence")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Keine Wiederholung" />
+                        <SelectValue placeholder={t("eventForm.recurrenceNone")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -578,7 +585,7 @@ export function EventFormDialog({
                   onClick={handleDelete}
                   disabled={isDeleting || isSubmitting}
                 >
-                  {isDeleting ? "Loeschen..." : "Loeschen"}
+                  {isDeleting ? tc("deleting") : tc("delete")}
                 </Button>
               )}
               <Button
@@ -586,14 +593,14 @@ export function EventFormDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Abbrechen
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting
-                  ? "Speichern..."
+                  ? tc("saving")
                   : isEditing
-                    ? "Speichern"
-                    : "Erstellen"}
+                    ? tc("save")
+                    : tc("create")}
               </Button>
             </DialogFooter>
           </form>

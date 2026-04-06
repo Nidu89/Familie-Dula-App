@@ -1,5 +1,9 @@
+"use client"
+
+import { useState, useEffect, useCallback, startTransition } from "react"
 import { Star, Trophy } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -8,16 +12,24 @@ import {
   type ChildPointsSummary,
 } from "@/lib/actions/rewards"
 
+const LEVEL_KEYS: Record<string, string> = {
+  Starter: "levelStarter",
+  Entdecker: "levelExplorer",
+  Abenteurer: "levelAdventurer",
+  Profi: "levelPro",
+  Meister: "levelMaster",
+}
+
 function getLevel(points: number): {
   level: number
-  name: string
+  nameKey: string
   next: number
 } {
-  if (points < 100) return { level: 1, name: "Starter", next: 100 }
-  if (points < 250) return { level: 2, name: "Entdecker", next: 250 }
-  if (points < 500) return { level: 3, name: "Abenteurer", next: 500 }
-  if (points < 1000) return { level: 4, name: "Profi", next: 1000 }
-  return { level: 5, name: "Meister", next: 1000 }
+  if (points < 100) return { level: 1, nameKey: "levelStarter", next: 100 }
+  if (points < 250) return { level: 2, nameKey: "levelExplorer", next: 250 }
+  if (points < 500) return { level: 3, nameKey: "levelAdventurer", next: 500 }
+  if (points < 1000) return { level: 4, nameKey: "levelPro", next: 1000 }
+  return { level: 5, nameKey: "levelMaster", next: 1000 }
 }
 
 interface RewardsWidgetProps {
@@ -25,22 +37,36 @@ interface RewardsWidgetProps {
   currentUserId: string
 }
 
-export async function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
-  const result = await getRewardsOverviewAction()
-  const allChildren: ChildPointsSummary[] = !("error" in result)
-    ? result.children
-    : []
+export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
+  const t = useTranslations("dashboard.rewards")
+  const [displayChildren, setDisplayChildren] = useState<ChildPointsSummary[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const displayChildren = isAdmin
-    ? allChildren
-    : allChildren.filter((c) => c.id === currentUserId)
+  const fetchRewards = useCallback(async () => {
+    const result = await getRewardsOverviewAction()
+    if (!("error" in result)) {
+      const allChildren = result.children
+      setDisplayChildren(
+        isAdmin
+          ? allChildren
+          : allChildren.filter((c) => c.id === currentUserId)
+      )
+    }
+    setLoading(false)
+  }, [isAdmin, currentUserId])
+
+  useEffect(() => {
+    startTransition(() => { void fetchRewards() })
+  }, [fetchRewards])
+
+  if (loading) return <RewardsWidgetSkeleton />
 
   return (
     <section className="flex flex-col rounded-[2rem] bg-card p-8 shadow-sm">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <h3 className="font-display text-xl font-bold text-primary-foreground">
-          Belohnungen
+          {t("title")}
         </h3>
         <Trophy className="h-5 w-5 text-primary-foreground" />
       </div>
@@ -55,17 +81,17 @@ export async function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetPro
           </div>
           <p className="text-sm text-muted-foreground">
             {isAdmin
-              ? "Noch keine Kinder in der Familie"
-              : "Noch keine Punkte gesammelt"}
+              ? t("noChildren")
+              : t("noPoints")}
           </p>
           <p className="text-xs text-muted-foreground">
-            Erledige Aufgaben, um Punkte zu sammeln
+            {t("noPointsDescription")}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           {displayChildren.map((child) => {
-            const { name: levelName, next } = getLevel(child.pointsBalance)
+            const { nameKey, next } = getLevel(child.pointsBalance)
             const prevThreshold =
               child.pointsBalance < 100
                 ? 0
@@ -94,9 +120,7 @@ export async function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetPro
                 </div>
                 <Progress value={progress} className="h-2" />
                 <p className="text-[10px] text-muted-foreground">
-                  {levelName} &middot; noch{" "}
-                  {Math.max(next - child.pointsBalance, 0)} Punkte bis zum
-                  naechsten Level
+                  {t(nameKey)} &middot; {t("nextLevel", { points: Math.max(next - child.pointsBalance, 0) })}
                 </p>
               </div>
             )
@@ -109,7 +133,7 @@ export async function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetPro
         href="/rewards"
         className="mt-6 block w-full rounded-full bg-muted py-3 text-center text-sm font-bold text-secondary transition-colors hover:bg-muted/80"
       >
-        Alle Belohnungen
+        {t("viewAll")}
       </Link>
     </section>
   )

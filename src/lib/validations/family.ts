@@ -53,3 +53,11 @@ export const removeMemberSchema = z.object({
 })
 
 export type RemoveMemberFormValues = z.infer<typeof removeMemberSchema>
+
+export const updateLocaleSchema = z.object({
+  locale: z.enum(["de", "en", "fr"], {
+    error: "Ungueltige Sprache",
+  }),
+})
+
+export type UpdateLocaleFormValues = z.infer<typeof updateLocaleSchema>

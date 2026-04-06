@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Loader2, LogOut } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,8 @@ interface LeaveFamilySectionProps {
 }
 
 export function LeaveFamilySection({ isLastAdmin }: LeaveFamilySectionProps) {
+  const t = useTranslations("family.leave")
+  const tc = useTranslations("common")
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
@@ -47,10 +50,9 @@ export function LeaveFamilySection({ isLastAdmin }: LeaveFamilySectionProps) {
   return (
     <Card className="border-destructive/30">
       <CardHeader>
-        <CardTitle className="text-lg text-destructive">Familie verlassen</CardTitle>
+        <CardTitle className="text-lg text-destructive">{t("title")}</CardTitle>
         <CardDescription>
-          Wenn du die Familie verlaesst, verlierst du den Zugriff auf alle
-          gemeinsamen Daten.
+          {t("description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -66,24 +68,21 @@ export function LeaveFamilySection({ isLastAdmin }: LeaveFamilySectionProps) {
 
         {isLastAdmin ? (
           <p className="text-sm text-muted-foreground">
-            Du bist der letzte Admin dieser Familie. Ernenne zuerst ein anderes
-            Mitglied zum Admin, bevor du die Familie verlassen kannst.
+            {t("lastAdminWarning")}
           </p>
         ) : (
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button variant="destructive" className="gap-2">
                 <LogOut className="h-4 w-4" />
-                Familie verlassen
+                {t("title")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Familie wirklich verlassen?</DialogTitle>
+                <DialogTitle>{t("confirmTitle")}</DialogTitle>
                 <DialogDescription>
-                  Du verlierst sofort den Zugriff auf alle Familiendaten. Diese
-                  Aktion kann nicht rueckgaengig gemacht werden. Du kannst der
-                  Familie spaeter nur per Einladung wieder beitreten.
+                  {t("confirmDescription")}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="gap-2 sm:gap-0">
@@ -92,7 +91,7 @@ export function LeaveFamilySection({ isLastAdmin }: LeaveFamilySectionProps) {
                   onClick={() => setIsOpen(false)}
                   disabled={isLoading}
                 >
-                  Abbrechen
+                  {tc("cancel")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -102,10 +101,10 @@ export function LeaveFamilySection({ isLastAdmin }: LeaveFamilySectionProps) {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Verlassen...
+                      {t("leaving")}
                     </>
                   ) : (
-                    "Ja, Familie verlassen"
+                    t("confirmButton")
                   )}
                 </Button>
               </DialogFooter>

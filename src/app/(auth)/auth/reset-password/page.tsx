@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { AuthLayout } from "@/components/auth-layout"
 import { Button } from "@/components/ui/button"
@@ -38,6 +39,8 @@ export default function ResetPasswordPage() {
 }
 
 function ResetPasswordContent() {
+  const t = useTranslations("auth.resetPassword")
+  const tc = useTranslations("common")
   const router = useRouter()
   const searchParams = useSearchParams()
   const isInvited = searchParams.get("invited") === "true"
@@ -63,9 +66,7 @@ function ResetPasswordContent() {
     const { error } = await supabase.auth.updateUser({ password: values.password })
 
     if (error) {
-      setErrorMessage(
-        "Passwort konnte nicht zurueckgesetzt werden. Der Link ist moeglicherweise abgelaufen."
-      )
+      setErrorMessage(t("error"))
       setIsLoading(false)
       return
     }
@@ -78,8 +79,8 @@ function ResetPasswordContent() {
   if (isSuccess) {
     return (
       <AuthLayout
-        title="Passwort gespeichert!"
-        subtitle={isInvited ? "Willkommen! Du wirst weitergeleitet..." : "Du kannst dich jetzt mit deinem neuen Passwort anmelden."}
+        title={t("successTitle")}
+        subtitle={isInvited ? t("successSubtitleInvited") : t("successSubtitle")}
       >
         <Card className="w-full shadow-lg">
           <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
@@ -88,14 +89,14 @@ function ResetPasswordContent() {
             </div>
             <p className="text-sm text-muted-foreground">
               {isInvited
-                ? "Dein Passwort wurde gespeichert. Du wirst zum Dashboard weitergeleitet..."
-                : "Dein Passwort wurde erfolgreich zurueckgesetzt. Du wirst zur Anmeldung weitergeleitet..."}
+                ? t("successTextInvited")
+                : t("successText")}
             </p>
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full" size="lg">
               <Link href={isInvited ? "/dashboard" : "/login"}>
-                {isInvited ? "Zum Dashboard" : "Zur Anmeldung"}
+                {isInvited ? t("toDashboard") : t("toLogin")}
               </Link>
             </Button>
           </CardFooter>
@@ -106,8 +107,8 @@ function ResetPasswordContent() {
 
   return (
     <AuthLayout
-      title={isInvited ? "Passwort festlegen" : "Neues Passwort"}
-      subtitle={isInvited ? "Lege ein Passwort fest, um dich kuenftig einloggen zu koennen." : "Waehle ein neues, sicheres Passwort fuer dein Konto."}
+      title={isInvited ? t("titleInvited") : t("title")}
+      subtitle={isInvited ? t("subtitleInvited") : t("subtitle")}
     >
       <Card className="w-full shadow-lg">
         <Form {...form}>
@@ -125,7 +126,7 @@ function ResetPasswordContent() {
                     href="/forgot-password"
                     className="mt-1 inline-block font-medium underline"
                   >
-                    Neuen Link anfordern
+                    {t("requestNewLink")}
                   </Link>
                 </div>
               )}
@@ -135,12 +136,12 @@ function ResetPasswordContent() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Neues Passwort</FormLabel>
+                    <FormLabel>{t("newPasswordLabel")}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          placeholder="Mindestens 8 Zeichen"
+                          placeholder={tc("passwordPlaceholder")}
                           autoComplete="new-password"
                           disabled={isLoading}
                           {...field}
@@ -153,8 +154,8 @@ function ResetPasswordContent() {
                           onClick={() => setShowPassword(!showPassword)}
                           aria-label={
                             showPassword
-                              ? "Passwort verbergen"
-                              : "Passwort anzeigen"
+                              ? tc("hidePassword")
+                              : tc("showPassword")
                           }
                           tabIndex={-1}
                         >
@@ -176,12 +177,12 @@ function ResetPasswordContent() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passwort bestaetigen</FormLabel>
+                    <FormLabel>{t("confirmPasswordLabel")}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Passwort wiederholen"
+                          placeholder={t("confirmPasswordPlaceholder")}
                           autoComplete="new-password"
                           disabled={isLoading}
                           {...field}
@@ -196,8 +197,8 @@ function ResetPasswordContent() {
                           }
                           aria-label={
                             showConfirmPassword
-                              ? "Passwort verbergen"
-                              : "Passwort anzeigen"
+                              ? tc("hidePassword")
+                              : tc("showPassword")
                           }
                           tabIndex={-1}
                         >
@@ -225,10 +226,10 @@ function ResetPasswordContent() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Speichern...
+                    {t("submitLoading")}
                   </>
                 ) : (
-                  "Passwort speichern"
+                  t("submit")
                 )}
               </Button>
             </CardFooter>

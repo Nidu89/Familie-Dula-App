@@ -1,8 +1,11 @@
 "use client"
 
 import { ChefHat, Timer } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 export function MealPlanWidget() {
+  const t = useTranslations("dashboard.mealPlan")
+  const tc = useTranslations("common")
   return (
     <section className="relative overflow-hidden rounded-[2rem] bg-secondary p-8 text-white">
       {/* Decorative blob */}
@@ -14,23 +17,23 @@ export function MealPlanWidget() {
           <ChefHat className="h-5 w-5" />
         </div>
         <span className="rounded-full border border-white/30 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest">
-          Abendessen
+          {t("dinner")}
         </span>
       </div>
 
       {/* Title */}
-      <h3 className="font-display text-3xl font-black">Essensplan</h3>
+      <h3 className="font-display text-3xl font-black">{t("title")}</h3>
       <p className="mt-1 text-sm italic text-white/60">
-        Kommt bald in PROJ-8
+        {t("subtitle")}
       </p>
 
       {/* Prep time block */}
       <div className="mt-6 flex items-center gap-3 rounded-xl bg-white/10 p-4">
         <Timer className="h-5 w-5 text-white/70" />
         <div>
-          <p className="text-xs font-bold">Zeitplanung</p>
+          <p className="text-xs font-bold">{t("scheduling")}</p>
           <p className="text-[10px] text-white/60">
-            Mahlzeiten fuer die ganze Woche planen
+            {t("schedulingDescription")}
           </p>
         </div>
       </div>
@@ -41,7 +44,7 @@ export function MealPlanWidget() {
         disabled
         className="mt-6 w-full rounded-full bg-primary py-3 text-sm font-black uppercase tracking-widest text-primary-foreground opacity-60 cursor-not-allowed"
       >
-        Kommt bald
+        {tc("comingSoon")}
       </button>
     </section>
   )

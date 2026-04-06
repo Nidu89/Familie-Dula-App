@@ -1,17 +1,19 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 interface DashboardHeaderProps {
   displayName: string
   familyName: string
   memberCount: number
 }
 
-function getGreeting(): string {
+function getGreetingKey(): string {
   const hour = new Date().getHours()
-  if (hour < 6) return "Gute Nacht"
-  if (hour < 12) return "Guten Morgen"
-  if (hour < 18) return "Guten Tag"
-  return "Guten Abend"
+  if (hour < 6) return "greetingNight"
+  if (hour < 12) return "greetingMorning"
+  if (hour < 18) return "greetingAfternoon"
+  return "greetingEvening"
 }
 
 export function DashboardHeader({
@@ -19,16 +21,17 @@ export function DashboardHeader({
   familyName,
   memberCount,
 }: DashboardHeaderProps) {
-  const greeting = getGreeting()
+  const t = useTranslations("dashboard")
+  const greetingKey = getGreetingKey()
 
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
         <span className="font-display text-xs font-bold uppercase tracking-widest text-primary-foreground">
-          {greeting} &middot; Familie {familyName}
+          {t(greetingKey)} &middot; {t("familyPrefix", { familyName })}
         </span>
         <h1 className="mt-2 font-display text-4xl font-black text-foreground md:text-5xl">
-          Hallo, {displayName}!
+          {t("hello", { displayName })}
         </h1>
       </div>
 

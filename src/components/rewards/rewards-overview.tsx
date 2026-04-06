@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { Star } from "lucide-react"
 
 import { ChildPointCard } from "@/components/rewards/child-point-card"
@@ -22,6 +23,8 @@ export function RewardsOverview({
   isAdultOrAdmin,
 }: RewardsOverviewProps) {
   const { toast } = useToast()
+  const t = useTranslations("rewards")
+  const tc = useTranslations("common")
   const [children, setChildren] = useState<ChildPointsSummary[]>(initialChildren)
 
   // History sheet state
@@ -40,7 +43,7 @@ export function RewardsOverview({
       const result = await getRewardsOverviewAction()
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -49,8 +52,8 @@ export function RewardsOverview({
       setChildren(result.children)
     } catch {
       toast({
-        title: "Fehler",
-        description: "Daten konnten nicht aktualisiert werden.",
+        title: tc("error"),
+        description: t("refreshError"),
         variant: "destructive",
       })
     }
@@ -59,14 +62,14 @@ export function RewardsOverview({
   function handleShowHistory(childId: string) {
     const child = children.find((c) => c.id === childId)
     setHistoryChildId(childId)
-    setHistoryChildName(child?.displayName || "Kind")
+    setHistoryChildName(child?.displayName || t("childFallback"))
     setHistoryOpen(true)
   }
 
   function handleManualPoints(childId: string) {
     const child = children.find((c) => c.id === childId)
     setManualChildId(childId)
-    setManualChildName(child?.displayName || "Kind")
+    setManualChildName(child?.displayName || t("childFallback"))
     setManualChildBalance(child?.pointsBalance || 0)
     setManualOpen(true)
   }
@@ -79,10 +82,10 @@ export function RewardsOverview({
         </div>
         <div>
           <p className="font-medium text-muted-foreground">
-            Keine Kinder in der Familie
+            {t("overview.noChildren")}
           </p>
           <p className="text-sm text-muted-foreground/70">
-            Fuege ein Kind zur Familie hinzu, um das Belohnungssystem zu nutzen.
+            {t("overview.noChildrenDescription")}
           </p>
         </div>
       </div>

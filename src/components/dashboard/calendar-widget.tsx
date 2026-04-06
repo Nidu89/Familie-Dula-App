@@ -1,5 +1,9 @@
+"use client"
+
+import { useState, useEffect, useCallback, startTransition } from "react"
 import { CalendarDays, Calendar } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -15,23 +19,23 @@ const CATEGORY_BG: Record<string, string> = {
   other: "bg-muted",
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  school: "Schule",
-  work: "Arbeit",
-  leisure: "Freizeit",
-  health: "Gesundheit",
-  other: "Sonstiges",
+const CATEGORY_KEYS: Record<string, string> = {
+  school: "school",
+  work: "work",
+  leisure: "leisure",
+  health: "health",
+  other: "other",
 }
 
-function formatEventTime(startAt: string, allDay: boolean): string {
-  if (allDay) return "Ganztaegig"
+function formatEventTime(startAt: string, allDay: boolean, allDayLabel: string): string {
+  if (allDay) return allDayLabel
   return new Date(startAt).toLocaleTimeString("de-DE", {
     hour: "2-digit",
     minute: "2-digit",
   })
 }
 
-function formatEventDate(startAt: string): string {
+function formatEventDate(startAt: string, todayLabel: string, tomorrowLabel: string): string {
   const date = new Date(startAt)
   const today = new Date()
   const tomorrow = new Date()
@@ -42,8 +46,8 @@ function formatEventDate(startAt: string): string {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
 
-  if (d.getTime() === today.getTime()) return "Heute"
-  if (d.getTime() === tomorrow.getTime()) return "Morgen"
+  if (d.getTime() === today.getTime()) return todayLabel
+  if (d.getTime() === tomorrow.getTime()) return tomorrowLabel
   return new Date(startAt).toLocaleDateString("de-DE", {
     weekday: "short",
     day: "numeric",
@@ -51,28 +55,43 @@ function formatEventDate(startAt: string): string {
   })
 }
 
-export async function CalendarWidget() {
-  const now = new Date()
-  const endOfDay = new Date(now)
-  endOfDay.setDate(endOfDay.getDate() + 3)
+export function CalendarWidget() {
+  const t = useTranslations("dashboard.calendar")
+  const tc = useTranslations("common")
+  const tCat = useTranslations("calendar.categories")
+  const [events, setEvents] = useState<CalendarEvent[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const result = await getEventsForRangeAction(
-    now.toISOString(),
-    endOfDay.toISOString()
-  )
+  const fetchEvents = useCallback(async () => {
+    const now = new Date()
+    const endOfDay = new Date(now)
+    endOfDay.setDate(endOfDay.getDate() + 3)
 
-  const events: CalendarEvent[] = !("error" in result)
-    ? result.events.filter((e) => e.title !== "__DELETED__").slice(0, 6)
-    : []
+    const result = await getEventsForRangeAction(
+      now.toISOString(),
+      endOfDay.toISOString()
+    )
+
+    if (!("error" in result)) {
+      setEvents(result.events.filter((e) => e.title !== "__DELETED__").slice(0, 6))
+    }
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    startTransition(() => { void fetchEvents() })
+  }, [fetchEvents])
+
+  if (loading) return <CalendarWidgetSkeleton />
 
   return (
     <section className="rounded-[2rem] bg-card p-8 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="font-display text-xl font-bold">Naechste Termine</h3>
+        <h3 className="font-display text-xl font-bold">{t("title")}</h3>
         <Link
           href="/calendar"
           className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted transition-colors"
-          aria-label="Zum Kalender"
+          aria-label={t("toCalendar")}
         >
           <CalendarDays className="h-5 w-5 text-primary-foreground" />
         </Link>
@@ -82,7 +101,7 @@ export async function CalendarWidget() {
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <Calendar className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
-            Keine anstehenden Termine
+            {t("empty")}
           </p>
         </div>
       ) : (
@@ -98,14 +117,14 @@ export async function CalendarWidget() {
               <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/20" />
 
               <p className="text-[10px] font-bold uppercase tracking-tight opacity-70">
-                {formatEventDate(event.startAt)} &middot;{" "}
-                {formatEventTime(event.startAt, event.allDay)}
+                {formatEventDate(event.startAt, tc("today"), tc("tomorrow"))} &middot;{" "}
+                {formatEventTime(event.startAt, event.allDay, tc("allDay"))}
               </p>
               <h4 className="mt-2 text-lg font-bold leading-tight">
                 {event.title}
               </h4>
               <span className="mt-3 inline-block rounded-full bg-white/30 px-3 py-0.5 text-[10px] font-semibold">
-                {CATEGORY_LABELS[event.category] ?? CATEGORY_LABELS.other}
+                {tCat(CATEGORY_KEYS[event.category] ?? CATEGORY_KEYS.other)}
               </span>
             </div>
           ))}

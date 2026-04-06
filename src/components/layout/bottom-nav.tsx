@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import {
   LayoutDashboard,
   Calendar,
@@ -28,29 +29,30 @@ import {
 /* ── nav items ───────────────────────────────────────────── */
 
 const BOTTOM_LINKS = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/calendar", label: "Kalender", icon: Calendar },
+  { href: "/dashboard", labelKey: "home" as const, icon: LayoutDashboard },
+  { href: "/calendar", labelKey: "calendar" as const, icon: Calendar },
   // FAB placeholder (rendered separately)
-  { href: "/tasks", label: "Aufgaben", icon: CheckSquare },
+  { href: "/tasks", labelKey: "tasks" as const, icon: CheckSquare },
   // "Mehr" is rendered separately
 ]
 
 const MORE_LINKS = [
-  { href: "/rewards", label: "Belohnungen", icon: Trophy },
-  { href: "/timer", label: "Timer", icon: Timer },
-  { href: "/rituals", label: "Rituale", icon: ListChecks },
-  { href: "/family/settings", label: "Familie", icon: Users },
+  { href: "/rewards", labelKey: "rewards" as const, icon: Trophy },
+  { href: "/timer", labelKey: "timer" as const, icon: Timer },
+  { href: "/rituals", labelKey: "rituals" as const, icon: ListChecks },
+  { href: "/family/settings", labelKey: "family" as const, icon: Users },
 ]
 
 const QUICK_ACTIONS = [
-  { href: "/tasks?new=1", label: "Neue Aufgabe", icon: ClipboardPlus },
-  { href: "/calendar?new=1", label: "Neuer Termin", icon: CalendarPlus },
-  { href: "/timer", label: "Neuer Timer", icon: TimerReset },
+  { href: "/tasks?new=1", labelKey: "newTask" as const, icon: ClipboardPlus },
+  { href: "/calendar?new=1", labelKey: "newEvent" as const, icon: CalendarPlus },
+  { href: "/timer", labelKey: "newTimer" as const, icon: TimerReset },
 ]
 
 /* ── component ───────────────────────────────────────────── */
 
 export function BottomNav() {
+  const t = useTranslations("layout.bottomNav")
   const pathname = usePathname()
   const router = useRouter()
   const [moreOpen, setMoreOpen] = useState(false)
@@ -66,7 +68,7 @@ export function BottomNav() {
     <>
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-card rounded-t-[2rem] shadow-[0_-8px_24px_rgba(0,0,0,0.05)] h-20 px-4 md:hidden"
-        aria-label="Mobile Navigation"
+        aria-label={t("aria")}
       >
         {/* First two links */}
         {BOTTOM_LINKS.slice(0, 2).map((link) => {
@@ -83,7 +85,7 @@ export function BottomNav() {
               }`}
             >
               <Icon className="h-5 w-5" />
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           )
         })}
@@ -94,7 +96,7 @@ export function BottomNav() {
             type="button"
             onClick={() => setFabOpen(true)}
             className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-lg active:scale-95 transition-transform"
-            aria-label="Neu erstellen"
+            aria-label={t("createNew")}
           >
             <Plus className="h-7 w-7" />
           </button>
@@ -115,7 +117,7 @@ export function BottomNav() {
               }`}
             >
               <Icon className="h-5 w-5" />
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           )
         })}
@@ -131,7 +133,7 @@ export function BottomNav() {
           }`}
         >
           <MoreHorizontal className="h-5 w-5" />
-          Mehr
+          {t("more")}
         </button>
       </nav>
 
@@ -140,7 +142,7 @@ export function BottomNav() {
         <SheetContent side="bottom" className="rounded-t-[2rem] px-6 pb-10">
           <SheetHeader className="mb-6">
             <SheetTitle className="font-display text-xl font-bold text-secondary">
-              Was moechtest du erstellen?
+              {t("createTitle")}
             </SheetTitle>
           </SheetHeader>
           <div className="grid grid-cols-3 gap-4">
@@ -160,7 +162,7 @@ export function BottomNav() {
                     <Icon className="h-6 w-6" />
                   </div>
                   <span className="text-xs font-semibold text-foreground">
-                    {action.label}
+                    {t(action.labelKey)}
                   </span>
                 </button>
               )
@@ -174,7 +176,7 @@ export function BottomNav() {
         <SheetContent side="bottom" className="rounded-t-[2rem] px-6 pb-10">
           <SheetHeader className="mb-4">
             <SheetTitle className="font-display text-xl font-bold text-secondary">
-              Mehr
+              {t("more")}
             </SheetTitle>
           </SheetHeader>
           <div className="space-y-1">
@@ -193,7 +195,7 @@ export function BottomNav() {
                   }`}
                 >
                   <Icon className="h-5 w-5 shrink-0" />
-                  <span className="text-sm font-medium">{link.label}</span>
+                  <span className="text-sm font-medium">{t(link.labelKey)}</span>
                 </Link>
               )
             })}

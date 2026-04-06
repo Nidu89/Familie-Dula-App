@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { PartyPopper, Star, RotateCcw } from "lucide-react"
 
@@ -26,6 +27,7 @@ export function RitualCompleteDialog({
   onRestart,
   onClose,
 }: RitualCompleteDialogProps) {
+  const t = useTranslations("rituals.complete")
   const hasReward = rewardPoints !== null && rewardPoints > 0
 
   return (
@@ -33,7 +35,7 @@ export function RitualCompleteDialog({
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      aria-label="Ritual abgeschlossen"
+      aria-label={t("ariaLabel")}
     >
       <div className="mx-4 flex max-w-sm flex-col items-center gap-6 rounded-[3rem] bg-card p-10 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-300">
         {/* Success icon */}
@@ -43,10 +45,10 @@ export function RitualCompleteDialog({
 
         <div>
           <h2 className="font-display text-2xl font-bold text-foreground">
-            Ritual abgeschlossen!
+            {t("title")}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            &quot;{ritualName}&quot; wurde erfolgreich abgeschlossen.
+            {t("description", { name: ritualName })}
           </p>
         </div>
 
@@ -59,7 +61,7 @@ export function RitualCompleteDialog({
                 +{rewardPoints}
               </p>
               <p className="text-xs font-medium text-muted-foreground">
-                Punkte verdient
+                {t("pointsEarned")}
               </p>
             </div>
           </div>
@@ -68,7 +70,7 @@ export function RitualCompleteDialog({
         {/* Time remaining */}
         {timeRemaining !== null && timeRemaining > 0 && (
           <p className="text-sm text-muted-foreground">
-            Zeit uebrig: {formatTime(timeRemaining)}
+            {t("timeRemaining", { time: formatTime(timeRemaining) })}
           </p>
         )}
 
@@ -78,7 +80,7 @@ export function RitualCompleteDialog({
             onClick={onClose}
             className="h-14 w-full rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-base font-bold text-white shadow-lg hover:opacity-90"
           >
-            Super!
+            {t("great")}
           </Button>
 
           {isAdult && (
@@ -88,7 +90,7 @@ export function RitualCompleteDialog({
               className="rounded-full text-sm font-medium text-secondary"
             >
               <RotateCcw className="mr-2 h-4 w-4" />
-              Nochmal starten
+              {t("restart")}
             </Button>
           )}
         </div>

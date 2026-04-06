@@ -1,5 +1,9 @@
+"use client"
+
+import { useState, useEffect, useCallback, startTransition } from "react"
 import { Star, ListChecks } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 
 import {
   Card,
@@ -10,7 +14,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getTasksAction } from "@/lib/actions/tasks"
+import { getTasksAction, type Task } from "@/lib/actions/tasks"
 import { getRewardsOverviewAction, type ChildPointsSummary } from "@/lib/actions/rewards"
 
 interface KidsViewProps {
@@ -18,19 +22,36 @@ interface KidsViewProps {
   userId: string
 }
 
-export async function KidsView({ displayName, userId }: KidsViewProps) {
-  const [tasksResult, rewardsResult] = await Promise.all([
-    getTasksAction({ assignedTo: userId, status: "open" }),
-    getRewardsOverviewAction(),
-  ])
+export function KidsView({ displayName, userId }: KidsViewProps) {
+  const t = useTranslations("dashboard.kidsView")
+  const tc = useTranslations("common")
+  const [myTasks, setMyTasks] = useState<Task[]>([])
+  const [points, setPoints] = useState(0)
+  const [loading, setLoading] = useState(true)
 
-  const myTasks = !("error" in tasksResult)
-    ? tasksResult.tasks.filter((t) => t.status !== "done").slice(0, 3)
-    : []
+  const fetchData = useCallback(async () => {
+    const [tasksResult, rewardsResult] = await Promise.all([
+      getTasksAction({ assignedTo: userId, status: "open" }),
+      getRewardsOverviewAction(),
+    ])
 
-  const points = !("error" in rewardsResult)
-    ? (rewardsResult.children.find((c: ChildPointsSummary) => c.id === userId)?.pointsBalance ?? 0)
-    : 0
+    if (!("error" in tasksResult)) {
+      setMyTasks(tasksResult.tasks.filter((t) => t.status !== "done").slice(0, 3))
+    }
+
+    if (!("error" in rewardsResult)) {
+      setPoints(
+        rewardsResult.children.find((c: ChildPointsSummary) => c.id === userId)?.pointsBalance ?? 0
+      )
+    }
+    setLoading(false)
+  }, [userId])
+
+  useEffect(() => {
+    startTransition(() => { void fetchData() })
+  }, [fetchData])
+
+  if (loading) return <KidsViewSkeleton />
 
   return (
     <Card className="border-0 bg-primary/8 shadow-sm">
@@ -38,15 +59,15 @@ export async function KidsView({ displayName, userId }: KidsViewProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-base">
-              Hallo, {displayName}!
+              {t("hello", { displayName })}
             </CardTitle>
             <CardDescription className="text-xs">
-              Deine persoenliche Uebersicht
+              {t("subtitle")}
             </CardDescription>
           </div>
           <Badge variant="secondary" className="gap-1">
             <Star className="h-3 w-3" />
-            {points} Punkte
+            {points} {tc("points")}
           </Badge>
         </div>
       </CardHeader>
@@ -61,9 +82,9 @@ export async function KidsView({ displayName, userId }: KidsViewProps) {
               <ListChecks className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium">Meine Aufgaben</p>
+              <p className="text-sm font-medium">{t("myTasks")}</p>
               <p className="text-xs text-muted-foreground">
-                {myTasks.length > 0 ? `${myTasks.length} offen` : "Alles erledigt!"}
+                {myTasks.length > 0 ? t("openTasks", { count: myTasks.length }) : t("allDone")}
               </p>
             </div>
           </Link>
@@ -77,11 +98,11 @@ export async function KidsView({ displayName, userId }: KidsViewProps) {
               <Star className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium">Meine Punkte</p>
+              <p className="text-sm font-medium">{t("myPoints")}</p>
               <p className="text-xs text-muted-foreground">
                 {points > 0
-                  ? `${points} Punkte gesammelt`
-                  : "Erledige Aufgaben, um Punkte zu sammeln!"}
+                  ? t("pointsCollected", { count: points })
+                  : t("earnPointsHint")}
               </p>
             </div>
           </Link>

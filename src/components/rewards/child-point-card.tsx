@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Star, History, PlusCircle } from "lucide-react"
 
 import {
@@ -34,6 +35,7 @@ export function ChildPointCard({
   onShowHistory,
   onManualPoints,
 }: ChildPointCardProps) {
+  const t = useTranslations("rewards.childCard")
   return (
     <Card className="flex flex-col">
       <CardHeader className="pb-3">
@@ -53,7 +55,7 @@ export function ChildPointCard({
           <span className="text-3xl font-bold text-chart-4">
             {child.pointsBalance}
           </span>
-          <span className="text-sm text-chart-4/70">Punkte</span>
+          <span className="text-sm text-chart-4/70">{t("points")}</span>
         </div>
 
         {/* Actions */}
@@ -65,7 +67,7 @@ export function ChildPointCard({
             onClick={() => onShowHistory(child.id)}
           >
             <History className="h-3.5 w-3.5" />
-            Verlauf
+            {t("history")}
           </Button>
           {isAdultOrAdmin && (
             <Button
@@ -74,7 +76,7 @@ export function ChildPointCard({
               onClick={() => onManualPoints(child.id)}
             >
               <PlusCircle className="h-3.5 w-3.5" />
-              Punkte
+              {t("points")}
             </Button>
           )}
         </div>

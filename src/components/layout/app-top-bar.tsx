@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { Bell, Settings, LogOut } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -25,6 +26,8 @@ export function AppTopBar({
   familyName,
   isAdmin,
 }: AppTopBarProps) {
+  const t = useTranslations("layout.topBar")
+  const tSidebar = useTranslations("layout.sidebar")
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const initials = displayName
@@ -46,7 +49,7 @@ export function AppTopBar({
   return (
     <header
       className="fixed top-0 right-0 left-0 z-50 flex h-20 items-center justify-between bg-background px-6 md:pl-80"
-      aria-label="Kopfleiste"
+      aria-label={t("aria")}
     >
       {/* Mobile: family name */}
       <span className="font-display text-xl font-black text-primary-foreground md:hidden">
@@ -60,7 +63,7 @@ export function AppTopBar({
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-muted transition-colors"
-          aria-label="Benachrichtigungen"
+          aria-label={t("notifications")}
         >
           <Bell className="h-5 w-5 text-foreground" />
         </button>
@@ -69,7 +72,7 @@ export function AppTopBar({
           <Link
             href="/family/settings"
             className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-muted transition-colors"
-            aria-label="Einstellungen"
+            aria-label={t("settings")}
           >
             <Settings className="h-5 w-5 text-foreground" />
           </Link>
@@ -80,7 +83,7 @@ export function AppTopBar({
             <button
               type="button"
               className="flex h-10 w-10 items-center justify-center rounded-full"
-              aria-label="Benutzermenue"
+              aria-label={t("userMenu")}
             >
               <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-accent text-accent-foreground text-sm font-semibold">
@@ -93,7 +96,7 @@ export function AppTopBar({
             <div className="px-2 py-1.5">
               <p className="text-sm font-medium">{displayName}</p>
               <p className="text-xs text-muted-foreground">
-                Familie {familyName}
+                {t("familyPrefix")} {familyName}
               </p>
             </div>
             <DropdownMenuSeparator />
@@ -103,7 +106,7 @@ export function AppTopBar({
               className="cursor-pointer text-destructive focus:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              {isLoggingOut ? "Abmelden..." : "Abmelden"}
+              {isLoggingOut ? t("loggingOut") : tSidebar("logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

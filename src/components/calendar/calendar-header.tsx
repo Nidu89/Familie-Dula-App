@@ -4,6 +4,7 @@ import { useState } from "react"
 import { format } from "date-fns"
 import { de } from "date-fns/locale"
 import { Filter, Plus } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,15 +16,6 @@ import {
 } from "@/components/ui/select"
 
 export type CalendarViewType = "month" | "week" | "day" | "agenda"
-
-const CATEGORIES = [
-  { value: "all", label: "Alle Kategorien" },
-  { value: "school", label: "Schule" },
-  { value: "work", label: "Arbeit" },
-  { value: "leisure", label: "Freizeit" },
-  { value: "health", label: "Gesundheit" },
-  { value: "other", label: "Sonstiges" },
-]
 
 interface FamilyMember {
   id: string
@@ -57,9 +49,26 @@ export function CalendarHeader({
   selectedCategory,
   onCategoryChange,
 }: CalendarHeaderProps) {
+  const t = useTranslations("calendar")
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const monthYearLabel = format(currentDate, "MMMM yyyy", { locale: de }).toUpperCase()
+
+  const VIEW_TABS = [
+    { value: "month", label: t("viewMonth") },
+    { value: "week", label: t("viewWeek") },
+    { value: "day", label: t("viewDay") },
+    { value: "agenda", label: t("viewList") },
+  ] as const
+
+  const CATEGORIES = [
+    { value: "all", label: t("allCategories") },
+    { value: "school", label: t("categories.school") },
+    { value: "work", label: t("categories.work") },
+    { value: "leisure", label: t("categories.leisure") },
+    { value: "health", label: t("categories.health") },
+    { value: "other", label: t("categories.other") },
+  ]
 
   return (
     <div className="flex flex-col gap-4">
@@ -70,21 +79,14 @@ export function CalendarHeader({
             {monthYearLabel}
           </p>
           <h1 className="font-display text-3xl font-extrabold text-foreground">
-            Familienkalender
+            {t("title")}
           </h1>
         </div>
 
         <div className="flex items-center gap-2">
           {/* View tabs (pill style) */}
           <div className="hidden items-center gap-1 rounded-full bg-muted p-1 sm:flex">
-            {(
-              [
-                { value: "month", label: "Monat" },
-                { value: "week", label: "Woche" },
-                { value: "day", label: "Tag" },
-                { value: "agenda", label: "Liste" },
-              ] as const
-            ).map((tab) => (
+            {VIEW_TABS.map((tab) => (
               <button
                 key={tab.value}
                 type="button"
@@ -113,7 +115,7 @@ export function CalendarHeader({
             aria-controls="calendar-filters"
           >
             <Filter className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Filter</span>
+            <span className="hidden sm:inline">{t("filter")}</span>
           </Button>
 
           {/* New event button */}
@@ -127,7 +129,7 @@ export function CalendarHeader({
               }}
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Neuer Termin</span>
+              <span className="hidden sm:inline">{t("newEvent")}</span>
             </button>
           )}
         </div>
@@ -135,14 +137,7 @@ export function CalendarHeader({
 
       {/* Mobile view selector */}
       <div className="flex items-center gap-1 rounded-full bg-muted p-1 sm:hidden">
-        {(
-          [
-            { value: "month", label: "Monat" },
-            { value: "week", label: "Woche" },
-            { value: "day", label: "Tag" },
-            { value: "agenda", label: "Liste" },
-          ] as const
-        ).map((tab) => (
+        {VIEW_TABS.map((tab) => (
           <button
             key={tab.value}
             type="button"
@@ -170,12 +165,12 @@ export function CalendarHeader({
           <Select value={selectedMember} onValueChange={onMemberChange}>
             <SelectTrigger
               className="w-[180px] rounded-full"
-              aria-label="Nach Person filtern"
+              aria-label={t("filterByPerson")}
             >
-              <SelectValue placeholder="Alle Personen" />
+              <SelectValue placeholder={t("allPersons")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle Personen</SelectItem>
+              <SelectItem value="all">{t("allPersons")}</SelectItem>
               {members.map((m) => (
                 <SelectItem key={m.id} value={m.id}>
                   {m.displayName}
@@ -187,9 +182,9 @@ export function CalendarHeader({
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
             <SelectTrigger
               className="w-[180px] rounded-full"
-              aria-label="Nach Kategorie filtern"
+              aria-label={t("filterByCategory")}
             >
-              <SelectValue placeholder="Alle Kategorien" />
+              <SelectValue placeholder={t("allCategories")} />
             </SelectTrigger>
             <SelectContent>
               {CATEGORIES.map((c) => (
@@ -210,7 +205,7 @@ export function CalendarHeader({
                 onCategoryChange("all")
               }}
             >
-              Filter zuruecksetzen
+              {t("resetFilters")}
             </Button>
           )}
         </div>

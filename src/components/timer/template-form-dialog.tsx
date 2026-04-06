@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, startTransition } from "react"
+import { useTranslations } from "next-intl"
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,8 @@ export function TemplateFormDialog({
   onOpenChange,
   template,
 }: TemplateFormDialogProps) {
+  const t = useTranslations("timer.templateForm")
+  const tc = useTranslations("common")
   const { createTemplate, updateTemplate } = useTimerContext()
 
   const [name, setName] = useState("")
@@ -49,11 +52,11 @@ export function TemplateFormDialog({
 
     const trimmedName = name.trim()
     if (!trimmedName) {
-      setError("Bitte gib einen Namen ein.")
+      setError(t("nameError"))
       return
     }
     if (minutes < 1 || minutes > 60) {
-      setError("Dauer muss zwischen 1 und 60 Minuten liegen.")
+      setError(t("durationError"))
       return
     }
 
@@ -74,7 +77,7 @@ export function TemplateFormDialog({
     if (success) {
       onOpenChange(false)
     } else {
-      setError("Speichern fehlgeschlagen. Bitte versuche es erneut.")
+      setError(t("saveError"))
     }
   }
 
@@ -83,18 +86,18 @@ export function TemplateFormDialog({
       <DialogContent className="rounded-[2rem] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">
-            {isEditing ? "Vorlage bearbeiten" : "Neue Vorlage"}
+            {isEditing ? t("editTitle") : t("createTitle")}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="template-name">Name</Label>
+            <Label htmlFor="template-name">{t("nameLabel")}</Label>
             <Input
               id="template-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="z.B. Anziehen"
+              placeholder={t("namePlaceholder")}
               maxLength={50}
               className="rounded-2xl"
               autoFocus
@@ -102,7 +105,7 @@ export function TemplateFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="template-minutes">Dauer (Minuten)</Label>
+            <Label htmlFor="template-minutes">{t("durationLabel")}</Label>
             <Input
               id="template-minutes"
               type="number"
@@ -116,7 +119,7 @@ export function TemplateFormDialog({
               className="rounded-2xl"
             />
             <p className="text-xs text-muted-foreground">
-              Mindestens 1, maximal 60 Minuten.
+              {t("durationHint")}
             </p>
           </div>
 
@@ -133,14 +136,14 @@ export function TemplateFormDialog({
               onClick={() => onOpenChange(false)}
               className="rounded-full"
             >
-              Abbrechen
+              {tc("cancel")}
             </Button>
             <Button
               type="submit"
               disabled={saving}
               className="rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white hover:opacity-90"
             >
-              {saving ? "Speichert..." : isEditing ? "Speichern" : "Erstellen"}
+              {saving ? t("saving") : isEditing ? tc("save") : tc("create")}
             </Button>
           </DialogFooter>
         </form>

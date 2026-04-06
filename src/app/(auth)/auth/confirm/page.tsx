@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Loader2, CheckCircle2, XCircle } from "lucide-react"
+import { useTranslations } from "next-intl"
 import type { EmailOtpType } from "@supabase/supabase-js"
 
 import { AuthLayout } from "@/components/auth-layout"
@@ -18,6 +19,7 @@ import { createClient } from "@/lib/supabase/client"
 type ConfirmState = "loading" | "success" | "error"
 
 function ConfirmContent() {
+  const t = useTranslations("auth.confirm")
   const [state, setState] = useState<ConfirmState>("loading")
   const searchParams = useSearchParams()
 
@@ -55,10 +57,10 @@ function ConfirmContent() {
     <AuthLayout
       title={
         state === "loading"
-          ? "E-Mail wird bestaetigt..."
+          ? t("loadingTitle")
           : state === "success"
-            ? "E-Mail bestaetigt!"
-            : "Bestaetigung fehlgeschlagen"
+            ? t("successTitle")
+            : t("errorTitle")
       }
     >
       <Card className="w-full shadow-lg">
@@ -67,7 +69,7 @@ function ConfirmContent() {
             <>
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">
-                Bitte warte einen Moment...
+                {t("loadingText")}
               </p>
             </>
           )}
@@ -78,8 +80,7 @@ function ConfirmContent() {
                 <CheckCircle2 className="h-8 w-8 text-accent-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Deine E-Mail-Adresse wurde erfolgreich bestaetigt. Du
-                kannst dich jetzt anmelden.
+                {t("successText")}
               </p>
             </>
           )}
@@ -90,8 +91,7 @@ function ConfirmContent() {
                 <XCircle className="h-8 w-8 text-destructive" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Der Bestaetigungslink ist ungueltig oder abgelaufen. Bitte
-                fordere einen neuen Link an.
+                {t("errorText")}
               </p>
             </>
           )}
@@ -100,12 +100,12 @@ function ConfirmContent() {
         {state !== "loading" && (
           <CardFooter className="flex flex-col gap-2">
             <Button asChild className="w-full" size="lg">
-              <Link href="/login">Zur Anmeldung</Link>
+              <Link href="/login">{t("toLogin")}</Link>
             </Button>
             {state === "error" && (
               <Button asChild variant="ghost" className="w-full">
                 <Link href="/auth/resend-confirmation">
-                  Neuen Bestaetigungslink anfordern
+                  {t("requestNewLink")}
                 </Link>
               </Button>
             )}
@@ -116,15 +116,20 @@ function ConfirmContent() {
   )
 }
 
+function ConfirmFallback() {
+  const t = useTranslations("auth.confirm")
+  return (
+    <AuthLayout title={t("loadingTitle")}>
+      <div className="flex justify-center pt-8">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    </AuthLayout>
+  )
+}
+
 export default function ConfirmPage() {
   return (
-    <Suspense fallback={
-      <AuthLayout title="E-Mail wird bestaetigt...">
-        <div className="flex justify-center pt-8">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-      </AuthLayout>
-    }>
+    <Suspense fallback={<ConfirmFallback />}>
       <ConfirmContent />
     </Suspense>
   )

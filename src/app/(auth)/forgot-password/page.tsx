@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, ArrowLeft } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { AuthLayout } from "@/components/auth-layout"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,8 @@ import {
 import { forgotPasswordAction } from "@/lib/actions/auth"
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth.forgotPassword")
+  const tc = useTranslations("common")
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -57,22 +60,21 @@ export default function ForgotPasswordPage() {
   if (isSuccess) {
     return (
       <AuthLayout
-        title="E-Mail gesendet!"
-        subtitle="Pruefe dein Postfach fuer den Passwort-Reset-Link."
+        title={t("sentTitle")}
+        subtitle={t("sentSubtitle")}
       >
         <Card className="w-full shadow-lg">
           <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/30 text-3xl">
-              <span role="img" aria-label="E-Mail gesendet">
+              <span role="img" aria-label={t("sentTitle")}>
                 &#x1F4EC;
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Falls ein Konto mit dieser E-Mail existiert, haben wir dir
-              einen Link zum Zuruecksetzen deines Passworts geschickt.
+              {t("sentText")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Keine E-Mail erhalten?{" "}
+              {t("noEmailReceived")}{" "}
               <button
                 type="button"
                 className="font-medium text-primary hover:underline"
@@ -81,7 +83,7 @@ export default function ForgotPasswordPage() {
                   form.reset()
                 }}
               >
-                Erneut versuchen
+                {t("retry")}
               </button>
             </p>
           </CardContent>
@@ -89,7 +91,7 @@ export default function ForgotPasswordPage() {
             <Button asChild variant="outline" className="w-full">
               <Link href="/login">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Zurueck zur Anmeldung
+                {t("backToLogin")}
               </Link>
             </Button>
           </CardFooter>
@@ -100,8 +102,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      title="Passwort vergessen?"
-      subtitle="Kein Problem! Gib deine E-Mail ein und wir senden dir einen Reset-Link."
+      title={t("title")}
+      subtitle={t("subtitle")}
     >
       <Card className="w-full shadow-lg">
         <Form {...form}>
@@ -122,11 +124,11 @@ export default function ForgotPasswordPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-Mail</FormLabel>
+                    <FormLabel>{tc("email")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@beispiel.de"
+                        placeholder={tc("emailPlaceholder")}
                         autoComplete="email"
                         disabled={isLoading}
                         {...field}
@@ -148,17 +150,17 @@ export default function ForgotPasswordPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Senden...
+                    {t("submitLoading")}
                   </>
                 ) : (
-                  "Reset-Link senden"
+                  t("submit")
                 )}
               </Button>
 
               <Button asChild variant="ghost" className="w-full">
                 <Link href="/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Zurueck zur Anmeldung
+                  {t("backToLogin")}
                 </Link>
               </Button>
             </CardFooter>

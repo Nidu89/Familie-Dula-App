@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { ListChecks } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RitualCard } from "./ritual-card"
@@ -24,6 +25,7 @@ export function RitualsList({
   onEdit,
   onDelete,
 }: RitualsListProps) {
+  const t = useTranslations("rituals.list")
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -50,20 +52,19 @@ export function RitualsList({
         {isAdult ? (
           <>
             <p className="text-sm font-medium text-muted-foreground">
-              Noch keine Rituale erstellt.
+              {t("emptyAdmin")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Erstelle ein neues Ritual, um wiederkehrende Ablaeufe zu
-              organisieren.
+              {t("emptyAdminDescription")}
             </p>
           </>
         ) : (
           <>
             <p className="text-sm font-medium text-muted-foreground">
-              Kein Ritual laeuft gerade.
+              {t("emptyChild")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Frag Mama oder Papa!
+              {t("emptyChildDescription")}
             </p>
           </>
         )}

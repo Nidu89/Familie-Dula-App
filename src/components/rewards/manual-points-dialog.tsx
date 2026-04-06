@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -55,6 +56,8 @@ export function ManualPointsDialog({
   onSuccess,
 }: ManualPointsDialogProps) {
   const { toast } = useToast()
+  const t = useTranslations("rewards.manualPoints")
+  const tc = useTranslations("common")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<ManualPointsFormValues>({
@@ -80,7 +83,7 @@ export function ManualPointsDialog({
 
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -88,7 +91,7 @@ export function ManualPointsDialog({
       }
 
       toast({
-        title: "Punkte gebucht",
+        title: t("success"),
         description: `${result.amountApplied > 0 ? "+" : ""}${result.amountApplied} Punkte. Neuer Stand: ${result.newBalance}`,
       })
 
@@ -97,8 +100,8 @@ export function ManualPointsDialog({
       onSuccess()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Punkte konnten nicht gebucht werden.",
+        title: tc("error"),
+        description: t("error"),
         variant: "destructive",
       })
     } finally {
@@ -110,15 +113,15 @@ export function ManualPointsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Punkte vergeben</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Punkte manuell fuer {childName} hinzufuegen oder abziehen.
+            {t("description", { childName })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="rounded-lg bg-muted p-3 text-center">
-          <p className="text-xs text-muted-foreground">Aktueller Stand</p>
-          <p className="text-2xl font-bold">{currentBalance} Punkte</p>
+          <p className="text-xs text-muted-foreground">{t("currentBalance")}</p>
+          <p className="text-2xl font-bold">{currentBalance} {tc("points")}</p>
         </div>
 
         <Form {...form}>
@@ -128,11 +131,11 @@ export function ManualPointsDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Betrag</FormLabel>
+                  <FormLabel>{t("amountLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="z.B. 10 oder -5"
+                      placeholder={t("amountPlaceholder")}
                       value={field.value}
                       onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                       onBlur={field.onBlur}
@@ -142,7 +145,7 @@ export function ManualPointsDialog({
                   </FormControl>
                   <FormMessage />
                   <p className="text-xs text-muted-foreground">
-                    Positiv = hinzufuegen, negativ = abziehen
+                    {t("amountHint")}
                   </p>
                 </FormItem>
               )}
@@ -153,10 +156,10 @@ export function ManualPointsDialog({
               name="comment"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kommentar (optional)</FormLabel>
+                  <FormLabel>{t("commentLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="z.B. Bonus fuer gutes Benehmen"
+                      placeholder={t("commentPlaceholder")}
                       rows={2}
                       {...field}
                     />
@@ -169,12 +172,12 @@ export function ManualPointsDialog({
             {/* Preview */}
             <div className="rounded-lg border bg-card p-3 text-center">
               <p className="text-xs text-muted-foreground">
-                Neuer Stand nach Buchung
+                {t("newBalance")}
               </p>
               <p
                 className={`text-xl font-bold ${previewBalance !== currentBalance ? "text-primary" : ""}`}
               >
-                {previewBalance} Punkte
+                {previewBalance} {tc("points")}
               </p>
             </div>
 
@@ -184,10 +187,10 @@ export function ManualPointsDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Abbrechen
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Buchen..." : "Buchen"}
+                {isSubmitting ? t("submitLoading") : t("submit")}
               </Button>
             </DialogFooter>
           </form>

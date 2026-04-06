@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, startTransition } from "react"
 import Link from "next/link"
 import { Clock, Pause, Play, Timer } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useOptionalTimerContext } from "@/context/timer-context"
 import { getTimerTemplatesAction, type TimerTemplate } from "@/lib/actions/timer"
@@ -18,11 +19,11 @@ interface TimerWidgetProps {
   isAdult: boolean
 }
 
-function formatDuration(seconds: number): string {
+function formatDuration(seconds: number, minLabel: string): string {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
-  if (s > 0) return `${m}:${String(s).padStart(2, "0")} Min.`
-  return `${m} Min.`
+  if (s > 0) return `${m}:${String(s).padStart(2, "0")} ${minLabel}`
+  return `${m} ${minLabel}`
 }
 
 function formatCountdown(seconds: number): string {
@@ -32,6 +33,8 @@ function formatCountdown(seconds: number): string {
 }
 
 export function TimerWidget({ familyId, isAdult }: TimerWidgetProps) {
+  const t = useTranslations("dashboard.timer")
+  const tc = useTranslations("common")
   const timerCtx = useOptionalTimerContext()
   const [templates, setTemplates] = useState<WidgetTemplate[]>([])
   const [loading, setLoading] = useState(true)
@@ -61,7 +64,7 @@ export function TimerWidget({ familyId, isAdult }: TimerWidgetProps) {
   return (
     <section className="rounded-[2rem] bg-card p-8 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="font-display text-xl font-bold">Timer</h3>
+        <h3 className="font-display text-xl font-bold">{t("title")}</h3>
         <Timer className="h-5 w-5 text-secondary" />
       </div>
 
@@ -83,7 +86,7 @@ export function TimerWidget({ familyId, isAdult }: TimerWidgetProps) {
               {formatCountdown(timerState.remainingSeconds)}
             </p>
             <p className="text-xs text-muted-foreground">
-              {timerState.status === "running" ? "Laeuft" : "Pausiert"}
+              {timerState.status === "running" ? t("running") : t("paused")}
             </p>
           </div>
         </Link>
@@ -99,7 +102,7 @@ export function TimerWidget({ familyId, isAdult }: TimerWidgetProps) {
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <Clock className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
-            Noch keine Timer-Vorlagen.
+            {t("noTemplates")}
           </p>
         </div>
       ) : (
@@ -118,7 +121,7 @@ export function TimerWidget({ familyId, isAdult }: TimerWidgetProps) {
                   {template.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDuration(template.durationSeconds)}
+                  {formatDuration(template.durationSeconds, tc("min"))}
                 </p>
               </div>
             </Link>
@@ -130,7 +133,7 @@ export function TimerWidget({ familyId, isAdult }: TimerWidgetProps) {
         href="/timer"
         className="mt-6 block w-full rounded-full bg-muted py-3 text-center text-sm font-bold text-secondary transition-colors hover:bg-muted/80"
       >
-        Timer oeffnen
+        {t("open")}
       </Link>
     </section>
   )

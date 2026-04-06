@@ -14,6 +14,7 @@ import {
 } from "date-fns"
 import { de } from "date-fns/locale"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 
@@ -24,8 +25,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   health: "hsl(40, 80%, 70%)",
   other: "hsl(20, 80%, 65%)",
 }
-
-const WEEKDAY_LABELS = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"]
 
 interface CalendarEventMinimal {
   id: string
@@ -51,6 +50,16 @@ export function CustomMonthGrid({
   onSelectDate,
   onNavigate,
 }: CustomMonthGridProps) {
+  const t = useTranslations("calendar")
+  const WEEKDAY_LABELS = [
+    t("weekdays.mo"),
+    t("weekdays.tu"),
+    t("weekdays.we"),
+    t("weekdays.th"),
+    t("weekdays.fr"),
+    t("weekdays.sa"),
+    t("weekdays.su"),
+  ]
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
   const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 })
@@ -99,7 +108,7 @@ export function CustomMonthGrid({
             size="icon"
             className="h-9 w-9 rounded-full bg-surface-low hover:bg-surface-container"
             onClick={() => onNavigate("PREV")}
-            aria-label="Vorheriger Monat"
+            aria-label={t("prevMonth")}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -108,7 +117,7 @@ export function CustomMonthGrid({
             size="icon"
             className="h-9 w-9 rounded-full bg-surface-low hover:bg-surface-container"
             onClick={() => onNavigate("NEXT")}
-            aria-label="Naechster Monat"
+            aria-label={t("nextMonth")}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

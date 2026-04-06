@@ -1,10 +1,12 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Pause, Play, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTimerContext } from "@/context/timer-context"
 
 export function TimerControls() {
+  const t = useTranslations("timer.controls")
   const { timer, isAdult } = useTimerContext()
   const { status } = timer.state
 
@@ -18,7 +20,7 @@ export function TimerControls() {
           onClick={timer.pause}
           variant="secondary"
           className="h-14 w-14 rounded-full bg-muted text-foreground hover:bg-muted/70"
-          aria-label="Timer pausieren"
+          aria-label={t("pause")}
         >
           <Pause className="h-6 w-6" />
         </Button>
@@ -28,7 +30,7 @@ export function TimerControls() {
         <Button
           onClick={timer.resume}
           className="h-14 w-14 rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-lg hover:opacity-90"
-          aria-label="Timer fortsetzen"
+          aria-label={t("resume")}
         >
           <Play className="h-6 w-6" />
         </Button>
@@ -38,7 +40,7 @@ export function TimerControls() {
         onClick={timer.reset}
         variant="secondary"
         className="h-14 w-14 rounded-full bg-muted text-foreground hover:bg-muted/70"
-        aria-label="Timer zuruecksetzen"
+        aria-label={t("reset")}
       >
         <RotateCcw className="h-5 w-5" />
       </Button>

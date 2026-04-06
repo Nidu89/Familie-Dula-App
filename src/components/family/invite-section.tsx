@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useTranslations } from "next-intl"
 import { Loader2, Mail, Hash, Copy, RefreshCw, Check } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -43,6 +44,7 @@ export function InviteSection({
   existingCodeExpiresAt,
   embedded = false,
 }: InviteSectionProps) {
+  const t = useTranslations("family.invite")
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [isCodeLoading, setIsCodeLoading] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState(false)
@@ -75,7 +77,7 @@ export function InviteSection({
         emailForm.reset()
       }
     } catch {
-      setEmailError("Einladung konnte nicht gesendet werden.")
+      setEmailError(t("emailError"))
     } finally {
       setIsEmailLoading(false)
     }
@@ -97,7 +99,7 @@ export function InviteSection({
         setCodeExpiresAt(expiresAt.toISOString())
       }
     } catch {
-      setCodeError("Code konnte nicht generiert werden.")
+      setCodeError(t("codeError"))
     } finally {
       setIsCodeLoading(false)
     }
@@ -129,7 +131,7 @@ export function InviteSection({
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-sm font-medium">
           <Mail className="h-4 w-4 text-primary" />
-          Per E-Mail einladen
+          {t("emailTitle")}
         </div>
 
         {emailError && (
@@ -148,7 +150,7 @@ export function InviteSection({
             role="status"
             aria-live="polite"
           >
-            Einladung wurde erfolgreich gesendet!
+            {t("emailSuccess")}
           </div>
         )}
 
@@ -162,7 +164,7 @@ export function InviteSection({
               name="email"
               render={({ field }) => (
                 <FormItem className="flex-1">
-                  <FormLabel className="sr-only">E-Mail-Adresse</FormLabel>
+                  <FormLabel className="sr-only">{t("emailLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -179,7 +181,7 @@ export function InviteSection({
               {isEmailLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "Einladen"
+                t("emailSubmit")
               )}
             </Button>
           </form>
@@ -192,7 +194,7 @@ export function InviteSection({
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-sm font-medium">
           <Hash className="h-4 w-4 text-primary" />
-          Einladungscode
+          {t("codeTitle")}
         </div>
 
         {codeError && (
@@ -215,7 +217,7 @@ export function InviteSection({
                 variant="outline"
                 size="icon"
                 onClick={onCopyCode}
-                aria-label="Code kopieren"
+                aria-label={t("codeCopy")}
               >
                 {copied ? (
                   <Check className="h-4 w-4 text-primary" />
@@ -228,7 +230,7 @@ export function InviteSection({
             <div className="flex items-center justify-between">
               {codeExpiresAt && (
                 <p className="text-xs text-muted-foreground">
-                  Gueltig bis {formatExpiryDate(codeExpiresAt)}
+                  {t("codeValidUntil", { date: formatExpiryDate(codeExpiresAt) })}
                 </p>
               )}
               <Button
@@ -243,15 +245,14 @@ export function InviteSection({
                 ) : (
                   <RefreshCw className="mr-1 h-3 w-3" />
                 )}
-                Neuen Code generieren
+                {t("codeGenerateNew")}
               </Button>
             </div>
           </div>
         ) : (
           <div className="text-center">
             <p className="mb-3 text-sm text-muted-foreground">
-              Generiere einen 6-stelligen Code, den Familienmitglieder beim
-              Beitreten eingeben koennen.
+              {t("codeDescription")}
             </p>
             <Button
               variant="outline"
@@ -261,12 +262,12 @@ export function InviteSection({
               {isCodeLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generieren...
+                  {t("codeGenerating")}
                 </>
               ) : (
                 <>
                   <Hash className="mr-2 h-4 w-4" />
-                  Code generieren
+                  {t("codeGenerate")}
                 </>
               )}
             </Button>
@@ -281,9 +282,9 @@ export function InviteSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Mitglied einladen</CardTitle>
+        <CardTitle className="text-lg">{t("title")}</CardTitle>
         <CardDescription>
-          Lade neue Mitglieder per E-Mail oder Einladungscode ein.
+          {t("description")}
         </CardDescription>
       </CardHeader>
       <CardContent>{content}</CardContent>

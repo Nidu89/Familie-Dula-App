@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useTimerContext } from "@/context/timer-context"
 
 function formatTime(seconds: number): string {
@@ -9,6 +10,7 @@ function formatTime(seconds: number): string {
 }
 
 export function TimerDisplay() {
+  const t = useTranslations("timer.display")
   const { timer } = useTimerContext()
   const { status, totalSeconds, remainingSeconds } = timer.state
 
@@ -88,7 +90,7 @@ export function TimerDisplay() {
                 00:00
               </p>
               <p className="mt-2 text-sm font-medium text-destructive">
-                Zeit abgelaufen!
+                {t("finished")}
               </p>
             </div>
           ) : (
@@ -110,9 +112,9 @@ export function TimerDisplay() {
       {/* Status label */}
       {status !== "idle" && (
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          {status === "running" && "Laeuft"}
-          {status === "paused" && "Pausiert"}
-          {status === "finished" && "Abgelaufen"}
+          {status === "running" && t("running")}
+          {status === "paused" && t("paused")}
+          {status === "finished" && t("expired")}
         </p>
       )}
     </div>

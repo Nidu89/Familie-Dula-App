@@ -12,6 +12,7 @@ import {
 import { format, parse, startOfWeek, getDay } from "date-fns"
 import { de } from "date-fns/locale"
 import { RRule } from "rrule"
+import { useTranslations } from "next-intl"
 
 import "react-big-calendar/lib/css/react-big-calendar.css"
 
@@ -72,6 +73,8 @@ export function CalendarView({
   isAdultOrAdmin,
   currentUserId,
 }: CalendarViewProps) {
+  const t = useTranslations("calendar")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const searchParams = useSearchParams()
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
@@ -112,7 +115,7 @@ export function CalendarView({
 
         if ("error" in result) {
           toast({
-            title: "Fehler",
+            title: tc("error"),
             description: result.error,
             variant: "destructive",
           })
@@ -122,8 +125,8 @@ export function CalendarView({
         setEvents(result.events)
       } catch {
         toast({
-          title: "Fehler",
-          description: "Termine konnten nicht geladen werden.",
+          title: tc("error"),
+          description: t("loadErrorToast"),
           variant: "destructive",
         })
       } finally {
@@ -375,19 +378,19 @@ export function CalendarView({
   )
 
   const messages = {
-    allDay: "Ganztaegig",
-    previous: "Zurueck",
-    next: "Weiter",
-    today: "Heute",
-    month: "Monat",
-    week: "Woche",
-    day: "Tag",
-    agenda: "Liste",
-    date: "Datum",
-    time: "Uhrzeit",
-    event: "Termin",
-    noEventsInRange: "Keine Termine in diesem Zeitraum.",
-    showMore: (total: number) => `+${total} weitere`,
+    allDay: t("bigCalendar.allDay"),
+    previous: t("bigCalendar.previous"),
+    next: t("bigCalendar.next"),
+    today: t("bigCalendar.today"),
+    month: t("bigCalendar.month"),
+    week: t("bigCalendar.week"),
+    day: t("bigCalendar.day"),
+    agenda: t("bigCalendar.agenda"),
+    date: t("bigCalendar.date"),
+    time: t("bigCalendar.time"),
+    event: t("bigCalendar.event"),
+    noEventsInRange: t("bigCalendar.noEvents"),
+    showMore: (total: number) => t("moreEvents", { total }),
   }
 
   const isMonthView = view === "month"
@@ -466,18 +469,9 @@ export function CalendarView({
       )}
 
       {/* Category Legend */}
-      <div className="flex flex-wrap gap-2" aria-label="Kategorien-Legende">
+      <div className="flex flex-wrap gap-2" aria-label={t("categoriesLegend")}>
         {Object.entries(CATEGORY_COLORS).map(([key, color]) => {
-          const label =
-            key === "school"
-              ? "Schule"
-              : key === "work"
-                ? "Arbeit"
-                : key === "leisure"
-                  ? "Freizeit"
-                  : key === "health"
-                    ? "Gesundheit"
-                    : "Sonstiges"
+          const label = t(`categories.${key}` as "categories.school" | "categories.work" | "categories.leisure" | "categories.health" | "categories.other")
           return (
             <Badge key={key} variant="outline" className="gap-1.5 text-xs">
               <span

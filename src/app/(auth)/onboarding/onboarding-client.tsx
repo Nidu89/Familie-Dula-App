@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Plus, Users } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { AuthLayout } from "@/components/auth-layout"
 import { Button } from "@/components/ui/button"
@@ -38,23 +39,29 @@ import {
 
 type OnboardingStep = "choose" | "create" | "join"
 
+function OnboardingFallback() {
+  const t = useTranslations("auth.onboarding")
+  const tc = useTranslations("common")
+  return (
+    <AuthLayout title={t("welcome")} subtitle={tc("loading")}>
+      <div className="flex w-full items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    </AuthLayout>
+  )
+}
+
 export function OnboardingClient() {
   return (
-    <Suspense
-      fallback={
-        <AuthLayout title="Willkommen!" subtitle="Laden...">
-          <div className="flex w-full items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        </AuthLayout>
-      }
-    >
+    <Suspense fallback={<OnboardingFallback />}>
       <OnboardingContent />
     </Suspense>
   )
 }
 
 function OnboardingContent() {
+  const t = useTranslations("auth.onboarding")
+  const tc = useTranslations("common")
   const searchParams = useSearchParams()
   const inviteCode = searchParams.get("invite")
 
@@ -120,8 +127,8 @@ function OnboardingContent() {
   if (step === "choose") {
     return (
       <AuthLayout
-        title="Willkommen!"
-        subtitle="Erstelle eine neue Familie oder tritt einer bestehenden bei."
+        title={t("welcome")}
+        subtitle={t("chooseSubtitle")}
       >
         <div className="flex w-full flex-col gap-4 md:flex-row">
           <Card
@@ -129,7 +136,7 @@ function OnboardingContent() {
             onClick={() => setStep("create")}
             role="button"
             tabIndex={0}
-            aria-label="Neue Familie erstellen"
+            aria-label={t("createCardAria")}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault()
@@ -143,9 +150,9 @@ function OnboardingContent() {
               </div>
             </CardHeader>
             <CardContent className="text-center">
-              <CardTitle className="mb-1 text-lg">Familie erstellen</CardTitle>
+              <CardTitle className="mb-1 text-lg">{t("createCardTitle")}</CardTitle>
               <CardDescription>
-                Starte eine neue Familiengruppe und lade Mitglieder ein.
+                {t("createCardDescription")}
               </CardDescription>
             </CardContent>
           </Card>
@@ -155,7 +162,7 @@ function OnboardingContent() {
             onClick={() => setStep("join")}
             role="button"
             tabIndex={0}
-            aria-label="Bestehender Familie beitreten"
+            aria-label={t("joinCardAria")}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault()
@@ -169,9 +176,9 @@ function OnboardingContent() {
               </div>
             </CardHeader>
             <CardContent className="text-center">
-              <CardTitle className="mb-1 text-lg">Familie beitreten</CardTitle>
+              <CardTitle className="mb-1 text-lg">{t("joinCardTitle")}</CardTitle>
               <CardDescription>
-                Tritt mit einem Einladungs-Code einer bestehenden Familie bei.
+                {t("joinCardDescription")}
               </CardDescription>
             </CardContent>
           </Card>
@@ -183,8 +190,8 @@ function OnboardingContent() {
   if (step === "create") {
     return (
       <AuthLayout
-        title="Familie erstellen"
-        subtitle="Gib deiner Familie einen Namen."
+        title={t("createTitle")}
+        subtitle={t("createSubtitle")}
       >
         <Card className="w-full shadow-lg">
           <Form {...createForm}>
@@ -205,11 +212,11 @@ function OnboardingContent() {
                   name="familyName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Familienname</FormLabel>
+                      <FormLabel>{t("familyNameLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="text"
-                          placeholder="z.B. Familie Dula"
+                          placeholder={t("familyNamePlaceholder")}
                           disabled={isLoading}
                           {...field}
                         />
@@ -230,10 +237,10 @@ function OnboardingContent() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Erstellen...
+                      {t("createLoading")}
                     </>
                   ) : (
-                    "Familie erstellen"
+                    t("createSubmit")
                   )}
                 </Button>
 
@@ -248,7 +255,7 @@ function OnboardingContent() {
                   }}
                   disabled={isLoading}
                 >
-                  Zurueck
+                  {tc("back")}
                 </Button>
               </CardFooter>
             </form>
@@ -261,8 +268,8 @@ function OnboardingContent() {
   // step === "join"
   return (
     <AuthLayout
-      title="Familie beitreten"
-      subtitle="Gib den 6-stelligen Einladungs-Code ein, den du erhalten hast."
+      title={t("joinTitle")}
+      subtitle={t("joinSubtitle")}
     >
       <Card className="w-full shadow-lg">
         <Form {...joinForm}>
@@ -283,12 +290,12 @@ function OnboardingContent() {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Einladungs-Code</FormLabel>
+                    <FormLabel>{t("inviteCodeLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
                         inputMode="numeric"
-                        placeholder="123456"
+                        placeholder={t("inviteCodePlaceholder")}
                         autoComplete="off"
                         maxLength={6}
                         disabled={isLoading}
@@ -312,10 +319,10 @@ function OnboardingContent() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Beitreten...
+                    {t("joinLoading")}
                   </>
                 ) : (
-                  "Familie beitreten"
+                  t("joinSubmit")
                 )}
               </Button>
 
@@ -330,7 +337,7 @@ function OnboardingContent() {
                 }}
                 disabled={isLoading}
               >
-                Zurueck
+                {tc("back")}
               </Button>
             </CardFooter>
           </form>

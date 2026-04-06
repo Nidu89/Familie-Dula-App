@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect, useReducer } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -78,6 +79,8 @@ function overlayReducer(state: OverlayState, action: OverlayAction): OverlayStat
 }
 
 export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
+  const t = useTranslations("rituals")
+  const tc = useTranslations("common")
   const {
     rituals,
     loading,
@@ -256,10 +259,10 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight">
-            Familien-Rituale
+            {t("pageTitle")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Wiederkehrende Routinen fuer die ganze Familie
+            {t("pageSubtitle")}
           </p>
         </div>
         {isAdult && !isActive && (
@@ -271,7 +274,7 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
             className="rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] font-bold text-white shadow-lg hover:opacity-90"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Neues Ritual
+            {t("newRitual")}
           </Button>
         )}
       </div>
@@ -302,7 +305,7 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
                 className="rounded-full text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 <X className="mr-2 h-4 w-4" />
-                Ritual abbrechen
+                {t("cancelButton")}
               </Button>
             </div>
           )}
@@ -314,10 +317,10 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
         <div className="flex flex-col items-center gap-3 rounded-[2rem] bg-muted py-10 text-center">
           <ListChecks className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">
-            Kein Ritual laeuft gerade.
+            {t("noActiveRitual")}
           </p>
           <p className="text-xs text-muted-foreground">
-            Frag Mama oder Papa!
+            {t("askParent")}
           </p>
         </div>
       )}
@@ -353,22 +356,21 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
         <AlertDialogContent className="rounded-[2rem]">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display">
-              Ritual loeschen?
+              {t("deleteTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Moechtest du &quot;{deletingRitual?.name}&quot; wirklich
-              loeschen? Diese Aktion kann nicht rueckgaengig gemacht werden.
+              {t("deleteDescription", { name: deletingRitual?.name ?? "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-full">
-              Abbrechen
+              {tc("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Loeschen
+              {tc("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -382,21 +384,21 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
         <AlertDialogContent className="rounded-[2rem]">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display">
-              Ritual abbrechen?
+              {t("cancelTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Der Fortschritt wird verworfen und Punkte werden nicht vergeben.
+              {t("cancelDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-full">
-              Zurueck
+              {tc("back")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmCancel}
               className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Abbrechen
+              {t("cancelButton")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -408,7 +410,7 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
           role="alertdialog"
           aria-modal="true"
-          aria-label="Timer abgelaufen"
+          aria-label={t("timeUp")}
         >
           <div className="mx-4 flex max-w-sm flex-col items-center gap-6 rounded-[3rem] bg-card p-10 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-300">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-destructive/10 animate-pulse">
@@ -416,17 +418,17 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
             </div>
             <div>
               <h2 className="font-display text-2xl font-bold text-foreground">
-                Zeit abgelaufen!
+                {t("timeUp")}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Du kannst die Schritte trotzdem weiter abhaken.
+                {t("timeUpHint")}
               </p>
             </div>
             <Button
               onClick={() => dispatchOverlay({ type: "DISMISS_TIMER_ALARM" })}
               className="h-14 w-full rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-base font-bold text-white shadow-lg hover:opacity-90"
             >
-              OK, verstanden
+              {t("timeUpConfirm")}
             </Button>
           </div>
         </div>

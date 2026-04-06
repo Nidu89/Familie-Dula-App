@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import {
   LayoutDashboard,
   Calendar,
@@ -23,16 +24,17 @@ interface AppSidebarProps {
 }
 
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/calendar", label: "Kalender", icon: Calendar },
-  { href: "/tasks", label: "Aufgaben", icon: CheckSquare },
-  { href: "/rewards", label: "Belohnungen", icon: Trophy },
-  { href: "/timer", label: "Timer", icon: Timer },
-  { href: "/rituals", label: "Rituale", icon: ListChecks },
-  { href: "/family/settings", label: "Familie", icon: Users },
+  { href: "/dashboard", labelKey: "dashboard" as const, icon: LayoutDashboard },
+  { href: "/calendar", labelKey: "calendar" as const, icon: Calendar },
+  { href: "/tasks", labelKey: "tasks" as const, icon: CheckSquare },
+  { href: "/rewards", labelKey: "rewards" as const, icon: Trophy },
+  { href: "/timer", labelKey: "timer" as const, icon: Timer },
+  { href: "/rituals", labelKey: "rituals" as const, icon: ListChecks },
+  { href: "/family/settings", labelKey: "family" as const, icon: Users },
 ]
 
 export function AppSidebar({ familyName }: AppSidebarProps) {
+  const t = useTranslations("layout.sidebar")
   const pathname = usePathname()
 
   async function handleLogout() {
@@ -42,7 +44,7 @@ export function AppSidebar({ familyName }: AppSidebarProps) {
   return (
     <aside
       className="fixed left-0 top-0 z-[60] hidden h-screen w-72 flex-col bg-card rounded-r-[3rem] shadow-[3rem_0_3rem_rgba(42,47,50,0.06)] md:flex"
-      aria-label="Seitennavigation"
+      aria-label={t("navigation")}
     >
       {/* Family branding */}
       <div className="px-8 pt-10 pb-8">
@@ -54,7 +56,7 @@ export function AppSidebar({ familyName }: AppSidebarProps) {
             <h2 className="font-display text-lg font-bold text-secondary">
               {familyName}
             </h2>
-            <p className="text-xs text-muted-foreground">Digital Sandbox</p>
+            <p className="text-xs text-muted-foreground">{t("tagline")}</p>
           </div>
         </div>
       </div>
@@ -75,7 +77,7 @@ export function AppSidebar({ familyName }: AppSidebarProps) {
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" />
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           )
         })}
@@ -88,7 +90,7 @@ export function AppSidebar({ familyName }: AppSidebarProps) {
           className="flex w-full items-center gap-3 px-6 py-3 rounded-full text-sm font-medium text-foreground hover:bg-muted transition-colors"
         >
           <HelpCircle className="h-5 w-5 shrink-0" />
-          Hilfe
+          {t("help")}
         </button>
         <button
           type="button"
@@ -96,7 +98,7 @@ export function AppSidebar({ familyName }: AppSidebarProps) {
           className="flex w-full items-center gap-3 px-6 py-3 rounded-full text-sm font-medium text-foreground hover:bg-muted transition-colors"
         >
           <LogOut className="h-5 w-5 shrink-0" />
-          Abmelden
+          {t("logout")}
         </button>
       </div>
     </aside>

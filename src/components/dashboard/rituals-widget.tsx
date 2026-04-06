@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, startTransition } from "react"
 import Link from "next/link"
 import { ListChecks, Play, Clock, Star } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getRitualsAction, type Ritual } from "@/lib/actions/rituals"
 
@@ -11,6 +12,8 @@ interface RitualsWidgetProps {
 }
 
 export function RitualsWidget({ isAdult }: RitualsWidgetProps) {
+  const t = useTranslations("dashboard.rituals")
+  const tc = useTranslations("common")
   const [rituals, setRituals] = useState<Ritual[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -31,7 +34,7 @@ export function RitualsWidget({ isAdult }: RitualsWidgetProps) {
   return (
     <section className="rounded-[2rem] bg-card p-8 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="font-display text-xl font-bold">Rituale</h3>
+        <h3 className="font-display text-xl font-bold">{t("title")}</h3>
         <ListChecks className="h-5 w-5 text-secondary" />
       </div>
 
@@ -45,7 +48,7 @@ export function RitualsWidget({ isAdult }: RitualsWidgetProps) {
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <ListChecks className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
-            Noch keine Rituale erstellt.
+            {t("noRituals")}
           </p>
         </div>
       ) : (
@@ -64,12 +67,12 @@ export function RitualsWidget({ isAdult }: RitualsWidgetProps) {
                   {ritual.name}
                 </p>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{ritual.steps.length} Schritte</span>
+                  <span>{ritual.steps.length} {tc("steps")}</span>
                   {ritual.timerDurationMinutes !== null &&
                     ritual.timerDurationMinutes > 0 && (
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {ritual.timerDurationMinutes} Min.
+                        {ritual.timerDurationMinutes} {tc("min")}
                       </span>
                     )}
                   {ritual.rewardPoints !== null &&
@@ -90,7 +93,7 @@ export function RitualsWidget({ isAdult }: RitualsWidgetProps) {
         href="/rituals"
         className="mt-6 block w-full rounded-full bg-muted py-3 text-center text-sm font-bold text-secondary transition-colors hover:bg-muted/80"
       >
-        Rituale oeffnen
+        {t("open")}
       </Link>
     </section>
   )

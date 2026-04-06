@@ -1,4 +1,7 @@
+"use client"
+
 import { Award } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { AchievementBadge } from "@/components/rewards/achievement-badge"
 import type { Achievement } from "@/lib/actions/rewards"
 

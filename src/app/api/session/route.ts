@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("family_id, role, display_name")
+    .select("family_id, role, display_name, locale")
     .eq("id", user.id)
     .single()
 
@@ -45,5 +45,6 @@ export async function GET(request: NextRequest) {
     role: profile.role ?? "child",
     displayName: profile.display_name ?? user.email?.split("@")[0] ?? "User",
     familyName,
+    locale: profile.locale ?? "en",
   })
 }

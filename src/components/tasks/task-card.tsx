@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Check, CheckCheck, Timer, BadgeCheck } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { useToast } from "@/hooks/use-toast"
 import { completeTaskAction, type Task } from "@/lib/actions/tasks"
@@ -32,30 +33,44 @@ function getInitials(name: string | null): string {
 
 /* ── time helpers ──────────────────────────────────────── */
 
-function getTimeInfo(
-  dueDate: string | null
-): { text: string; isOverdue: boolean } | null {
+type TimeInfoResult =
+  | { type: "overdue"; isOverdue: true }
+  | { type: "hoursLeft"; hours: number; isOverdue: false }
+  | { type: "daysLeft"; days: number; isOverdue: false }
+
+function getTimeInfo(dueDate: string | null): TimeInfoResult | null {
   if (!dueDate) return null
 
   const now = new Date()
   const todayStr = now.toISOString().split("T")[0]
 
   if (dueDate < todayStr) {
-    return { text: "Ueberfaellig", isOverdue: true }
+    return { type: "overdue", isOverdue: true }
   }
 
   if (dueDate === todayStr) {
     const endOfDay = new Date(dueDate + "T23:59:59")
     const diffMs = endOfDay.getTime() - now.getTime()
     const hours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)))
-    return { text: `Noch ${hours} Stunden`, isOverdue: false }
+    return { type: "hoursLeft", hours, isOverdue: false }
   }
 
   const due = new Date(dueDate)
   const days = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  return {
-    text: `Noch ${days} ${days === 1 ? "Tag" : "Tage"}`,
-    isOverdue: false,
+  return { type: "daysLeft", days, isOverdue: false }
+}
+
+function formatTimeInfo(
+  info: TimeInfoResult,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string {
+  switch (info.type) {
+    case "overdue":
+      return t("card.overdue")
+    case "hoursLeft":
+      return t("card.hoursLeft", { hours: info.hours })
+    case "daysLeft":
+      return t("card.daysLeft", { count: info.days })
   }
 }
 
@@ -78,6 +93,8 @@ export function TaskCard({
   onEdit,
   onCompleted,
 }: TaskCardProps) {
+  const t = useTranslations("tasks")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [isCompleting, setIsCompleting] = useState(false)
 
@@ -96,7 +113,7 @@ export function TaskCard({
       const result = await completeTaskAction(task.id)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -104,28 +121,28 @@ export function TaskCard({
       }
       if (result.pointsAwarded && result.points) {
         toast({
-          title: "Aufgabe erledigt!",
-          description: `+${result.points} Punkte! Stand: ${result.newBalance}`,
+          title: t("card.completed"),
+          description: t("card.pointsAwarded", { points: result.points, balance: result.newBalance ?? 0 }),
         })
       } else {
         toast({
-          title: "Aufgabe erledigt!",
-          description: "Aufgabe als erledigt markiert.",
+          title: t("card.completed"),
+          description: t("card.markedDone"),
         })
       }
       if (result.awardedBadges?.length) {
         for (const badge of result.awardedBadges) {
           toast({
-            title: "Neues Abzeichen!",
-            description: `"${badge}" verdient!`,
+            title: t("card.newBadge"),
+            description: t("card.badgeEarned", { badge }),
           })
         }
       }
       onCompleted()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Konnte nicht als erledigt markiert werden.",
+        title: tc("error"),
+        description: t("card.completeFailed"),
         variant: "destructive",
       })
     } finally {
@@ -191,7 +208,7 @@ export function TaskCard({
           <span
             className={`font-display font-black text-lg ${isEigene ? "text-chart-3" : "text-primary-foreground"}`}
           >
-            +{task.points} Pkt.
+            {t("card.pointsShort", { points: task.points })}
           </span>
         )}
       </div>
@@ -219,7 +236,7 @@ export function TaskCard({
           <span
             className={`text-xs font-bold uppercase ${timeInfo.isOverdue ? "text-destructive" : "text-chart-3"}`}
           >
-            {timeInfo.text}
+            {formatTimeInfo(timeInfo, t)}
           </span>
         </div>
       )}
@@ -240,7 +257,7 @@ export function TaskCard({
           ) : (
             <Check className="h-5 w-5" />
           )}
-          {isEigene ? "Fertig!" : "Erledigt!"}
+          {isEigene ? t("card.doneOwn") : t("card.doneHousehold")}
         </button>
       )}
     </div>

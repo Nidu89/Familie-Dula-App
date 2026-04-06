@@ -1,5 +1,9 @@
+"use client"
+
+import { useState, useEffect, useCallback, startTransition } from "react"
 import { AlertTriangle, Square, Clock, Star } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { getTasksAction, type Task } from "@/lib/actions/tasks"
@@ -11,19 +15,34 @@ function isOverdue(dueDate: string | null): boolean {
   return new Date(dueDate) < today
 }
 
-export async function TasksWidget() {
-  const result = await getTasksAction()
-  const todayStr = new Date().toISOString().split("T")[0]
+export function TasksWidget() {
+  const t = useTranslations("dashboard.tasks")
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const tasks: Task[] = !("error" in result)
-    ? result.tasks
-        .filter(
-          (t) =>
-            t.status !== "done" &&
-            (isOverdue(t.dueDate) || t.dueDate === todayStr || !t.dueDate)
-        )
-        .slice(0, 4)
-    : []
+  const fetchTasks = useCallback(async () => {
+    const result = await getTasksAction()
+    const todayStr = new Date().toISOString().split("T")[0]
+
+    if (!("error" in result)) {
+      setTasks(
+        result.tasks
+          .filter(
+            (t) =>
+              t.status !== "done" &&
+              (isOverdue(t.dueDate) || t.dueDate === todayStr || !t.dueDate)
+          )
+          .slice(0, 4)
+      )
+    }
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    startTransition(() => { void fetchTasks() })
+  }, [fetchTasks])
+
+  if (loading) return <TasksWidgetSkeleton />
 
   const overdueCount = tasks.filter((t) => isOverdue(t.dueDate)).length
 
@@ -31,10 +50,10 @@ export async function TasksWidget() {
     <section className="flex flex-col rounded-[2rem] bg-card p-8 shadow-sm">
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
-        <h3 className="font-display text-xl font-bold">Top Aufgaben</h3>
+        <h3 className="font-display text-xl font-bold">{t("title")}</h3>
         {overdueCount > 0 && (
           <span className="rounded-full bg-destructive/10 px-2 py-1 text-[10px] font-black text-destructive">
-            {overdueCount} UEBERFAELLIG
+            {overdueCount} {t("overdue")}
           </span>
         )}
       </div>
@@ -44,7 +63,7 @@ export async function TasksWidget() {
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <Square className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
-            Alle Aufgaben erledigt!
+            {t("allDone")}
           </p>
         </div>
       ) : (
@@ -99,7 +118,7 @@ export async function TasksWidget() {
         href="/tasks"
         className="mt-6 block w-full rounded-full bg-muted py-3 text-center text-sm font-bold text-secondary transition-colors hover:bg-muted/80"
       >
-        Alle Aufgaben ansehen
+        {t("viewAll")}
       </Link>
     </section>
   )

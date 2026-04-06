@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { RotateCcw } from "lucide-react"
@@ -23,6 +24,8 @@ export function RitualStepItem({
   onToggle,
   onReset,
 }: RitualStepItemProps) {
+  const t = useTranslations("rituals.stepItem")
+
   return (
     <div
       className={`flex items-center gap-4 rounded-2xl p-4 transition-all ${
@@ -45,7 +48,7 @@ export function RitualStepItem({
         }}
         disabled={isCompleted}
         className="h-6 w-6 shrink-0 rounded-lg"
-        aria-label={`Schritt ${order + 1}: ${title}`}
+        aria-label={t("aria", { order: order + 1, title })}
       />
 
       <label
@@ -66,7 +69,7 @@ export function RitualStepItem({
           size="sm"
           onClick={() => onReset(stepId)}
           className="h-8 w-8 shrink-0 rounded-full p-0 text-muted-foreground hover:text-foreground"
-          aria-label={`Schritt "${title}" zuruecksetzen`}
+          aria-label={t("resetAria", { title })}
         >
           <RotateCcw className="h-3.5 w-3.5" />
         </Button>

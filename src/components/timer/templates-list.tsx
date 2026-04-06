@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Clock, Pencil, Plus, Trash2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTimerContext } from "@/context/timer-context"
@@ -23,6 +24,8 @@ function formatDuration(seconds: number): string {
 }
 
 export function TemplatesList() {
+  const t = useTranslations("timer.templates")
+  const tc = useTranslations("common")
   const {
     timer,
     templates,
@@ -97,7 +100,7 @@ export function TemplatesList() {
     <section>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-[10px] font-medium uppercase tracking-widest text-secondary">
-          Vorlagen
+          {t("title")}
         </h2>
         {isAdult && (
           <button
@@ -107,10 +110,10 @@ export function TemplatesList() {
               setFormOpen(true)
             }}
             className="flex items-center gap-1 text-xs font-bold text-secondary transition-colors hover:text-secondary/80"
-            aria-label="Neue Vorlage erstellen"
+            aria-label={t("new")}
           >
             <Plus className="h-4 w-4" />
-            Neue Vorlage
+            {t("new")}
           </button>
         )}
       </div>
@@ -119,7 +122,7 @@ export function TemplatesList() {
         <div className="flex flex-col items-center gap-3 rounded-2xl bg-muted py-8 text-center">
           <Clock className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
-            Noch keine Vorlagen erstellt.
+            {t("empty")}
           </p>
         </div>
       ) : (
@@ -169,7 +172,7 @@ export function TemplatesList() {
               {/* BUG-2: System default indicator */}
               {template.isSystemDefault && (
                 <p className="mt-1 text-[10px] text-muted-foreground">
-                  Systemvorlage
+                  {t("system")}
                 </p>
               )}
             </div>
@@ -191,20 +194,20 @@ export function TemplatesList() {
       >
         <AlertDialogContent className="rounded-[2rem]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Vorlage loeschen?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Diese Vorlage wird unwiderruflich geloescht.
+              {t("deleteDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-full">
-              Abbrechen
+              {tc("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Loeschen
+              {tc("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -217,20 +220,20 @@ export function TemplatesList() {
       >
         <AlertDialogContent className="rounded-[2rem]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Laufender Timer ersetzen?</AlertDialogTitle>
+            <AlertDialogTitle>{t("replaceTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Der aktive Timer wird abgebrochen und durch &quot;{confirmReplaceTemplate?.name}&quot; ersetzt. Fortfahren?
+              {t("replaceDescription", { name: confirmReplaceTemplate?.name ?? "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-full">
-              Abbrechen
+              {tc("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmReplace}
               className="rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white hover:opacity-90"
             >
-              Fortfahren
+              {tc("continue")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Rocket } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import {
   Dialog,
@@ -34,6 +35,8 @@ export function ContributePointsDialog({
   userBalance,
   onSuccess,
 }: ContributePointsDialogProps) {
+  const t = useTranslations("rewards.contributeDialog")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [amount, setAmount] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -49,7 +52,7 @@ export function ContributePointsDialog({
       const result = await contributeToGoalAction(goalId, effectiveAmount)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -58,13 +61,13 @@ export function ContributePointsDialog({
 
       if (result.goalCompleted) {
         toast({
-          title: "Ziel erreicht!",
-          description: `Das Familienziel "${goalTitle}" wurde erreicht!`,
+          title: t("goalReached"),
+          description: t("goalReachedDescription", { goalTitle }),
         })
       } else {
         toast({
-          title: "Punkte beigesteuert",
-          description: `${result.amountContributed} Punkte beigesteuert. Dein neuer Stand: ${result.newBalance} Pkt.`,
+          title: t("success"),
+          description: t("successDescription", { balance: result.newBalance }),
         })
       }
 
@@ -73,8 +76,8 @@ export function ContributePointsDialog({
       onSuccess(result.newBalance)
     } catch {
       toast({
-        title: "Fehler",
-        description: "Punkte konnten nicht beigesteuert werden.",
+        title: tc("error"),
+        description: t("error"),
         variant: "destructive",
       })
     } finally {
@@ -86,24 +89,24 @@ export function ContributePointsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Punkte beisteuern</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Steuere Punkte zum Familienziel &ldquo;{goalTitle}&rdquo; bei.
+            {t("description", { goalTitle })}
           </DialogDescription>
         </DialogHeader>
 
         {userBalance === 0 ? (
           <div className="rounded-lg bg-muted p-4 text-center">
             <p className="text-sm text-muted-foreground">
-              Du hast aktuell keine Punkte. Erledige Aufgaben, um Punkte zu sammeln!
+              {t("noPoints")}
             </p>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Current balance */}
             <div className="rounded-lg bg-muted p-3 text-center">
-              <p className="text-xs text-muted-foreground">Dein Kontostand</p>
-              <p className="text-2xl font-bold">{userBalance} Punkte</p>
+              <p className="text-xs text-muted-foreground">{t("balance")}</p>
+              <p className="text-2xl font-bold">{userBalance} {tc("points")}</p>
             </div>
 
             {/* Amount selector */}
@@ -113,7 +116,7 @@ export function ContributePointsDialog({
                   htmlFor="contribute-amount"
                   className="text-sm font-medium"
                 >
-                  Betrag
+                  {t("amountLabel")}
                 </label>
                 <Input
                   id="contribute-amount"
@@ -144,10 +147,10 @@ export function ContributePointsDialog({
             {/* Preview */}
             <div className="rounded-lg bg-accent/50 p-3 text-center">
               <p className="text-xs text-muted-foreground">
-                Verbleibender Stand
+                {t("remainingBalance")}
               </p>
               <p className="text-xl font-bold">
-                {userBalance - effectiveAmount} Punkte
+                {userBalance - effectiveAmount} {tc("points")}
               </p>
             </div>
           </div>
@@ -159,7 +162,7 @@ export function ContributePointsDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
           >
-            Abbrechen
+            {tc("cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -167,7 +170,7 @@ export function ContributePointsDialog({
             className="gap-1.5"
           >
             <Rocket className="h-3.5 w-3.5" />
-            {isSubmitting ? "Wird beigesteuert..." : "Beisteuern"}
+            {isSubmitting ? t("submitLoading") : t("submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

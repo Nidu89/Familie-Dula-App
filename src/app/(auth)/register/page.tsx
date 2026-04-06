@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Eye, EyeOff } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { AuthLayout } from "@/components/auth-layout"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,8 @@ import {
 import { registerAction, resendConfirmationAction } from "@/lib/actions/auth"
 
 export default function RegisterPage() {
+  const t = useTranslations("auth.register")
+  const tc = useTranslations("common")
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -65,22 +68,21 @@ export default function RegisterPage() {
   if (isSuccess) {
     return (
       <AuthLayout
-        title="Fast geschafft!"
-        subtitle="Wir haben dir eine Bestaetigungs-E-Mail gesendet."
+        title={t("confirmTitle")}
+        subtitle={t("confirmSubtitle")}
       >
         <Card className="w-full shadow-lg">
           <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/30 text-3xl">
-              <span role="img" aria-label="E-Mail">
+              <span role="img" aria-label={tc("email")}>
                 &#x2709;&#xFE0F;
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Bitte oeffne deine E-Mails und klicke auf den
-              Bestaetigungslink, um dein Konto zu aktivieren.
+              {t("confirmText")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Keine E-Mail erhalten?{" "}
+              {t("noEmailReceived")}{" "}
               <button
                 type="button"
                 className="font-medium text-primary hover:underline disabled:opacity-50"
@@ -92,16 +94,16 @@ export default function RegisterPage() {
                 }}
               >
                 {resendState === "loading"
-                  ? "Wird gesendet..."
+                  ? t("resending")
                   : resendState === "sent"
-                    ? "E-Mail gesendet!"
-                    : "Erneut senden"}
+                    ? t("resent")
+                    : t("resend")}
               </button>
             </p>
           </CardContent>
           <CardFooter>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/login">Zurueck zur Anmeldung</Link>
+              <Link href="/login">{t("backToLogin")}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -111,8 +113,8 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Konto erstellen"
-      subtitle="Registriere dich, um mit deiner Familie loszulegen."
+      title={t("title")}
+      subtitle={t("subtitle")}
     >
       <Card className="w-full shadow-lg">
         <Form {...form}>
@@ -133,11 +135,11 @@ export default function RegisterPage() {
                 name="displayName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Anzeigename</FormLabel>
+                    <FormLabel>{t("displayNameLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder="Dein Name"
+                        placeholder={t("displayNamePlaceholder")}
                         autoComplete="name"
                         disabled={isLoading}
                         {...field}
@@ -153,11 +155,11 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-Mail</FormLabel>
+                    <FormLabel>{tc("email")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@beispiel.de"
+                        placeholder={tc("emailPlaceholder")}
                         autoComplete="email"
                         disabled={isLoading}
                         {...field}
@@ -173,12 +175,12 @@ export default function RegisterPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passwort</FormLabel>
+                    <FormLabel>{tc("password")}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          placeholder="Mindestens 8 Zeichen"
+                          placeholder={tc("passwordPlaceholder")}
                           autoComplete="new-password"
                           disabled={isLoading}
                           {...field}
@@ -191,8 +193,8 @@ export default function RegisterPage() {
                           onClick={() => setShowPassword(!showPassword)}
                           aria-label={
                             showPassword
-                              ? "Passwort verbergen"
-                              : "Passwort anzeigen"
+                              ? tc("hidePassword")
+                              : tc("showPassword")
                           }
                           tabIndex={-1}
                         >
@@ -214,12 +216,12 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passwort bestaetigen</FormLabel>
+                    <FormLabel>{t("confirmPasswordLabel")}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Passwort wiederholen"
+                          placeholder={t("confirmPasswordPlaceholder")}
                           autoComplete="new-password"
                           disabled={isLoading}
                           {...field}
@@ -234,8 +236,8 @@ export default function RegisterPage() {
                           }
                           aria-label={
                             showConfirmPassword
-                              ? "Passwort verbergen"
-                              : "Passwort anzeigen"
+                              ? tc("hidePassword")
+                              : tc("showPassword")
                           }
                           tabIndex={-1}
                         >
@@ -263,20 +265,20 @@ export default function RegisterPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Registrieren...
+                    {t("submitLoading")}
                   </>
                 ) : (
-                  "Registrieren"
+                  t("submit")
                 )}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
-                Bereits ein Konto?{" "}
+                {t("hasAccount")}{" "}
                 <Link
                   href="/login"
                   className="font-medium text-primary hover:underline"
                 >
-                  Jetzt anmelden
+                  {t("login")}
                 </Link>
               </p>
             </CardFooter>

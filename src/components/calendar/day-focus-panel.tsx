@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { format, isSameDay } from "date-fns"
 import { de } from "date-fns/locale"
 import { CalendarDays, Plus } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import type { CalendarEvent } from "@/lib/actions/calendar"
@@ -14,14 +15,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   leisure: "hsl(170, 50%, 60%)",
   health: "hsl(40, 80%, 70%)",
   other: "hsl(20, 80%, 65%)",
-}
-
-const CATEGORY_LABELS: Record<string, string> = {
-  school: "Schule",
-  work: "Arbeit",
-  leisure: "Freizeit",
-  health: "Gesundheit",
-  other: "Sonstiges",
 }
 
 interface FamilyMember {
@@ -46,6 +39,8 @@ export function DayFocusPanel({
   onAddEvent,
   onSelectEvent,
 }: DayFocusPanelProps) {
+  const t = useTranslations("calendar")
+  const tc = useTranslations("common")
   // Filter events for the selected day
   const dayEvents = useMemo(() => {
     return events.filter((event) => {
@@ -105,7 +100,7 @@ export function DayFocusPanel({
       {/* Panel header */}
       <div>
         <p className="font-display text-xs font-bold uppercase tracking-widest text-secondary">
-          Tagesfokus
+          {t("dayFocus")}
         </p>
         <h3 className="mt-1 font-display text-lg font-extrabold text-foreground">
           {capitalizedDayName},{" "}
@@ -120,7 +115,7 @@ export function DayFocusPanel({
             <CalendarDays className="h-7 w-7 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Keine Termine an diesem Tag
+            {t("noEventsDay")}
           </p>
         </div>
       ) : (
@@ -129,10 +124,10 @@ export function DayFocusPanel({
             const categoryColor =
               CATEGORY_COLORS[event.category] || CATEGORY_COLORS.other
             const categoryLabel =
-              CATEGORY_LABELS[event.category] || CATEGORY_LABELS.other
+              t(`categories.${event.category}` as "categories.school" | "categories.work" | "categories.leisure" | "categories.health" | "categories.other")
 
             const timeLabel = event.allDay
-              ? "Ganztaegig"
+              ? tc("allDay")
               : `${format(new Date(event.startAt), "HH:mm")} - ${format(new Date(event.endAt), "HH:mm")}`
 
             return (
@@ -193,7 +188,7 @@ export function DayFocusPanel({
           onClick={onAddEvent}
         >
           <Plus className="h-4 w-4" />
-          Termin hinzufuegen
+          {t("addEvent")}
         </Button>
       )}
     </div>

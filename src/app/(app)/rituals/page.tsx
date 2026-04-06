@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 
 import { getDashboardDataAction } from "@/lib/actions/dashboard"
 import { RitualsPageClient } from "@/components/rituals/rituals-page-client"
+import { RitualsPageHeader } from "@/components/rituals/rituals-page-header"
 
 export default async function RitualsPage() {
   const result = await getDashboardDataAction()
@@ -11,9 +12,7 @@ export default async function RitualsPage() {
     if (result.error === "Du gehoerst keiner Familie an.") redirect("/onboarding")
     return (
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-        <p className="text-sm text-muted-foreground">
-          Rituale konnten nicht geladen werden. Bitte Seite neu laden.
-        </p>
+        <RitualsPageHeader showError />
       </main>
     )
   }

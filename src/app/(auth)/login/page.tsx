@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Eye, EyeOff } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { AuthLayout } from "@/components/auth-layout"
 import { Button } from "@/components/ui/button"
@@ -26,6 +27,8 @@ import { loginSchema, type LoginFormValues } from "@/lib/validations/auth"
 import { loginAction } from "@/lib/actions/auth"
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login")
+  const tc = useTranslations("common")
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -51,8 +54,8 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="Willkommen zurueck!"
-      subtitle="Melde dich an, um zu deiner Familie zu gelangen."
+      title={t("title")}
+      subtitle={t("subtitle")}
     >
       <Card className="w-full shadow-lg">
         <Form {...form}>
@@ -73,11 +76,11 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-Mail</FormLabel>
+                    <FormLabel>{t("emailLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@beispiel.de"
+                        placeholder={tc("emailPlaceholder")}
                         autoComplete="email"
                         disabled={isLoading}
                         {...field}
@@ -94,20 +97,20 @@ export default function LoginPage() {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
-                      <FormLabel>Passwort</FormLabel>
+                      <FormLabel>{t("passwordLabel")}</FormLabel>
                       <Link
                         href="/forgot-password"
                         className="text-xs text-primary hover:underline"
                         tabIndex={-1}
                       >
-                        Passwort vergessen?
+                        {t("forgotPassword")}
                       </Link>
                     </div>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          placeholder="Mindestens 8 Zeichen"
+                          placeholder={tc("passwordPlaceholder")}
                           autoComplete="current-password"
                           disabled={isLoading}
                           {...field}
@@ -120,8 +123,8 @@ export default function LoginPage() {
                           onClick={() => setShowPassword(!showPassword)}
                           aria-label={
                             showPassword
-                              ? "Passwort verbergen"
-                              : "Passwort anzeigen"
+                              ? tc("hidePassword")
+                              : tc("showPassword")
                           }
                           tabIndex={-1}
                         >
@@ -149,20 +152,20 @@ export default function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Anmelden...
+                    {t("submitLoading")}
                   </>
                 ) : (
-                  "Anmelden"
+                  t("submit")
                 )}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
-                Noch kein Konto?{" "}
+                {t("noAccount")}{" "}
                 <Link
                   href="/register"
                   className="font-medium text-primary hover:underline"
                 >
-                  Jetzt registrieren
+                  {t("register")}
                 </Link>
               </p>
             </CardFooter>

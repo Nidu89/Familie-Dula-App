@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useTranslations } from "next-intl"
 
 import {
   Dialog,
@@ -48,6 +49,8 @@ export function RewardFormDialog({
   editReward,
   onSuccess,
 }: RewardFormDialogProps) {
+  const t = useTranslations("rewards.rewardForm")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isActive, setIsActive] = useState(true)
@@ -99,28 +102,28 @@ export function RewardFormDialog({
         })
         if ("error" in result) {
           toast({
-            title: "Fehler",
+            title: tc("error"),
             description: result.error,
             variant: "destructive",
           })
           return
         }
         toast({
-          title: "Belohnung aktualisiert",
+          title: t("updated"),
           description: `"${values.title}" wurde gespeichert.`,
         })
       } else {
         const result = await createRewardAction(values)
         if ("error" in result) {
           toast({
-            title: "Fehler",
+            title: tc("error"),
             description: result.error,
             variant: "destructive",
           })
           return
         }
         toast({
-          title: "Belohnung erstellt",
+          title: t("created"),
           description: `"${values.title}" ist jetzt im Shop verfuegbar.`,
         })
       }
@@ -129,8 +132,8 @@ export function RewardFormDialog({
       onSuccess()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Belohnung konnte nicht gespeichert werden.",
+        title: tc("error"),
+        description: t("error"),
         variant: "destructive",
       })
     } finally {
@@ -143,12 +146,12 @@ export function RewardFormDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Belohnung bearbeiten" : "Neue Belohnung"}
+            {isEditing ? t("editTitle") : t("createTitle")}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Aendere die Details dieser Belohnung."
-              : "Erstelle eine neue Belohnung fuer den Shop."}
+              ? t("editDescription")
+              : t("createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -159,10 +162,10 @@ export function RewardFormDialog({
               name="iconEmoji"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Emoji-Icon</FormLabel>
+                  <FormLabel>{t("emojiLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="z.B. &#x1F3AE;"
+                      placeholder={t("emojiPlaceholder")}
                       maxLength={4}
                       className="text-center text-2xl"
                       {...field}
@@ -178,10 +181,10 @@ export function RewardFormDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Titel</FormLabel>
+                  <FormLabel>{t("titleLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="z.B. 30 Min. Spielzeit"
+                      placeholder={t("titlePlaceholder")}
                       maxLength={50}
                       {...field}
                     />
@@ -196,10 +199,10 @@ export function RewardFormDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beschreibung (optional)</FormLabel>
+                  <FormLabel>{t("descriptionLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Kurze Beschreibung der Belohnung"
+                      placeholder={t("descriptionPlaceholder")}
                       rows={2}
                       maxLength={200}
                       {...field}
@@ -215,7 +218,7 @@ export function RewardFormDialog({
               name="pointsCost"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Punktekosten</FormLabel>
+                  <FormLabel>{t("costLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -241,9 +244,9 @@ export function RewardFormDialog({
             {isEditing && (
               <div className="flex items-center justify-between rounded-lg bg-muted p-3">
                 <div>
-                  <p className="text-sm font-medium">Sichtbar im Shop</p>
+                  <p className="text-sm font-medium">{t("visibleToggle")}</p>
                   <p className="text-xs text-muted-foreground">
-                    Deaktivierte Belohnungen sind fuer Kinder nicht sichtbar.
+                    {t("visibleHint")}
                   </p>
                 </div>
                 <Switch checked={isActive} onCheckedChange={setIsActive} />
@@ -256,14 +259,14 @@ export function RewardFormDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Abbrechen
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting
-                  ? "Speichern..."
+                  ? tc("saving")
                   : isEditing
-                    ? "Speichern"
-                    : "Erstellen"}
+                    ? tc("save")
+                    : tc("create")}
               </Button>
             </DialogFooter>
           </form>

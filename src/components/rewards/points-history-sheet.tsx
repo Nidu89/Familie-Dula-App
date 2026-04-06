@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { Star, CheckCircle2, PenLine, Gift, Target } from "lucide-react"
 
 import {
@@ -29,27 +30,27 @@ interface PointsHistorySheetProps {
 
 const TYPE_CONFIG = {
   task_completion: {
-    label: "Aufgabe erledigt",
+    labelKey: "taskCompleted" as const,
     icon: CheckCircle2,
     className: "text-chart-3",
   },
   manual_add: {
-    label: "Manuell hinzugefuegt",
+    labelKey: "manualAdd" as const,
     icon: PenLine,
     className: "text-primary",
   },
   manual_deduct: {
-    label: "Manuell abgezogen",
+    labelKey: "manualSub" as const,
     icon: PenLine,
     className: "text-destructive",
   },
   reward_redemption: {
-    label: "Belohnung eingeloest",
+    labelKey: "rewardRedeemed" as const,
     icon: Gift,
     className: "text-secondary",
   },
   goal_contribution: {
-    label: "Familienziel-Beitrag",
+    labelKey: "goalContribution" as const,
     icon: Target,
     className: "text-secondary",
   },
@@ -72,6 +73,8 @@ export function PointsHistorySheet({
   childName,
 }: PointsHistorySheetProps) {
   const { toast } = useToast()
+  const t = useTranslations("rewards.history")
+  const tc = useTranslations("common")
   const [transactions, setTransactions] = useState<PointsTransaction[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
@@ -82,7 +85,7 @@ export function PointsHistorySheet({
       const result = await getPointsHistoryAction(childId)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -91,8 +94,8 @@ export function PointsHistorySheet({
       setTransactions(result.transactions)
     } catch {
       toast({
-        title: "Fehler",
-        description: "Punktehistorie konnte nicht geladen werden.",
+        title: tc("error"),
+        description: t("history.loadError"),
         variant: "destructive",
       })
     } finally {
@@ -110,9 +113,9 @@ export function PointsHistorySheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Punkteverlauf - {childName}</SheetTitle>
+          <SheetTitle>{t("title", { childName })}</SheetTitle>
           <SheetDescription>
-            Alle Buchungen fuer {childName} im Ueberblick.
+            {t("description", { childName })}
           </SheetDescription>
         </SheetHeader>
 
@@ -129,7 +132,7 @@ export function PointsHistorySheet({
                 <Star className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Noch keine Punkte gesammelt
+                {t("empty")}
               </p>
             </div>
           ) : (
@@ -150,7 +153,7 @@ export function PointsHistorySheet({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-sm font-medium">
-                            {tx.taskTitle || config.label}
+                            {tx.taskTitle || t(config.labelKey)}
                           </p>
                           <Badge
                             variant="outline"

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Users } from "lucide-react"
 import { LeaderboardCard } from "@/components/rewards/leaderboard-card"
 import { PointsHistorySheet } from "@/components/rewards/points-history-sheet"
@@ -13,6 +14,7 @@ interface FamilyLeaderboardProps {
 }
 
 export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboardProps) {
+  const t = useTranslations("rewards.leaderboard")
   // History sheet state
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyMemberId, setHistoryMemberId] = useState<string | null>(null)
@@ -27,14 +29,14 @@ export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboard
   function handleShowHistory(memberId: string) {
     const member = members.find((m) => m.id === memberId)
     setHistoryMemberId(memberId)
-    setHistoryMemberName(member?.displayName || "Mitglied")
+    setHistoryMemberName(member?.displayName || t("memberFallback"))
     setHistoryOpen(true)
   }
 
   function handleManualPoints(memberId: string) {
     const member = members.find((m) => m.id === memberId)
     setManualMemberId(memberId)
-    setManualMemberName(member?.displayName || "Mitglied")
+    setManualMemberName(member?.displayName || t("memberFallback"))
     setManualMemberBalance(member?.pointsBalance || 0)
     setManualOpen(true)
   }
@@ -47,7 +49,7 @@ export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboard
             <Users className="h-7 w-7 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Noch keine Familienmitglieder vorhanden.
+            {t("empty")}
           </p>
         </div>
       </section>
@@ -57,9 +59,9 @@ export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboard
   return (
     <section aria-label="Familien-Leaderboard">
       <div className="mb-4 flex items-baseline gap-3">
-        <h2 className="font-display text-xl font-bold">Wer ist vorn?</h2>
+        <h2 className="font-display text-xl font-bold">{t("title")}</h2>
         <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
-          Leaderboard
+          {t("badge")}
         </span>
       </div>
 

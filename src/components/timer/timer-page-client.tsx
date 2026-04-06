@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useTimerContext } from "@/context/timer-context"
 import { TimerDisplay } from "./timer-display"
 import { TimerControls } from "./timer-controls"
@@ -8,6 +9,7 @@ import { TemplatesList } from "./templates-list"
 import { TimerAlarmDialog } from "./timer-alarm-dialog"
 
 export function TimerPageClient() {
+  const t = useTranslations("timer")
   const { timer, isAdult } = useTimerContext()
   const { status } = timer.state
 
@@ -30,7 +32,7 @@ export function TimerPageClient() {
       {status === "idle" && !isAdult && (
         <div className="flex flex-col items-center gap-3 rounded-[2rem] bg-muted py-10 text-center">
           <p className="text-sm text-muted-foreground">
-            Kein Timer aktiv. Ein Elternteil kann den Timer starten.
+            {t("childIdleMessage")}
           </p>
         </div>
       )}

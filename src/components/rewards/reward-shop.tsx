@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import Link from "next/link"
 import { Plus, Gift, ChevronRight } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -31,6 +32,8 @@ export function RewardShop({
   maxVisible = 6,
   showViewAll = true,
 }: RewardShopProps) {
+  const t = useTranslations("rewards.shop")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [rewards, setRewards] = useState<Reward[]>(initialRewards)
   const [userBalance, setUserBalance] = useState(initialBalance)
@@ -42,7 +45,7 @@ export function RewardShop({
       const result = await getRewardShopAction()
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -52,8 +55,8 @@ export function RewardShop({
       setUserBalance(result.userBalance)
     } catch {
       toast({
-        title: "Fehler",
-        description: "Shop konnte nicht aktualisiert werden.",
+        title: tc("error"),
+        description: t("refreshError"),
         variant: "destructive",
       })
     }
@@ -74,12 +77,12 @@ export function RewardShop({
   const hasMore = maxVisible > 0 && rewards.length > maxVisible
 
   return (
-    <section aria-label="Belohnungs-Shop">
+    <section aria-label={t("title")}>
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-baseline gap-3">
-          <h2 className="font-display text-xl font-bold">Deine Belohnungen</h2>
+          <h2 className="font-display text-xl font-bold">{t("title")}</h2>
           <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
-            Shop
+            {t("badge")}
           </span>
         </div>
         {isAdultOrAdmin && (
@@ -90,7 +93,7 @@ export function RewardShop({
             onClick={handleAdd}
           >
             <Plus className="h-3.5 w-3.5" />
-            Neue Belohnung
+            {t("newReward")}
           </Button>
         )}
       </div>
@@ -101,7 +104,7 @@ export function RewardShop({
             <Gift className="h-7 w-7 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Noch keine Belohnungen vorhanden.
+            {t("empty")}
           </p>
           {isAdultOrAdmin && (
             <Button
@@ -109,7 +112,7 @@ export function RewardShop({
               className="mt-2 rounded-full"
               onClick={handleAdd}
             >
-              Erste Belohnung erstellen
+              {t("createFirst")}
             </Button>
           )}
         </div>
@@ -134,7 +137,7 @@ export function RewardShop({
                 href="/rewards/shop"
                 className="inline-flex items-center gap-1 text-sm font-semibold text-secondary hover:underline"
               >
-                Alle anzeigen
+                {t("viewAll")}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
@@ -153,8 +156,9 @@ export function RewardShop({
 }
 
 export function RewardShopSkeleton() {
+  const t = useTranslations("rewards.shop")
   return (
-    <section aria-label="Belohnungs-Shop wird geladen">
+    <section aria-label={t("loading")}>
       <div className="mb-4 flex items-center justify-between">
         <Skeleton className="h-7 w-48" />
         <Skeleton className="h-8 w-32 rounded-full" />

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { Rocket, Target, Plus, CheckCircle2, PartyPopper } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -32,6 +33,8 @@ export function CommunityGoal({
   userBalance: initialBalance,
   isAdultOrAdmin,
 }: CommunityGoalProps) {
+  const t = useTranslations("rewards")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [goal, setGoal] = useState<FamilyGoal | null>(initialGoal)
   const [contributions, setContributions] =
@@ -51,7 +54,7 @@ export function CommunityGoal({
       ])
       if ("error" in goalResult) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: goalResult.error,
           variant: "destructive",
         })
@@ -64,8 +67,8 @@ export function CommunityGoal({
       }
     } catch {
       toast({
-        title: "Fehler",
-        description: "Familienziel konnte nicht aktualisiert werden.",
+        title: tc("error"),
+        description: t("goal.updateError"),
         variant: "destructive",
       })
     }
@@ -78,21 +81,21 @@ export function CommunityGoal({
       const result = await completeFamilyGoalAction(goal.id)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
         return
       }
       toast({
-        title: "Ziel abgeschlossen!",
-        description: `"${goal.title}" wurde als abgeschlossen markiert.`,
+        title: t("goal.completeSuccess"),
+        description: t("goal.completeSuccessDescription", { title: goal.title }),
       })
       await refreshGoal()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Ziel konnte nicht abgeschlossen werden.",
+        title: tc("error"),
+        description: t("goal.completeError"),
         variant: "destructive",
       })
     } finally {
@@ -103,11 +106,11 @@ export function CommunityGoal({
   // No active goal
   if (!goal) {
     return (
-      <section aria-label="Familienziel">
+      <section aria-label={t("goal.title")}>
         <div className="mb-4 flex items-baseline gap-3">
-          <h2 className="font-display text-xl font-bold">Familienziel</h2>
+          <h2 className="font-display text-xl font-bold">{t("goal.title")}</h2>
           <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
-            Community
+            {t("goal.badge")}
           </span>
         </div>
         <div className="flex flex-col items-center gap-3 rounded-[2rem] bg-card py-12 text-center">
@@ -115,7 +118,7 @@ export function CommunityGoal({
             <Target className="h-7 w-7 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Kein aktives Familienziel vorhanden.
+            {t("goal.empty")}
           </p>
           {isAdultOrAdmin && (
             <Button
@@ -124,7 +127,7 @@ export function CommunityGoal({
               onClick={() => setGoalFormOpen(true)}
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Neues Ziel starten
+              {t("goal.newGoal")}
             </Button>
           )}
         </div>
@@ -147,11 +150,11 @@ export function CommunityGoal({
     goal.status === "completed" || goal.collectedPoints >= goal.targetPoints
 
   return (
-    <section aria-label="Familienziel">
+    <section aria-label={t("goal.title")}>
       <div className="mb-4 flex items-baseline gap-3">
-        <h2 className="font-display text-xl font-bold">Familienziel</h2>
+        <h2 className="font-display text-xl font-bold">{t("goal.title")}</h2>
         <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
-          Community
+          {t("goal.badge")}
         </span>
       </div>
 
@@ -190,12 +193,10 @@ export function CommunityGoal({
             <PartyPopper className="h-8 w-8 text-primary" />
             <div>
               <p className="font-display font-bold text-accent-foreground">
-                Ziel erreicht!
+                {t("goal.reached")}
               </p>
               <p className="text-sm text-accent-foreground/70">
-                Die Familie hat gemeinsam{" "}
-                {goal.collectedPoints.toLocaleString("de-DE")} Punkte
-                gesammelt!
+                {t("goal.reachedDescription", { points: goal.collectedPoints.toLocaleString("de-DE") })}
               </p>
             </div>
           </div>
@@ -207,7 +208,7 @@ export function CommunityGoal({
             {goal.collectedPoints.toLocaleString("de-DE")}
           </span>
           <span className="text-sm text-accent-foreground/60">
-            / {goal.targetPoints.toLocaleString("de-DE")} Pkt.
+            / {goal.targetPoints.toLocaleString("de-DE")} {tc("pts")}
           </span>
         </div>
 
@@ -230,7 +231,7 @@ export function CommunityGoal({
 
         {!isCompleted && (
           <p className="mb-6 text-xs text-accent-foreground/60">
-            Noch {remainingPoints.toLocaleString("de-DE")} Punkte bis zum Ziel
+            {t("goal.remaining", { points: remainingPoints.toLocaleString("de-DE") })}
           </p>
         )}
 
@@ -238,7 +239,7 @@ export function CommunityGoal({
         {contributions.length > 0 && (
           <div className="mb-6 space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-accent-foreground/50">
-              Letzte Beitraege
+              {t("goal.lastContributions")}
             </p>
             {contributions.slice(0, 3).map((c) => (
               <div
@@ -246,10 +247,10 @@ export function CommunityGoal({
                 className="flex items-center justify-between rounded-lg bg-card/40 px-3 py-2 text-xs backdrop-blur-sm"
               >
                 <span className="font-medium text-accent-foreground">
-                  {c.contributedByName || "Mitglied"}
+                  {c.contributedByName || t("leaderboard.memberFallback")}
                 </span>
                 <span className="font-bold text-secondary">
-                  +{c.amount} Pkt.
+                  +{c.amount} {tc("pts")}
                 </span>
               </div>
             ))}
@@ -264,7 +265,7 @@ export function CommunityGoal({
               onClick={() => setContributeOpen(true)}
             >
               <Rocket className="h-4 w-4" />
-              Punkte beisteuern
+              {t("goal.contribute")}
             </Button>
           )}
 
@@ -278,12 +279,12 @@ export function CommunityGoal({
               {isCompleted ? (
                 <>
                   <Plus className="h-4 w-4" />
-                  Neues Ziel
+                  {t("goal.newGoalBtn")}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4" />
-                  {isCompleting ? "Wird abgeschlossen..." : "Abschliessen"}
+                  {isCompleting ? t("goal.completing") : t("goal.complete")}
                 </>
               )}
             </Button>
@@ -320,7 +321,7 @@ export function CommunityGoal({
             className="text-xs font-semibold text-muted-foreground hover:text-foreground"
             onClick={() => setShowHistory(!showHistory)}
           >
-            {showHistory ? "Vergangene Ziele verbergen" : `${completedGoals.length} vergangene${completedGoals.length === 1 ? "s" : ""} Ziel${completedGoals.length === 1 ? "" : "e"} anzeigen`}
+            {showHistory ? t("goal.hideCompleted") : t("goal.showCompleted", { count: completedGoals.length })}
           </button>
           {showHistory && (
             <div className="mt-3 space-y-2">
@@ -334,7 +335,7 @@ export function CommunityGoal({
                     <div>
                       <p className="text-sm font-medium">{g.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {g.status === "completed" ? "Erreicht" : "Abgebrochen"}
+                        {g.status === "completed" ? t("goal.statusReached") : t("goal.statusCancelled")}
                         {g.completedAt && ` am ${new Date(g.completedAt).toLocaleDateString("de-DE")}`}
                       </p>
                     </div>
@@ -353,8 +354,9 @@ export function CommunityGoal({
 }
 
 export function CommunityGoalSkeleton() {
+  const t = useTranslations("rewards")
   return (
-    <section aria-label="Familienziel wird geladen">
+    <section aria-label={t("goal.loading")}>
       <div className="mb-4">
         <Skeleton className="h-7 w-40" />
       </div>

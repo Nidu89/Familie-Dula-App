@@ -5,6 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Plus, Trash2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import {
   Dialog,
@@ -43,12 +44,12 @@ import {
 
 type SeriesMode = "single" | "following" | "all"
 
-const RECURRENCE_OPTIONS = [
-  { value: "none", label: "Keine Wiederholung" },
-  { value: "FREQ=DAILY", label: "Taeglich" },
-  { value: "FREQ=WEEKLY", label: "Woechentlich" },
-  { value: "FREQ=MONTHLY", label: "Monatlich" },
-]
+const RECURRENCE_VALUES = [
+  { value: "none", key: "noRecurrence" },
+  { value: "FREQ=DAILY", key: "recurrenceDaily" },
+  { value: "FREQ=WEEKLY", key: "recurrenceWeekly" },
+  { value: "FREQ=MONTHLY", key: "recurrenceMonthly" },
+] as const
 
 interface FamilyMember {
   id: string
@@ -89,6 +90,8 @@ export function TaskFormDialog({
   members,
   onSuccess,
 }: TaskFormDialogProps) {
+  const t = useTranslations("tasks")
+  const tc = useTranslations("common")
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -180,7 +183,7 @@ export function TaskFormDialog({
 
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
@@ -188,17 +191,17 @@ export function TaskFormDialog({
       }
 
       toast({
-        title: isEditing ? "Aufgabe aktualisiert" : "Aufgabe erstellt",
+        title: isEditing ? t("form.updated") : t("form.created"),
         description: isEditing
-          ? "Die Aufgabe wurde erfolgreich aktualisiert."
-          : "Die Aufgabe wurde erfolgreich erstellt.",
+          ? t("form.updatedDescription")
+          : t("form.createdDescription"),
       })
       onOpenChange(false)
       onSuccess()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: tc("error"),
+        description: tc("unexpectedError"),
         variant: "destructive",
       })
     } finally {
@@ -213,22 +216,22 @@ export function TaskFormDialog({
       const result = await deleteTaskAction(task.id, seriesMode)
       if ("error" in result) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
         return
       }
       toast({
-        title: "Aufgabe geloescht",
-        description: "Die Aufgabe wurde erfolgreich geloescht.",
+        title: t("form.deleted"),
+        description: t("form.deletedDescription"),
       })
       onOpenChange(false)
       onSuccess()
     } catch {
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: tc("error"),
+        description: tc("unexpectedError"),
         variant: "destructive",
       })
     } finally {
@@ -241,12 +244,12 @@ export function TaskFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Aufgabe bearbeiten" : "Neue Aufgabe"}
+            {isEditing ? t("form.editTitle") : t("form.createTitle")}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Aendere die Details dieser Aufgabe."
-              : "Erstelle eine neue Aufgabe fuer die Familie."}
+              ? t("form.editDescription")
+              : t("form.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -257,10 +260,10 @@ export function TaskFormDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Titel *</FormLabel>
+                  <FormLabel>{t("form.titleLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="z.B. Zimmer aufraeumen"
+                      placeholder={t("form.titlePlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -274,10 +277,10 @@ export function TaskFormDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beschreibung</FormLabel>
+                  <FormLabel>{tc("description")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Optionale Beschreibung..."
+                      placeholder={tc("descriptionPlaceholder")}
                       rows={2}
                       {...field}
                     />
@@ -293,7 +296,7 @@ export function TaskFormDialog({
                 name="dueDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Faelligkeitsdatum</FormLabel>
+                    <FormLabel>{t("form.dueDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -307,7 +310,7 @@ export function TaskFormDialog({
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Prioritaet</FormLabel>
+                    <FormLabel>{t("form.priority")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -318,9 +321,9 @@ export function TaskFormDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="low">Niedrig</SelectItem>
-                        <SelectItem value="medium">Mittel</SelectItem>
-                        <SelectItem value="high">Hoch</SelectItem>
+                        <SelectItem value="low">{t("form.priorityLow")}</SelectItem>
+                        <SelectItem value="medium">{t("form.priorityMedium")}</SelectItem>
+                        <SelectItem value="high">{t("form.priorityHigh")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -335,7 +338,7 @@ export function TaskFormDialog({
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>{t("form.status")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -346,11 +349,11 @@ export function TaskFormDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="open">Offen</SelectItem>
+                        <SelectItem value="open">{t("form.statusOpen")}</SelectItem>
                         <SelectItem value="in_progress">
-                          In Bearbeitung
+                          {t("form.statusInProgress")}
                         </SelectItem>
-                        <SelectItem value="done">Erledigt</SelectItem>
+                        <SelectItem value="done">{t("form.statusDone")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -363,18 +366,18 @@ export function TaskFormDialog({
                 name="assignedTo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Zugewiesen an</FormLabel>
+                    <FormLabel>{t("form.assignee")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Niemand" />
+                          <SelectValue placeholder={t("form.assigneeNone")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="none">Unzugewiesen</SelectItem>
+                        <SelectItem value="none">{t("form.assigneeUnassigned")}</SelectItem>
                         {members.map((m) => (
                           <SelectItem key={m.id} value={m.id}>
                             {m.displayName}
@@ -394,7 +397,7 @@ export function TaskFormDialog({
                 name="points"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Punkte (optional)</FormLabel>
+                    <FormLabel>{t("form.pointsOptional")}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -419,20 +422,20 @@ export function TaskFormDialog({
                 name="recurrenceRule"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Wiederholung</FormLabel>
+                    <FormLabel>{t("form.recurrence")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Keine" />
+                          <SelectValue placeholder={t("form.recurrenceNone")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {RECURRENCE_OPTIONS.map((r) => (
+                        {RECURRENCE_VALUES.map((r) => (
                           <SelectItem key={r.value} value={r.value}>
-                            {r.label}
+                            {t(`form.${r.key}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -445,12 +448,12 @@ export function TaskFormDialog({
 
             {/* Subtasks */}
             <div>
-              <p className="text-sm font-medium leading-none">Unteraufgaben</p>
+              <p className="text-sm font-medium leading-none">{t("form.subtasks")}</p>
               <div className="mt-2 space-y-2">
                 {fields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-2">
                     <Input
-                      placeholder="Unteraufgabe..."
+                      placeholder={t("form.subtaskPlaceholder")}
                       {...form.register(`subtasks.${index}.title`)}
                       className="flex-1"
                     />
@@ -459,7 +462,7 @@ export function TaskFormDialog({
                       variant="ghost"
                       size="icon"
                       onClick={() => remove(index)}
-                      aria-label="Unteraufgabe entfernen"
+                      aria-label={t("form.removeSubtask")}
                     >
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
@@ -473,23 +476,23 @@ export function TaskFormDialog({
                   onClick={() => append({ title: "", isDone: false })}
                 >
                   <Plus className="h-3 w-3" />
-                  Unteraufgabe
+                  {t("form.addSubtask")}
                 </Button>
               </div>
             </div>
 
             {isEditing && isRecurring && (
               <div className="rounded-md border p-3 space-y-2">
-                <p className="text-sm font-medium leading-none">Welche Aufgaben bearbeiten?</p>
+                <p className="text-sm font-medium leading-none">{t("form.editSeriesLabel")}</p>
                 <RadioGroup
                   value={seriesMode}
                   onValueChange={(v) => setSeriesMode(v as SeriesMode)}
                   className="space-y-1"
                 >
                   {[
-                    { value: "single", label: "Nur diese Aufgabe" },
-                    { value: "following", label: "Diese + alle folgenden" },
-                    { value: "all", label: "Alle Aufgaben der Serie" },
+                    { value: "single", label: t("form.editOnlyThis") },
+                    { value: "following", label: t("form.editThisAndFollowing") },
+                    { value: "all", label: t("form.editAll") },
                   ].map((opt) => (
                     <div key={opt.value} className="flex items-center gap-2">
                       <RadioGroupItem value={opt.value} id={`task-series-${opt.value}`} />
@@ -510,7 +513,7 @@ export function TaskFormDialog({
                   onClick={handleDelete}
                   disabled={isDeleting || isSubmitting}
                 >
-                  {isDeleting ? "Loeschen..." : "Loeschen"}
+                  {isDeleting ? tc("deleting") : tc("delete")}
                 </Button>
               )}
               <Button
@@ -518,14 +521,14 @@ export function TaskFormDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Abbrechen
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting
-                  ? "Speichern..."
+                  ? tc("saving")
                   : isEditing
-                    ? "Speichern"
-                    : "Erstellen"}
+                    ? tc("save")
+                    : tc("create")}
               </Button>
             </DialogFooter>
           </form>

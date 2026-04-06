@@ -10,6 +10,7 @@ import {
   inviteByEmailSchema,
   updateRoleSchema,
   removeMemberSchema,
+  updateLocaleSchema,
 } from "@/lib/validations/family"
 
 // ============================================================
@@ -480,6 +481,38 @@ export async function checkAndJoinEmailInvitationAction(): Promise<{ familyId: s
   }
 
   return { familyId: familyId as string }
+}
+
+export async function updateLocaleAction(locale: string) {
+  const parsed = updateLocaleSchema.safeParse({ locale })
+  if (!parsed.success) {
+    return { error: "Ungueltige Sprache." }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`updateLocale:${ip}`, 20, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "Nicht angemeldet." }
+  }
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ locale: parsed.data.locale })
+    .eq("id", user.id)
+
+  if (updateError) {
+    return { error: "Sprache konnte nicht aktualisiert werden." }
+  }
+
+  return { success: true }
 }
 
 export async function getFamilyDataAction() {

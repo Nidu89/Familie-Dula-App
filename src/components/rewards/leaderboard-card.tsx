@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Trophy, Medal, User, History, PlusCircle } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,8 @@ function getInitials(name: string): string {
 }
 
 export function LeaderboardCard({ member, rank, isAdultOrAdmin, onShowHistory, onManualPoints }: LeaderboardCardProps) {
+  const t = useTranslations("rewards.leaderboard")
+  const tc = useTranslations("common")
   const isFirst = rank === 1
   const isSecond = rank === 2
 
@@ -85,7 +88,7 @@ export function LeaderboardCard({ member, rank, isAdultOrAdmin, onShowHistory, o
             style={{
               background: "linear-gradient(135deg, #6c5a00, #ffd709)",
             }}
-            aria-label="Rang 1"
+            aria-label={t("rank1")}
           >
             <Trophy className="h-3.5 w-3.5 text-white" />
           </div>
@@ -93,7 +96,7 @@ export function LeaderboardCard({ member, rank, isAdultOrAdmin, onShowHistory, o
         {isSecond && (
           <div
             className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-surface-high"
-            aria-label="Rang 2"
+            aria-label={t("rank2")}
           >
             <Medal className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
@@ -105,10 +108,10 @@ export function LeaderboardCard({ member, rank, isAdultOrAdmin, onShowHistory, o
         <p className="font-display text-sm font-bold">{member.displayName}</p>
         <p className="text-xs text-muted-foreground capitalize">
           {member.role === "child"
-            ? "Kind"
+            ? t("roleChild")
             : member.role === "admin"
-              ? "Admin"
-              : "Erwachsener"}
+              ? t("roleAdmin")
+              : t("roleAdult")}
         </p>
       </div>
 
@@ -117,7 +120,7 @@ export function LeaderboardCard({ member, rank, isAdultOrAdmin, onShowHistory, o
           {member.pointsBalance}
         </span>
         <span className="text-xs font-medium text-accent-foreground/70">
-          Pkt.
+          {tc("pts")}
         </span>
       </div>
 

@@ -1,11 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { useTimerContext } from "@/context/timer-context"
 import { Bell } from "lucide-react"
 
 export function TimerAlarmDialog() {
+  const t = useTranslations("timer.alarm")
   const { timer, isAdult, alarmAudioRef } = useTimerContext()
   const isFinished = timer.state.status === "finished"
   const [audioBlocked, setAudioBlocked] = useState(false)
@@ -46,7 +48,7 @@ export function TimerAlarmDialog() {
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       role="alertdialog"
       aria-modal="true"
-      aria-label="Timer abgelaufen"
+      aria-label={t("ariaLabel")}
     >
       <div className="mx-4 flex max-w-sm flex-col items-center gap-6 rounded-[3rem] bg-card p-10 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-300">
         {/* Pulsing bell icon */}
@@ -56,14 +58,14 @@ export function TimerAlarmDialog() {
 
         <div>
           <h2 className="font-display text-2xl font-bold text-foreground">
-            Zeit abgelaufen!
+            {t("title")}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Der Timer ist abgelaufen.
+            {t("description")}
           </p>
           {audioBlocked && (
             <p className="mt-2 text-xs text-muted-foreground">
-              Ton blockiert — bitte Autoplay im Browser erlauben.
+              {t("audioBlocked")}
             </p>
           )}
         </div>
@@ -73,11 +75,11 @@ export function TimerAlarmDialog() {
             onClick={timer.reset}
             className="h-14 w-full rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-base font-bold text-white shadow-lg hover:opacity-90"
           >
-            OK, verstanden
+            {t("confirm")}
           </Button>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Ein Elternteil muss den Timer bestaetigen.
+            {t("childMessage")}
           </p>
         )}
       </div>

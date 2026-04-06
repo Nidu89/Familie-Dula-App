@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 
 import { getDashboardDataAction } from "@/lib/actions/dashboard"
 import { TimerPageClient } from "@/components/timer/timer-page-client"
+import { TimerPageHeader } from "@/components/timer/timer-page-header"
 
 export default async function TimerPage() {
   const result = await getDashboardDataAction()
@@ -11,24 +12,14 @@ export default async function TimerPage() {
     if (result.error === "Du gehoerst keiner Familie an.") redirect("/onboarding")
     return (
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-        <p className="text-sm text-muted-foreground">
-          Timer konnte nicht geladen werden. Bitte Seite neu laden.
-        </p>
+        <TimerPageHeader showError />
       </main>
     )
   }
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          Familien-Timer
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Countdown-Timer fuer die ganze Familie
-        </p>
-      </div>
-
+      <TimerPageHeader />
       <TimerPageClient />
     </main>
   )

@@ -12,6 +12,7 @@ import {
   Loader2,
   type LucideIcon,
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 interface WeatherData {
   temperature: number
