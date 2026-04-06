@@ -1,6 +1,6 @@
 # PROJ-8: Essens- & Rezeptplanung
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -46,7 +46,67 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Struktur
+
+```
+/recipes (Tab-Navigation: "Rezepte" | "Essensplan")
+
+Tab: Rezepte
++-- Recipes Page Header ("Neue Rezept"-Button für Admins)
++-- Tag-Filter-Bar (Chips: schnell, vegetarisch, vegan, glutenfrei, + eigene)
++-- Rezept-Grid
+|   +-- Recipe Card
+|       +-- Bild (oder Platzhalter-Icon)
+|       +-- Titel + Tags
+|       +-- "Zu Einkaufsliste hinzufügen"-Button
++-- Recipe Form Dialog (erstellen/bearbeiten)
+|   +-- Titel, Beschreibung, Zutatenliste, Tags, Bild-Upload
++-- Recipe Detail Sheet (Klick auf Karte)
+    +-- Vollbild-Ansicht: Zutaten, Beschreibung, Tags
+
+Tab: Essensplan
++-- Week Navigator (Pfeil zurück/vor, aktuell angezeigte Woche)
++-- Meal Plan Grid (7 Spalten × 3 Zeilen)
+|   +-- Spalten-Header (Mo, Di, Mi, Do, Fr, Sa, So)
+|   +-- Zeilen (Frühstück / Mittagessen / Abendessen)
+|   +-- Zelle
+|       +-- Zugewiesenes Rezept (Chip mit Name + Entfernen-Button)
+|       +-- ODER: Freitext (z.B. "Reste")
+|       +-- ODER: "+ Hinzufügen"-Button (öffnet Rezept-Auswahl oder Freitext)
++-- "Alle Zutaten dieser Woche zu Einkaufsliste"-Button
+```
+
+### Datenmodell
+
+**`recipes`** – Ein Rezept pro Eintrag:
+- ID, Familien-ID, Titel, Beschreibung, Tags (Array), Bild-URL (optional), Erstellt-von, Erstellt-am
+
+**`recipe_ingredients`** – Eine Zutat pro Eintrag:
+- ID, Rezept-ID, Name, Menge (optional), Einheit (optional)
+
+**`meal_plan_entries`** – Ein Slot im Essensplan:
+- ID, Familien-ID, Woche (ISO-String, z.B. "2026-W15"), Wochentag (0–6), Mahlzeit-Typ (frühstück/mittagessen/abendessen), Rezept-ID (optional), Freitext (optional)
+
+**Gespeichert in:** Supabase-Datenbank + Supabase Storage (Bilder)
+
+### Tech-Entscheidungen
+
+| Entscheidung | Warum |
+|---|---|
+| Supabase Storage für Bilder | Familienspezifischer Ordner (`{family_id}/`), RLS stellt sicher, dass nur Familienmitglieder Bilder sehen/hochladen dürfen. |
+| ISO-Wochenstring als Schlüssel | `"2026-W15"` identifiziert eine Woche eindeutig und ist einfach zu berechnen – kein komplexes Datums-Mapping nötig. |
+| Client-seitige Bildvalidierung | Dateigröße (max. 5 MB) und Format (JPEG/PNG/WebP) werden vor dem Upload geprüft → verhindert unnötige Server-Anfragen. |
+| "Zu Einkaufsliste"-Integration (PROJ-7) | Zutaten eines Rezepts werden direkt in die ausgewählte Einkaufsliste geschrieben – kein Zwischensystem nötig. |
+| Deleted-Recipe-Handling | Wenn ein Rezept gelöscht wird, bleibt der Essensplan-Eintrag erhalten und zeigt "Rezept gelöscht" an – kein Datenverlust. |
+
+### Berechtigungen (RLS)
+- Alle Familienmitglieder: Rezepte und Essensplan lesen.
+- Nur Admins/Erwachsene: Rezepte erstellen, bearbeiten, löschen.
+- Alle Familienmitglieder: Essensplan-Slots befüllen und ändern.
+
+### Neue Abhängigkeiten
+Keine neuen Packages nötig — Supabase Storage ist bereits im Projekt konfiguriert (PROJ-6 nutzt es bereits).
 
 ## QA Test Results
 _To be added by /qa_

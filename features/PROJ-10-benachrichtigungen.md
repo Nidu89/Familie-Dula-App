@@ -1,6 +1,6 @@
 # PROJ-10: Benachrichtigungen
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -41,7 +41,60 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Struktur
+
+```
+App Top Bar (bestehend – app-top-bar.tsx erweitern)
++-- Glocken-Icon-Button
+    +-- Ungelesen-Badge (rote Zahl)
+    +-- Notification Dropdown
+        +-- "Alle als gelesen markieren"-Button
+        +-- Notification List
+        |   +-- Notification Item
+        |       +-- Typ-Icon (Kalender / Aufgabe / Chat)
+        |       +-- Titel + Kurzbeschreibung
+        |       +-- Zeitstempel (z.B. "vor 5 Min")
+        |       +-- Klick → navigiert zum Auslöser (Termin / Aufgabe / Chat)
+        +-- "Mehr laden"-Button (Pagination)
+
+/settings/notifications (neue Einstellungsseite)
++-- Benachrichtigungseinstellungen-Header
++-- Toggle-Liste (ein Toggle pro Typ)
+    +-- Neuer Termin zugewiesen → Ein/Aus
+    +-- Aufgabe zugewiesen → Ein/Aus
+    +-- Aufgabe fällig → Ein/Aus
+    +-- Neue Chat-Nachricht → Ein/Aus
+```
+
+### Datenmodell
+
+**`notifications`** – Eine Benachrichtigung pro Eintrag:
+- ID, Nutzer-ID (Empfänger), Typ (calendar_assigned | task_assigned | task_due | chat_message), Titel, Kurztext, Auslöser-ID (ID des Termins/Aufgabe/Nachricht), Gelesen-Status (true/false), Erstellt-am
+- Automatische Löschung nach 30 Tagen (Supabase pg_cron).
+
+**`notification_preferences`** – Einstellungen pro Nutzer:
+- Nutzer-ID, Benachrichtigungs-Typ, Aktiviert (true/false)
+- Standard: alle Typen aktiviert. Nutzer kann pro Typ deaktivieren.
+
+**Gespeichert in:** Supabase-Datenbank
+
+### Tech-Entscheidungen
+
+| Entscheidung | Warum |
+|---|---|
+| Supabase Database Trigger | Wenn eine Aufgabe zugewiesen wird, ein Termin erstellt wird oder eine Chat-Nachricht eingeht → DB Trigger schreibt automatisch in `notifications`. Kein manueller API-Aufruf im Frontend nötig. |
+| Supabase Realtime auf `notifications` | Ungelesen-Badge im Glocken-Icon aktualisiert sich live, sobald eine neue Benachrichtigung eingeht – ohne Seiten-Reload. |
+| Reine In-App-Lösung | Keine Web-Push-API, keine Browser-Berechtigungen, kein Service-Worker. Einfacher zu implementieren, kein Datenschutz-Problem. |
+| pg_cron für 30-Tage-Bereinigung | Automatisches Löschen alter Benachrichtigungen via geplanten Datenbankjob – kein separates Cleanup-Script nötig. |
+| Preference-Prüfung im Trigger | Vor dem Einfügen prüft der Trigger, ob der Nutzer diesen Typ aktiviert hat → keine unnötigen Datenbankeinträge. |
+
+### Berechtigungen (RLS)
+- Jeder Nutzer kann nur seine eigenen Benachrichtigungen lesen und als gelesen markieren.
+- Benachrichtigungen werden serverseitig (via Trigger) erzeugt – kein direkter Client-Insert.
+
+### Neue Abhängigkeiten
+Keine neuen Packages nötig — Supabase Realtime und Supabase DB-Trigger sind bereits im Projekt verfügbar.
 
 ## QA Test Results
 _To be added by /qa_

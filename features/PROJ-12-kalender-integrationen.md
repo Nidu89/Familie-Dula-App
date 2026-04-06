@@ -1,6 +1,6 @@
 # PROJ-12: Kalender-Integrationen (iCloud, Google & mehr)
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-03-18
 **Last Updated:** 2026-04-06
 
@@ -48,7 +48,70 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Struktur
+
+```
+/settings/calendar-integrations (neue Einstellungsseite)
++-- Seiten-Header ("Kalender-Verbindungen")
++-- Verbundene Provider-Liste
+|   +-- Provider Card (Google Calendar / iCloud)
+|       +-- Provider-Logo + Name
+|       +-- Status (Verbunden ✓ / Fehler ✗ / Nicht verbunden)
+|       +-- Letzter Sync-Zeitpunkt
+|       +-- Kalender-Auswahl (Checkboxen: welche Kalender importieren)
+|       +-- "Manuell synchronisieren"-Button
+|       +-- "Verbindung trennen"-Button
++-- "Neuen Kalender verbinden"-Button
++-- Add Provider Flow (mehrstufig)
+    +-- Schritt 1: Provider wählen (Google / iCloud)
+    +-- Schritt 2a: Google → Weiterleitung zu Google OAuth
+    +-- Schritt 2b: iCloud → Formular (Apple-ID + App-spezifisches Passwort)
+    +-- Schritt 3: Kalender auswählen (Checkliste der verfügbaren Kalender)
+    +-- Schritt 4: Bestätigung + erster Sync
+
+Kalender-Ansicht (PROJ-4 erweitern)
++-- Externe Termine (read-only, visuell unterscheidbar)
+    +-- Provider-Badge ("Google" / "iCloud") auf dem Termin-Chip
+    +-- Kein Bearbeiten/Löschen möglich (read-only Label)
+```
+
+### Datenmodell
+
+**`calendar_integrations`** – Eine Verbindung pro Provider pro Nutzer:
+- ID, Nutzer-ID, Provider (google | icloud), Status (active | error | disconnected), Zugangsdaten (verschlüsselt via Supabase Vault), Ausgewählte Kalender (Liste der Kalender-IDs), Letzter erfolgreicher Sync, Erstellt-am
+
+**`external_calendar_events`** – Ein importierter Termin pro Eintrag:
+- ID, Integrations-ID, Externer Termin-ID (vom Provider), Titel, Start-Zeit, End-Zeit, Kalender-Name, Provider-Label, Zuletzt synchronisiert-am
+- Werden bei "Verbindung trennen" vollständig gelöscht (DSGVO).
+
+**Gespeichert in:** Supabase-Datenbank + Supabase Vault (Tokens/Passwörter)
+
+### Tech-Entscheidungen
+
+| Entscheidung | Warum |
+|---|---|
+| Supabase Vault für Zugangsdaten | Tokens und Passwörter werden verschlüsselt gespeichert – kein Klardatentext in der DB. Standard für sicherheitskritische Credentials. |
+| Google: OAuth 2.0 | Nutzer gibt Google-Passwort nie an die App weiter. OAuth ist der Branchenstandard für sichere Drittanbieter-Verbindungen. |
+| iCloud: CalDAV mit App-Passwort | Apple unterstützt kein OAuth für CalDAV. App-spezifische Passwörter sind Apples empfohlene Lösung – Nutzer generiert diese in seinem Apple-Konto. |
+| Sync via Supabase Edge Function (Cron) | Der Browser kann nicht direkt auf Google Calendar API oder CalDAV zugreifen (CORS, Credentials). Ein serverseitiger Cron-Job läuft alle 15–60 Min und holt die Daten. |
+| Provider-Abstraktionsschicht | Gemeinsames Interface (`fetchCalendars()`, `fetchEvents()`) für alle Provider. Neuen Provider (z.B. Outlook) hinzufügen = neue Klasse implementieren, kein Umbau des Kerns. |
+| Einweg-Sync only (v1) | Bidirektionaler Sync ist komplex und fehleranfällig (Konflikte). Einweg (extern → App) ist zuverlässig und erfüllt den Hauptbedarf: alles an einem Ort sehen. |
+| Importierte Termine als read-only | Verhindert, dass Änderungen in der App mit dem externen Kalender in Konflikt geraten. Klare Trennung für den Nutzer. |
+
+### Berechtigungen (RLS)
+- Jeder Nutzer verwaltet nur seine eigenen Kalender-Verbindungen.
+- Importierte externe Termine sind nur für den jeweiligen Nutzer sichtbar (nicht für andere Familienmitglieder, da es persönliche Kalender sind).
+- DSGVO: "Verbindung trennen" löscht Token + alle importierten Termine sofort.
+
+### Neue Abhängigkeiten
+
+| Package | Zweck |
+|---|---|
+| `googleapis` | Google Calendar API v3 (OAuth 2.0, Termine abrufen) |
+| `tsdav` | CalDAV-Client für iCloud (RFC 4791, iCal-Parsing) |
+
+Diese Packages laufen ausschließlich in Supabase Edge Functions (serverseitig), nicht im Browser.
 
 ## QA Test Results
 _To be added by /qa_

@@ -1,6 +1,6 @@
 # PROJ-11: Bild-Upload im Chat
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -43,7 +43,59 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Struktur
+
+Diese Komponenten erweitern den bestehenden Chat aus PROJ-9:
+
+```
+Message Input Area (PROJ-9 erweitern)
++-- Bild-Anhang-Button (Büroklammer/Bild-Icon)
++-- Verstecktes File-Input (accept: image/jpeg,image/png,image/gif,image/webp)
++-- Upload-Fortschrittsanzeige (Ladebalken/Spinner während Upload)
+
+Message Bubble (PROJ-9 erweitern)
++-- Wenn Bild vorhanden:
+|   +-- Bild-Thumbnail (max. 300×300 px, CSS object-fit: cover)
+|   +-- Löschen-Button (eigene Bilder / Admins alle Bilder)
++-- Wenn kein Bild: bisheriges Text-Bubble-Verhalten
+
+Image Lightbox (neue Komponente)
++-- Dialog / Overlay
++-- Vollbild-Anzeige des Bilds
++-- Schließen-Button (X)
+```
+
+### Datenmodell
+
+**Erweiterung von `chat_messages`** (PROJ-9):
+- `image_url` (optional) — Pfad zum Bild in Supabase Storage
+
+**Supabase Storage Bucket `chat-images`:**
+- Ordnerstruktur: `{family_id}/{channel_id}/{message_id}.{ext}`
+- Privater Bucket: kein öffentlicher Zugriff, nur via Signed URLs
+- RLS auf Storage: nur Familienmitglieder können Bilder lesen/hochladen
+
+**Gespeichert in:** Supabase Storage (Bilder) + Supabase-Datenbank (Nachrichten mit Bild-Pfad)
+
+### Tech-Entscheidungen
+
+| Entscheidung | Warum |
+|---|---|
+| Client-seitige Validierung vor Upload | Dateigröße (max. 10 MB) und Format werden geprüft, bevor der Upload startet → spart Bandbreite und gibt sofortiges Feedback. |
+| Signed URLs (zeitlich begrenzt) | Bilder sind nicht öffentlich zugänglich. Signed URLs laufen z.B. nach 1 Stunde ab und werden bei Bedarf erneuert → sicher, auch wenn jemand die URL kopiert. |
+| CSS-Thumbnails statt Server-Resize | Keine Bildverarbeitung auf dem Server nötig. Browser skaliert das Bild via CSS auf max. 300×300 px – einfach und ausreichend für Chat-Thumbnails. |
+| Lightbox via shadcn Dialog | Klick auf Thumbnail öffnet einen Dialog mit dem Vollbild via Signed URL. Nutzt bereits installierte shadcn/ui Dialog-Komponente. |
+| family_id-Ordner-Präfix | Isoliert Bilder verschiedener Familien im selben Bucket → kein versehentlicher Zugriff auf fremde Bilder, einfache RLS-Policy. |
+
+### Berechtigungen (RLS)
+- Alle Familienmitglieder: Bilder der eigenen Familie hochladen und anzeigen.
+- Eigene Bilder: Jeder kann seine eigenen Bilder löschen.
+- Admins: Können alle Bilder der Familie löschen.
+- Löschen: Entfernt Bild aus Storage UND setzt `image_url` in `chat_messages` auf null.
+
+### Neue Abhängigkeiten
+Keine neuen Packages nötig — Supabase Storage ist bereits im Projekt vorhanden.
 
 ## QA Test Results
 _To be added by /qa_

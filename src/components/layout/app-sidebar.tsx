@@ -10,6 +10,7 @@ import {
   Trophy,
   Timer,
   ListChecks,
+  ShoppingCart,
   Users,
   HelpCircle,
   LogOut,
@@ -30,6 +31,7 @@ const NAV_LINKS = [
   { href: "/rewards", labelKey: "rewards" as const, icon: Trophy },
   { href: "/timer", labelKey: "timer" as const, icon: Timer },
   { href: "/rituals", labelKey: "rituals" as const, icon: ListChecks },
+  { href: "/shopping", labelKey: "shopping" as const, icon: ShoppingCart },
   { href: "/family/settings", labelKey: "family" as const, icon: Users },
 ]
 
