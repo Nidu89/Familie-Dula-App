@@ -1,6 +1,6 @@
 # PROJ-16: Wochen-Challenge als pinnable Aufgabe
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-06
 **Last Updated:** 2026-04-06
 
@@ -264,4 +264,9 @@ Keine – alle benötigten Komponenten (DropdownMenu, etc.) sind bereits install
 - **Production Ready:** JA — kein Critical oder High Bug vorhanden
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-06
+**Commit:** fa7d440
+**Production URL:** https://familie-dula-app.vercel.app/tasks
+**DB Migration:** `20260406_proj16_week_challenge` — applied to `fmmorvmshvgqatnefkpf`
+**Status:** PROJ-16 → Deployed in INDEX.md
