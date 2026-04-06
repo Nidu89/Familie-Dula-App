@@ -26,10 +26,14 @@ export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboard
   const [manualMemberName, setManualMemberName] = useState("")
   const [manualMemberBalance, setManualMemberBalance] = useState(0)
 
+  // History balance state
+  const [historyBalance, setHistoryBalance] = useState(0)
+
   function handleShowHistory(memberId: string) {
     const member = members.find((m) => m.id === memberId)
     setHistoryMemberId(memberId)
     setHistoryMemberName(member?.displayName || t("memberFallback"))
+    setHistoryBalance(member?.pointsBalance || 0)
     setHistoryOpen(true)
   }
 
@@ -83,6 +87,7 @@ export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboard
         onOpenChange={setHistoryOpen}
         childId={historyMemberId}
         childName={historyMemberName}
+        currentBalance={historyBalance}
       />
 
       {isAdultOrAdmin && (

@@ -504,6 +504,7 @@
       "manualSub": "Manually deducted",
       "rewardRedeemed": "Reward redeemed",
       "goalContribution": "Family goal contribution",
+      "balance": "Balance: {balance}",
       "loadError": "Could not load points history."
     },
     "leaderboard": {

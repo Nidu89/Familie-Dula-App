@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
 import { Star, CheckCircle2, PenLine, Gift, Target } from "lucide-react"
 
@@ -26,6 +26,7 @@ interface PointsHistorySheetProps {
   onOpenChange: (open: boolean) => void
   childId: string | null
   childName: string
+  currentBalance?: number
 }
 
 const TYPE_CONFIG = {
@@ -71,6 +72,7 @@ export function PointsHistorySheet({
   onOpenChange,
   childId,
   childName,
+  currentBalance,
 }: PointsHistorySheetProps) {
   const { toast } = useToast()
   const t = useTranslations("rewards.history")
@@ -109,6 +111,18 @@ export function PointsHistorySheet({
     }
   }, [open, childId, fetchHistory])
 
+  // Compute running balance for each transaction (newest first)
+  // runningBalances[0] = currentBalance, runningBalances[i] = balance after tx[i]
+  const runningBalances = useMemo(() => {
+    if (currentBalance == null || transactions.length === 0) return []
+    const balances: number[] = new Array(transactions.length)
+    balances[0] = currentBalance
+    for (let i = 1; i < transactions.length; i++) {
+      balances[i] = balances[i - 1] - transactions[i - 1].amount
+    }
+    return balances
+  }, [currentBalance, transactions])
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md">
@@ -141,6 +155,7 @@ export function PointsHistorySheet({
                 const config = TYPE_CONFIG[tx.type]
                 const Icon = config.icon
                 const isPositive = tx.amount > 0
+                const runningBalance = runningBalances[index]
 
                 return (
                   <div key={tx.id}>
@@ -155,13 +170,20 @@ export function PointsHistorySheet({
                           <p className="text-sm font-medium">
                             {tx.taskTitle || t(config.labelKey)}
                           </p>
-                          <Badge
-                            variant="outline"
-                            className={`shrink-0 text-xs font-semibold ${isPositive ? "border-chart-3/30 text-chart-3" : "border-destructive/30 text-destructive"}`}
-                          >
-                            {isPositive ? "+" : ""}
-                            {tx.amount}
-                          </Badge>
+                          <div className="flex flex-col items-end gap-0.5 shrink-0">
+                            <Badge
+                              variant="outline"
+                              className={`text-xs font-semibold ${isPositive ? "border-chart-3/30 text-chart-3" : "border-destructive/30 text-destructive"}`}
+                            >
+                              {isPositive ? "+" : ""}
+                              {tx.amount}
+                            </Badge>
+                            {runningBalance != null && (
+                              <span className="text-[10px] text-muted-foreground font-medium">
+                                {t("balance", { balance: runningBalance })}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {tx.comment && (
                           <p className="mt-0.5 text-xs text-muted-foreground">

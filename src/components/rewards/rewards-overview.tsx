@@ -59,10 +59,14 @@ export function RewardsOverview({
     }
   }, [toast, tc, t])
 
+  // History balance state
+  const [historyBalance, setHistoryBalance] = useState(0)
+
   function handleShowHistory(childId: string) {
     const child = children.find((c) => c.id === childId)
     setHistoryChildId(childId)
     setHistoryChildName(child?.displayName || t("childFallback"))
+    setHistoryBalance(child?.pointsBalance || 0)
     setHistoryOpen(true)
   }
 
@@ -111,6 +115,7 @@ export function RewardsOverview({
         onOpenChange={setHistoryOpen}
         childId={historyChildId}
         childName={historyChildName}
+        currentBalance={historyBalance}
       />
 
       <ManualPointsDialog

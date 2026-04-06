@@ -111,23 +111,6 @@ export function TasksList({
     }
   }, [toast, tc, t])
 
-  /* ── realtime ───────────────────────────────────────── */
-
-  useEffect(() => {
-    const supabase = createClient()
-    const channel = supabase
-      .channel("tasks_realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tasks" },
-        () => fetchTasks()
-      )
-      .subscribe()
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [fetchTasks])
-
   /* ── derived state ──────────────────────────────────── */
 
   const adjustedTasks = useMemo(
@@ -174,6 +157,28 @@ export function TasksList({
     // Also re-fetch tasks so the UI is fully in sync
     fetchTasks()
   }, [fetchTasks])
+
+  /* ── realtime ───────────────────────────────────────── */
+
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel("tasks_realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        () => fetchTasks()
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "families" },
+        () => refreshWeekChallenge()
+      )
+      .subscribe()
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [fetchTasks, refreshWeekChallenge])
 
   /* ── handlers ───────────────────────────────────────── */
 

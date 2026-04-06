@@ -504,6 +504,7 @@
       "manualSub": "Manuell abgezogen",
       "rewardRedeemed": "Belohnung eingeloest",
       "goalContribution": "Familienziel-Beitrag",
+      "balance": "Saldo: {balance}",
       "loadError": "Punktehistorie konnte nicht geladen werden."
     },
     "leaderboard": {

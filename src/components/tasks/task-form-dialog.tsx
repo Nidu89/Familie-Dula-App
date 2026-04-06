@@ -313,7 +313,7 @@ export function TaskFormDialog({
                     <FormLabel>{t("form.priority")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -341,7 +341,7 @@ export function TaskFormDialog({
                     <FormLabel>{t("form.status")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -369,7 +369,7 @@ export function TaskFormDialog({
                     <FormLabel>{t("form.assignee")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -425,7 +425,7 @@ export function TaskFormDialog({
                     <FormLabel>{t("form.recurrence")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
