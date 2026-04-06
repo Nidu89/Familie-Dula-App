@@ -9,7 +9,11 @@ import { useTranslations } from "next-intl"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { TaskCard } from "@/components/tasks/task-card"
-import { TaskFormDialog } from "@/components/tasks/task-form-dialog"
+import dynamic from "next/dynamic"
+
+const TaskFormDialog = dynamic(() =>
+  import("@/components/tasks/task-form-dialog").then((m) => m.TaskFormDialog)
+)
 import { getTasksAction, type Task } from "@/lib/actions/tasks"
 import { getFamilyDataAction } from "@/lib/actions/family"
 import { createClient } from "@/lib/supabase/client"

@@ -52,17 +52,34 @@ export async function middleware(request: NextRequest) {
 
   if (user && user.email_confirmed_at) {
     // 3. Family-Check (BUG-4/PROJ-1)
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('family_id')
-      .eq('id', user.id)
-      .single()
+    // Optimization: cache family status in cookie to skip DB query on subsequent requests
+    const familyCookie = request.cookies.get('x-has-family')?.value
 
-    if (profileError) {
-      console.error('[middleware] profile query failed:', profileError.message)
+    let hasFamily: boolean
+
+    if (familyCookie === '1' || familyCookie === '0') {
+      hasFamily = familyCookie === '1'
+    } else {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('family_id')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) {
+        console.error('[middleware] profile query failed:', profileError.message)
+      }
+
+      hasFamily = !!profile?.family_id
+
+      // Cache result for 1 hour
+      supabaseResponse.cookies.set('x-has-family', hasFamily ? '1' : '0', {
+        maxAge: 3600,
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      })
     }
-
-    const hasFamily = !!profile?.family_id
 
     // Eingeloggt ohne Familie → /onboarding (ausser bereits dort)
     if (!hasFamily && !pathname.startsWith('/onboarding')) {

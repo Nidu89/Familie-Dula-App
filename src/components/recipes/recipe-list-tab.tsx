@@ -25,8 +25,14 @@ import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { TagFilterBar } from "@/components/recipes/tag-filter-bar"
 import { RecipeCard } from "@/components/recipes/recipe-card"
-import { RecipeFormDialog } from "@/components/recipes/recipe-form-dialog"
-import { RecipeDetailSheet } from "@/components/recipes/recipe-detail-sheet"
+import dynamic from "next/dynamic"
+
+const RecipeFormDialog = dynamic(() =>
+  import("@/components/recipes/recipe-form-dialog").then((m) => m.RecipeFormDialog)
+)
+const RecipeDetailSheet = dynamic(() =>
+  import("@/components/recipes/recipe-detail-sheet").then((m) => m.RecipeDetailSheet)
+)
 
 interface RecipeListTabProps {
   recipes: Recipe[]

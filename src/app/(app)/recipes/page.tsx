@@ -18,10 +18,11 @@ export default async function RecipesRoute() {
   const { role } = dashResult
   const isAdultOrAdmin = role === "admin" || role === "adult"
 
-  const recipesResult = await getRecipesAction()
+  const [recipesResult, listsResult] = await Promise.all([
+    getRecipesAction(),
+    getShoppingListsAction(),
+  ])
   const initialRecipes = "error" in recipesResult ? [] : recipesResult.recipes
-
-  const listsResult = await getShoppingListsAction()
   const shoppingLists = "error" in listsResult ? [] : listsResult.lists
 
   return (

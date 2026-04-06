@@ -91,6 +91,7 @@ export async function getShoppingListsAction(): Promise<
 
   const supabase = await createClient()
 
+  // Single query with embedded item data (eliminates second round trip)
   const { data: rawLists, error: listsError } = await supabase
     .from("shopping_lists")
     .select(
@@ -101,7 +102,8 @@ export async function getShoppingListsAction(): Promise<
       created_by,
       creator:created_by ( display_name ),
       created_at,
-      updated_at
+      updated_at,
+      shopping_items ( is_done )
     `
     )
     .eq("family_id", profile.family_id)
@@ -112,47 +114,28 @@ export async function getShoppingListsAction(): Promise<
     return { error: "Einkaufslisten konnten nicht geladen werden." }
   }
 
-  // For each list, count total items and done items
-  const listIds = (rawLists || []).map((l) => l.id)
-
-  let itemCounts: Record<string, { total: number; done: number }> = {}
-
-  if (listIds.length > 0) {
-    const { data: items } = await supabase
-      .from("shopping_items")
-      .select("list_id, is_done")
-      .in("list_id", listIds)
-
-    if (items) {
-      for (const item of items) {
-        if (!itemCounts[item.list_id]) {
-          itemCounts[item.list_id] = { total: 0, done: 0 }
-        }
-        itemCounts[item.list_id].total++
-        if (item.is_done) itemCounts[item.list_id].done++
-      }
+  const lists: ShoppingList[] = (rawLists || []).map((l) => {
+    const items = (l.shopping_items as { is_done: boolean }[]) || []
+    return {
+      id: l.id,
+      familyId: l.family_id,
+      name: l.name,
+      createdBy: l.created_by,
+      createdByName: (() => {
+        const c = l.creator as unknown
+        if (Array.isArray(c))
+          return (
+            (c[0] as { display_name: string | null } | undefined)
+              ?.display_name || null
+          )
+        return (c as { display_name: string | null } | null)?.display_name || null
+      })(),
+      itemCount: items.length,
+      doneCount: items.filter((i) => i.is_done).length,
+      createdAt: l.created_at,
+      updatedAt: l.updated_at,
     }
-  }
-
-  const lists: ShoppingList[] = (rawLists || []).map((l) => ({
-    id: l.id,
-    familyId: l.family_id,
-    name: l.name,
-    createdBy: l.created_by,
-    createdByName: (() => {
-      const c = l.creator as unknown
-      if (Array.isArray(c))
-        return (
-          (c[0] as { display_name: string | null } | undefined)
-            ?.display_name || null
-        )
-      return (c as { display_name: string | null } | null)?.display_name || null
-    })(),
-    itemCount: itemCounts[l.id]?.total ?? 0,
-    doneCount: itemCounts[l.id]?.done ?? 0,
-    createdAt: l.created_at,
-    updatedAt: l.updated_at,
-  }))
+  })
 
   return { lists }
 }

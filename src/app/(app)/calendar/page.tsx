@@ -24,20 +24,17 @@ export default async function CalendarPage() {
   const { role } = dashResult
   const isAdultOrAdmin = role === "admin" || role === "adult"
 
-  // Load initial events for current month range
+  // Load events and family members in parallel
   const now = new Date()
   const rangeStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
   const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 2, 0)
 
-  const eventsResult = await getEventsForRangeAction(
-    rangeStart.toISOString(),
-    rangeEnd.toISOString()
-  )
+  const [eventsResult, familyResult] = await Promise.all([
+    getEventsForRangeAction(rangeStart.toISOString(), rangeEnd.toISOString()),
+    getFamilyDataAction(),
+  ])
 
   const initialEvents = "error" in eventsResult ? [] : eventsResult.events
-
-  // Load family members for filters and participant selection
-  const familyResult = await getFamilyDataAction()
   const members =
     "error" in familyResult
       ? []

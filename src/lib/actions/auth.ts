@@ -1,6 +1,6 @@
 "use server"
 
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import {
@@ -163,5 +163,8 @@ export async function resendConfirmationAction(email: string) {
 export async function logoutAction() {
   const supabase = await createClient()
   await supabase.auth.signOut()
+  // Clear middleware family-status cache
+  const cookieStore = await cookies()
+  cookieStore.delete('x-has-family')
   redirect('/login')
 }

@@ -1,6 +1,6 @@
 "use server"
 
-import { headers } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import {
@@ -123,6 +123,10 @@ export async function createFamilyAction(familyName: string) {
     return { error: "Familie konnte nicht erstellt werden. Bitte versuche es erneut." }
   }
 
+  // Invalidate middleware family-status cache
+  const cookieStore = await cookies()
+  cookieStore.set("x-has-family", "1", { maxAge: 3600, httpOnly: true, sameSite: "lax", path: "/" })
+
   redirect("/dashboard")
 }
 
@@ -165,6 +169,10 @@ export async function joinFamilyByCodeAction(code: string) {
   if (redeemError) {
     return { error: "Einladungscode ungueltig oder abgelaufen." }
   }
+
+  // Invalidate middleware family-status cache
+  const cookieStore = await cookies()
+  cookieStore.set("x-has-family", "1", { maxAge: 3600, httpOnly: true, sameSite: "lax", path: "/" })
 
   redirect("/dashboard")
 }
@@ -479,6 +487,10 @@ export async function checkAndJoinEmailInvitationAction(): Promise<{ familyId: s
   if (error || !familyId) {
     return { familyId: null }
   }
+
+  // Invalidate middleware family-status cache
+  const cookieStore = await cookies()
+  cookieStore.set("x-has-family", "1", { maxAge: 3600, httpOnly: true, sameSite: "lax", path: "/" })
 
   return { familyId: familyId as string }
 }

@@ -5,8 +5,14 @@ import { useTranslations } from "next-intl"
 import { Star } from "lucide-react"
 
 import { ChildPointCard } from "@/components/rewards/child-point-card"
-import { PointsHistorySheet } from "@/components/rewards/points-history-sheet"
-import { ManualPointsDialog } from "@/components/rewards/manual-points-dialog"
+import dynamic from "next/dynamic"
+
+const PointsHistorySheet = dynamic(() =>
+  import("@/components/rewards/points-history-sheet").then((m) => m.PointsHistorySheet)
+)
+const ManualPointsDialog = dynamic(() =>
+  import("@/components/rewards/manual-points-dialog").then((m) => m.ManualPointsDialog)
+)
 import {
   getRewardsOverviewAction,
   type ChildPointsSummary,

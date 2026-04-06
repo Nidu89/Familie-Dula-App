@@ -636,31 +636,30 @@ export async function checkAndAwardAchievementsAction(
     return { error: "Profil nicht gefunden oder nicht in deiner Familie." }
   }
 
-  // Fetch all achievements
-  const { data: allAchievements, error: achError } = await supabase
-    .from("achievements")
-    .select("*")
+  // Fetch achievements, earned status, and completed tasks in parallel
+  const [
+    { data: allAchievements, error: achError },
+    { data: alreadyEarned },
+    { data: completedTasks },
+  ] = await Promise.all([
+    supabase.from("achievements").select("*"),
+    supabase
+      .from("profile_achievements")
+      .select("achievement_id")
+      .eq("profile_id", profileId),
+    supabase
+      .from("tasks")
+      .select("id, category, completed_at, status")
+      .eq("assigned_to", profileId)
+      .eq("status", "done")
+      .eq("family_id", profile.family_id),
+  ])
 
   if (achError || !allAchievements) {
     return { error: "Abzeichen konnten nicht geladen werden." }
   }
 
-  // Fetch already earned achievements
-  const { data: alreadyEarned } = await supabase
-    .from("profile_achievements")
-    .select("achievement_id")
-    .eq("profile_id", profileId)
-
   const earnedIds = new Set((alreadyEarned || []).map((e) => e.achievement_id))
-
-  // Fetch completed tasks for this profile
-  const { data: completedTasks } = await supabase
-    .from("tasks")
-    .select("id, category, completed_at, status")
-    .eq("assigned_to", profileId)
-    .eq("status", "done")
-    .eq("family_id", profile.family_id)
-
   const tasks = completedTasks || []
   const awarded: string[] = []
 

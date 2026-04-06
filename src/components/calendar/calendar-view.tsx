@@ -25,7 +25,11 @@ import {
 import { CustomMonthGrid } from "@/components/calendar/custom-month-grid"
 import { DayFocusPanel } from "@/components/calendar/day-focus-panel"
 import { WeatherWidget } from "@/components/calendar/weather-widget"
-import { EventFormDialog } from "@/components/calendar/event-form-dialog"
+import dynamic from "next/dynamic"
+
+const EventFormDialog = dynamic(() =>
+  import("@/components/calendar/event-form-dialog").then((m) => m.EventFormDialog)
+)
 import {
   getEventsForRangeAction,
   type CalendarEvent,

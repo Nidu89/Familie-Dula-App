@@ -19,8 +19,14 @@ import { useActiveRitual } from "@/hooks/use-active-ritual"
 import { awardRitualCompletionAction } from "@/lib/actions/rituals"
 import { RitualsList } from "./rituals-list"
 import { ActiveRitualView } from "./active-ritual-view"
-import { RitualFormDialog } from "./ritual-form-dialog"
-import { RitualCompleteDialog } from "./ritual-complete-dialog"
+import dynamic from "next/dynamic"
+
+const RitualFormDialog = dynamic(() =>
+  import("./ritual-form-dialog").then((m) => m.RitualFormDialog)
+)
+const RitualCompleteDialog = dynamic(() =>
+  import("./ritual-complete-dialog").then((m) => m.RitualCompleteDialog)
+)
 import type { Ritual } from "@/lib/actions/rituals"
 import type { RitualStep } from "@/lib/validations/rituals"
 

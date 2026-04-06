@@ -8,7 +8,11 @@ import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RewardCard } from "@/components/rewards/reward-card"
-import { RewardFormDialog } from "@/components/rewards/reward-form-dialog"
+import dynamic from "next/dynamic"
+
+const RewardFormDialog = dynamic(() =>
+  import("@/components/rewards/reward-form-dialog").then((m) => m.RewardFormDialog)
+)
 import { useToast } from "@/hooks/use-toast"
 import {
   getRewardShopAction,

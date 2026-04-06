@@ -1,77 +1,63 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { TimerProvider } from "@/context/timer-context"
-import { LocaleProvider } from "@/context/locale-context"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { AppTopBar } from "@/components/layout/app-top-bar"
-import { BottomNav } from "@/components/layout/bottom-nav"
+import { createClient } from "@/lib/supabase/server"
+import { AppShell, type SessionData } from "@/components/layout/app-shell"
 
 /**
  * App group layout — wraps all authenticated pages.
- * LocaleProvider wraps everything for i18n translations.
- * TimerProvider lives here so timer state survives route transitions.
- * Navigation (sidebar, top bar, bottom nav) is rendered here for all pages.
+ * Server component: fetches session data on the server (no client roundtrip).
+ * Passes session to AppShell (client) which provides context providers + nav.
  */
-export default function AppGroupLayout({
+export default async function AppGroupLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [session, setSession] = useState<{
-    familyId: string | null
-    role: "admin" | "adult" | "child"
-    displayName: string
-    familyName: string | null
-    locale: "de" | "en" | "fr"
-  } | null>(null)
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  useEffect(() => {
-    fetch("/api/session")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data) {
-          setSession({
-            familyId: data.familyId,
-            role: data.role,
-            displayName: data.displayName,
-            familyName: data.familyName,
-            locale: data.locale ?? "en",
-          })
-        }
-      })
-      .catch(() => {
-        // Session fetch failed — nav and timer won't initialize
-      })
-  }, [])
+  let session: SessionData = {
+    familyId: null,
+    role: "child",
+    displayName: "User",
+    familyName: null,
+    locale: "en",
+  }
 
-  const isAdmin = session?.role === "admin"
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("family_id, role, display_name, locale")
+      .eq("id", user.id)
+      .single()
 
-  return (
-    <LocaleProvider initialLocale={session?.locale ?? "en"}>
-      <TimerProvider
-        familyId={session?.familyId ?? null}
-        role={session?.role ?? "child"}
-      >
-        {session?.familyName && (
-          <>
-            <AppSidebar
-              familyName={session.familyName}
-              displayName={session.displayName}
-              isAdmin={isAdmin}
-            />
-            <AppTopBar
-              displayName={session.displayName}
-              familyName={session.familyName}
-              isAdmin={isAdmin}
-            />
-          </>
-        )}
-        <div className={session?.familyName ? "md:ml-72 pt-20 pb-24 md:pb-8" : ""}>
-          {children}
-        </div>
-        {session?.familyName && <BottomNav />}
-      </TimerProvider>
-    </LocaleProvider>
-  )
+    if (profile) {
+      let familyName: string | null = null
+      if (profile.family_id) {
+        const { data: family } = await supabase
+          .from("families")
+          .select("name")
+          .eq("id", profile.family_id)
+          .single()
+        familyName = family?.name ?? null
+      }
+
+      session = {
+        familyId: profile.family_id,
+        role: (["admin", "adult", "child"] as const).includes(
+          profile.role as "admin" | "adult" | "child"
+        )
+          ? (profile.role as "admin" | "adult" | "child")
+          : "child",
+        displayName:
+          profile.display_name?.trim() ||
+          user.email?.split("@")[0] ||
+          "User",
+        familyName,
+        locale: (profile.locale as "de" | "en" | "fr") ?? "en",
+      }
+    }
+  }
+
+  return <AppShell session={session}>{children}</AppShell>
 }
