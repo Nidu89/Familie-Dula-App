@@ -26,7 +26,7 @@
 | PROJ-12 | iCloud Kalender Integration | Planned | [PROJ-12-icloud-kalender-integration.md](PROJ-12-icloud-kalender-integration.md) | 2026-03-18 |
 | PROJ-13 | Familien-Timer | Deployed | [PROJ-13-familien-timer.md](PROJ-13-familien-timer.md) | 2026-03-30 |
 | PROJ-14 | Familien-Rituale | Deployed | [PROJ-14-familien-rituale.md](PROJ-14-familien-rituale.md) | 2026-04-05 |
-| PROJ-15 | Mehrsprachigkeit (i18n) | Approved | [PROJ-15-mehrsprachigkeit-i18n.md](PROJ-15-mehrsprachigkeit-i18n.md) | 2026-04-05 |
+| PROJ-15 | Mehrsprachigkeit (i18n) | Deployed | [PROJ-15-mehrsprachigkeit-i18n.md](PROJ-15-mehrsprachigkeit-i18n.md) | 2026-04-05 |
 
 <!-- Add features above this line -->
 

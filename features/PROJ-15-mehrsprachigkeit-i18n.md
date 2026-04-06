@@ -1,6 +1,6 @@
 # PROJ-15: Mehrsprachigkeit (i18n)
 
-## Status: Approved
+## Status: Deployed
 **Created:** 2026-04-05
 **Last Updated:** 2026-04-05
 
@@ -197,4 +197,15 @@ Die größte Arbeit ist die **Textextraktion**: Alle deutschen Hardcoded-Strings
 - **Recommendation:** Deploy — der Low-Bug ist nur internes Server-Pattern und hat keine Auswirkung auf Benutzer
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-05
+**Production URL:** https://familie-dula-app.vercel.app
+**Git Tag:** v1.15.0-PROJ-15
+**Commit:** feat(PROJ-15): Mehrsprachigkeit (i18n) — Deutsch, Englisch, Français
+
+### Deployment Notes
+- 86 files changed, 5182 insertions, 1055 deletions
+- Supabase migration applied: `profiles.locale` column added (DEFAULT 'en', CHECK de|en|fr)
+- next-intl v3.x installed as new dependency
+- All 708 translation keys parity-enforced across de/en/fr JSON bundles
+- Lint: 6 pre-existing errors in timer-context.tsx (react-hooks/exhaustive-deps) — not introduced by PROJ-15
