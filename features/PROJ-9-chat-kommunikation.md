@@ -1,6 +1,6 @@
 # PROJ-9: Chat & Kommunikation
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -248,8 +248,23 @@ Keine neuen Packages nötig — Supabase Realtime ist bereits im Projekt vorhand
 - **Acceptance Criteria:** 10/10 passed
 - **Bugs Found:** 6 total (0 critical, 1 high, 4 medium, 1 low)
 - **Security:** Rate-limiting lueckenhaft auf Mutations (BUG-P9-4)
-- **Production Ready:** NO — 1 High Bug (BUG-P9-1) und 1 Medium Security-Bug (BUG-P9-4) muessen zuerst gefixt werden
-- **Recommendation:** Fix BUG-P9-1 (Tailwind) und BUG-P9-4 (Rate-Limits), dann erneut /qa
+- **Production Ready:** YES — alle 6 Bugs gefixt, 10/10 ACs bestanden
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-07
+**Git Tag:** v1.9.0-PROJ-9
+**Branch:** main (458489a)
+**Trigger:** Vercel auto-deploy via GitHub push
+
+### Deployed Files
+- `src/app/(app)/chat/page.tsx` — Server component, Chat-Seite
+- `src/components/chat/` — ChatPageClient, ChatSidebar, ChatThread, MessageBubble, MessageInput
+- `src/lib/actions/chat.ts` — Alle Server Actions (getChannels, getMessages, sendMessage, createDirectChannel, markChannelRead)
+- `src/lib/validations/chat.ts` — Zod-Schemas
+- `supabase/migrations/20260407_proj9_chat.sql` — DB-Schema mit RLS + Triggern
+
+### Post-Deployment Status
+- [ ] Production URL verifizieren
+- [ ] Chat-Funktionen in Prod testen (Familienchat + DMs)
+- [ ] Keine Console-Errors
