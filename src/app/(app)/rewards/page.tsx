@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 
-import { getDashboardDataAction } from "@/lib/actions/dashboard"
+import { getAppSession } from "@/lib/session"
 import {
   getFamilyLeaderboardAction,
   getRewardShopAction,
@@ -14,25 +14,11 @@ import { AchievementGallery } from "@/components/rewards/achievement-gallery"
 import { CommunityGoal } from "@/components/rewards/community-goal"
 
 export default async function RewardsPage() {
-  const dashResult = await getDashboardDataAction()
+  const session = await getAppSession()
+  if (!session) redirect("/login")
 
-  if ("error" in dashResult) {
-    if (dashResult.error === "Nicht angemeldet.") redirect("/login")
-    if (dashResult.error === "Du gehoerst keiner Familie an.")
-      redirect("/onboarding")
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-        <p className="text-sm text-muted-foreground">
-          Belohnungen konnten nicht geladen werden. Bitte Seite neu laden.
-        </p>
-      </main>
-    )
-  }
+  const isAdultOrAdmin = session.role === "admin" || session.role === "adult"
 
-  const { role } = dashResult
-  const isAdultOrAdmin = role === "admin" || role === "adult"
-
-  // Load all data in parallel
   const [leaderboardResult, shopResult, achievementsResult, goalResult, completedGoalsResult] =
     await Promise.all([
       getFamilyLeaderboardAction(),
@@ -57,7 +43,6 @@ export default async function RewardsPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      {/* Page header */}
       <div className="mb-8">
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           Belohnungen & Erfolge
@@ -67,12 +52,9 @@ export default async function RewardsPage() {
         </p>
       </div>
 
-      {/* Sections with generous spacing per design system */}
       <div className="space-y-12">
-        {/* 1. Leaderboard */}
         <FamilyLeaderboard members={leaderboardMembers} isAdultOrAdmin={isAdultOrAdmin} />
 
-        {/* 2. Reward Shop */}
         <RewardShop
           initialRewards={shopRewards}
           initialBalance={shopBalance}
@@ -81,10 +63,8 @@ export default async function RewardsPage() {
           showViewAll
         />
 
-        {/* 3. Achievement Badges */}
         <AchievementGallery achievements={achievements} />
 
-        {/* 4. Community Goal */}
         <CommunityGoal
           initialGoal={familyGoal}
           initialContributions={goalContributions}

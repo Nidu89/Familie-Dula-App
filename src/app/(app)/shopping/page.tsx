@@ -1,21 +1,14 @@
 import { redirect } from "next/navigation"
 
-import { getDashboardDataAction } from "@/lib/actions/dashboard"
+import { getAppSession } from "@/lib/session"
 import { getShoppingListsAction } from "@/lib/actions/shopping"
 import { ShoppingListOverview } from "@/components/shopping/shopping-list-overview"
 
 export default async function ShoppingPage() {
-  const dashResult = await getDashboardDataAction()
+  const session = await getAppSession()
+  if (!session) redirect("/login")
 
-  if ("error" in dashResult) {
-    if (dashResult.error === "Nicht angemeldet.") redirect("/login")
-    if (dashResult.error === "Du gehoerst keiner Familie an.")
-      redirect("/onboarding")
-    redirect("/login")
-  }
-
-  const { role } = dashResult
-  const isAdultOrAdmin = role === "admin" || role === "adult"
+  const isAdultOrAdmin = session.role === "admin" || session.role === "adult"
 
   const listsResult = await getShoppingListsAction()
   const initialLists = "error" in listsResult ? [] : listsResult.lists

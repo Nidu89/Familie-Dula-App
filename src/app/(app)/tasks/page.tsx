@@ -1,30 +1,16 @@
 import { redirect } from "next/navigation"
 
-import { getDashboardDataAction } from "@/lib/actions/dashboard"
+import { getAppSession } from "@/lib/session"
 import { getTasksAction } from "@/lib/actions/tasks"
 import { getFamilyDataAction } from "@/lib/actions/family"
 import { TasksList } from "@/components/tasks/tasks-list"
 
 export default async function TasksPage() {
-  const dashResult = await getDashboardDataAction()
+  const session = await getAppSession()
+  if (!session) redirect("/login")
 
-  if ("error" in dashResult) {
-    if (dashResult.error === "Nicht angemeldet.") redirect("/login")
-    if (dashResult.error === "Du gehoerst keiner Familie an.")
-      redirect("/onboarding")
-    return (
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <p className="text-sm text-muted-foreground">
-          Aufgaben konnten nicht geladen werden. Bitte Seite neu laden.
-        </p>
-      </main>
-    )
-  }
+  const isAdultOrAdmin = session.role === "admin" || session.role === "adult"
 
-  const { role } = dashResult
-  const isAdultOrAdmin = role === "admin" || role === "adult"
-
-  // Load tasks and members in parallel
   const [tasksResult, familyResult] = await Promise.all([
     getTasksAction(),
     getFamilyDataAction(),
@@ -43,7 +29,6 @@ export default async function TasksPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 pt-6 pb-48 sm:px-6 sm:pt-8 md:pb-40">
-      {/* Page header */}
       <div className="mb-8 md:mb-12">
         <span className="text-xs font-bold uppercase tracking-wider text-primary-foreground">
           Familien-Sandbox
@@ -60,7 +45,7 @@ export default async function TasksPage() {
         initialTasks={initialTasks}
         members={members}
         isAdultOrAdmin={isAdultOrAdmin}
-        currentUserId={dashResult.user.id}
+        currentUserId={session.userId}
         weekChallengeTaskId={weekChallengeTaskId}
       />
     </main>

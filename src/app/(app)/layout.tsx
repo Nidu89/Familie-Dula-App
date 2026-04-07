@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server"
+import { getAppSession } from "@/lib/session"
 import { AppShell, type SessionData } from "@/components/layout/app-shell"
 
 /**
  * App group layout — wraps all authenticated pages.
- * Server component: fetches session data on the server (no client roundtrip).
+ * Server component: fetches session via cached helper (shared with pages).
  * Passes session to AppShell (client) which provides context providers + nav.
  */
 export default async function AppGroupLayout({
@@ -11,53 +11,23 @@ export default async function AppGroupLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const appSession = await getAppSession()
 
-  let session: SessionData = {
-    familyId: null,
-    role: "child",
-    displayName: "User",
-    familyName: null,
-    locale: "en",
-  }
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("family_id, role, display_name, locale")
-      .eq("id", user.id)
-      .single()
-
-    if (profile) {
-      let familyName: string | null = null
-      if (profile.family_id) {
-        const { data: family } = await supabase
-          .from("families")
-          .select("name")
-          .eq("id", profile.family_id)
-          .single()
-        familyName = family?.name ?? null
+  const session: SessionData = appSession
+    ? {
+        familyId: appSession.familyId,
+        role: appSession.role,
+        displayName: appSession.displayName,
+        familyName: appSession.familyName,
+        locale: appSession.locale,
       }
-
-      session = {
-        familyId: profile.family_id,
-        role: (["admin", "adult", "child"] as const).includes(
-          profile.role as "admin" | "adult" | "child"
-        )
-          ? (profile.role as "admin" | "adult" | "child")
-          : "child",
-        displayName:
-          profile.display_name?.trim() ||
-          user.email?.split("@")[0] ||
-          "User",
-        familyName,
-        locale: (profile.locale as "de" | "en" | "fr") ?? "en",
+    : {
+        familyId: null,
+        role: "child",
+        displayName: "User",
+        familyName: null,
+        locale: "en",
       }
-    }
-  }
 
   return <AppShell session={session}>{children}</AppShell>
 }

@@ -1,36 +1,18 @@
 import { redirect } from "next/navigation"
-import { getDashboardDataAction } from "@/lib/actions/dashboard"
+import { getAppSession } from "@/lib/session"
 import { DashboardContent } from "@/components/dashboard/dashboard-content"
 
 export default async function DashboardPage() {
-  const result = await getDashboardDataAction()
+  const session = await getAppSession()
 
-  if ("error" in result) {
-    if (
-      result.error === "Nicht angemeldet." ||
-      result.error === "Not logged in."
-    ) {
-      redirect("/login")
-    }
-    if (
-      result.error === "Du gehoerst keiner Familie an." ||
-      result.error === "You do not belong to a family."
-    ) {
-      redirect("/onboarding")
-    }
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-        <p className="text-sm text-muted-foreground">{result.error}</p>
-      </main>
-    )
-  }
+  if (!session) redirect("/login")
 
   return (
     <DashboardContent
-      user={result.user}
-      family={result.family}
-      role={result.role}
-      memberCount={result.memberCount}
+      user={{ id: session.userId, displayName: session.displayName }}
+      family={{ id: session.familyId, name: session.familyName }}
+      role={session.role}
+      memberCount={session.memberCount}
     />
   )
 }

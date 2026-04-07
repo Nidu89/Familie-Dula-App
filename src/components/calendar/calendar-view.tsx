@@ -2,19 +2,13 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import {
-  Calendar as BigCalendar,
-  dateFnsLocalizer,
-  type View,
-  type Event as RBCEvent,
-  type NavigateAction,
+import type {
+  View,
+  Event as RBCEvent,
+  NavigateAction,
 } from "react-big-calendar"
-import { format, parse, startOfWeek, getDay } from "date-fns"
-import { de } from "date-fns/locale"
 import { RRule } from "rrule"
 import { useTranslations } from "next-intl"
-
-import "react-big-calendar/lib/css/react-big-calendar.css"
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
@@ -30,6 +24,13 @@ import dynamic from "next/dynamic"
 const EventFormDialog = dynamic(() =>
   import("@/components/calendar/event-form-dialog").then((m) => m.EventFormDialog)
 )
+const BigCalendarWrapper = dynamic(
+  () =>
+    import("@/components/calendar/big-calendar-wrapper").then(
+      (m) => m.BigCalendarWrapper
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-[600px] w-full rounded-lg" /> }
+)
 import {
   getEventsForRangeAction,
   type CalendarEvent,
@@ -37,15 +38,7 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
-const locales = { "de-DE": de }
 
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
-  getDay,
-  locales,
-})
 
 interface CalendarEventRBC extends RBCEvent {
   resource: CalendarEvent
@@ -450,11 +443,8 @@ export function CalendarView({
       ) : (
         /* Non-month views: use react-big-calendar */
         <div className="rounded-lg bg-card p-2 sm:p-4 [&_.rbc-header]:border-border [&_.rbc-header]:bg-muted/50 [&_.rbc-header]:py-2 [&_.rbc-header]:text-xs [&_.rbc-header]:font-medium [&_.rbc-header]:text-muted-foreground [&_.rbc-month-row]:border-border [&_.rbc-day-bg]:border-border [&_.rbc-off-range-bg]:bg-muted/20 [&_.rbc-today]:bg-primary/5 [&_.rbc-time-view]:border-border [&_.rbc-timeslot-group]:border-border [&_.rbc-time-content]:border-border [&_.rbc-day-slot_.rbc-time-slot]:border-border/30 [&_.rbc-agenda-view_table]:border-border [&_.rbc-agenda-view_table_td]:border-border [&_.rbc-agenda-view_table_th]:border-border">
-          <BigCalendar<CalendarEventRBC>
-            localizer={localizer}
+          <BigCalendarWrapper
             events={rbcEvents}
-            startAccessor="start"
-            endAccessor="end"
             view={view as View}
             onView={(v) => setView(v as CalendarViewType)}
             date={currentDate}
@@ -465,9 +455,7 @@ export function CalendarView({
             eventPropGetter={eventStyleGetter}
             components={components}
             messages={messages}
-            culture="de-DE"
             style={{ height: 600 }}
-            popup
           />
         </div>
       )}

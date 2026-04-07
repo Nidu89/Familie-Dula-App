@@ -2,28 +2,15 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
-import { getDashboardDataAction } from "@/lib/actions/dashboard"
+import { getAppSession } from "@/lib/session"
 import { getRewardShopAction } from "@/lib/actions/rewards"
 import { RewardShop } from "@/components/rewards/reward-shop"
 
 export default async function RewardShopPage() {
-  const dashResult = await getDashboardDataAction()
+  const session = await getAppSession()
+  if (!session) redirect("/login")
 
-  if ("error" in dashResult) {
-    if (dashResult.error === "Nicht angemeldet.") redirect("/login")
-    if (dashResult.error === "Du gehoerst keiner Familie an.")
-      redirect("/onboarding")
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-        <p className="text-sm text-muted-foreground">
-          Shop konnte nicht geladen werden. Bitte Seite neu laden.
-        </p>
-      </main>
-    )
-  }
-
-  const { role } = dashResult
-  const isAdultOrAdmin = role === "admin" || role === "adult"
+  const isAdultOrAdmin = session.role === "admin" || session.role === "adult"
 
   const shopResult = await getRewardShopAction()
   const shopRewards = "error" in shopResult ? [] : shopResult.rewards
@@ -31,7 +18,6 @@ export default async function RewardShopPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      {/* Back link */}
       <Link
         href="/rewards"
         className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-secondary hover:underline"

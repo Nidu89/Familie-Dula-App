@@ -1,22 +1,15 @@
 import { redirect } from "next/navigation"
 
-import { getDashboardDataAction } from "@/lib/actions/dashboard"
+import { getAppSession } from "@/lib/session"
 import { getRecipesAction } from "@/lib/actions/recipes"
 import { getShoppingListsAction } from "@/lib/actions/shopping"
 import { RecipesPage } from "@/components/recipes/recipes-page"
 
 export default async function RecipesRoute() {
-  const dashResult = await getDashboardDataAction()
+  const session = await getAppSession()
+  if (!session) redirect("/login")
 
-  if ("error" in dashResult) {
-    if (dashResult.error === "Nicht angemeldet.") redirect("/login")
-    if (dashResult.error === "Du gehoerst keiner Familie an.")
-      redirect("/onboarding")
-    redirect("/login")
-  }
-
-  const { role } = dashResult
-  const isAdultOrAdmin = role === "admin" || role === "adult"
+  const isAdultOrAdmin = session.role === "admin" || session.role === "adult"
 
   const [recipesResult, listsResult] = await Promise.all([
     getRecipesAction(),
