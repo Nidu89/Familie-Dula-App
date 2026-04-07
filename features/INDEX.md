@@ -20,7 +20,7 @@
 | PROJ-6 | Belohnungssystem | Deployed | [PROJ-6-belohnungssystem.md](PROJ-6-belohnungssystem.md) | 2026-03-18 |
 | PROJ-7 | Einkaufslisten | Deployed | [PROJ-7-einkaufslisten.md](PROJ-7-einkaufslisten.md) | 2026-03-18 |
 | PROJ-8 | Essens- & Rezeptplanung | Deployed | [PROJ-8-essens-rezeptplanung.md](PROJ-8-essens-rezeptplanung.md) | 2026-03-18 |
-| PROJ-9 | Chat & Kommunikation | In Progress | [PROJ-9-chat-kommunikation.md](PROJ-9-chat-kommunikation.md) | 2026-03-18 |
+| PROJ-9 | Chat & Kommunikation | In Review | [PROJ-9-chat-kommunikation.md](PROJ-9-chat-kommunikation.md) | 2026-03-18 |
 | PROJ-10 | Benachrichtigungen | In Progress | [PROJ-10-benachrichtigungen.md](PROJ-10-benachrichtigungen.md) | 2026-03-18 |
 | PROJ-11 | Bild-Upload im Chat | In Progress | [PROJ-11-chat-bild-upload.md](PROJ-11-chat-bild-upload.md) | 2026-03-18 |
 | PROJ-12 | Kalender-Integrationen (iCloud, Google & mehr) | In Progress | [PROJ-12-kalender-integrationen.md](PROJ-12-kalender-integrationen.md) | 2026-03-18 |

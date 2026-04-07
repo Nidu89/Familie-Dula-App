@@ -113,7 +113,143 @@
 Keine neuen Packages nötig — Supabase Realtime ist bereits im Projekt vorhanden.
 
 ## QA Test Results
-_To be added by /qa_
+
+**Tested:** 2026-04-07
+**App URL:** http://localhost:3000
+**Tester:** QA Engineer (AI)
+
+### Acceptance Criteria Status
+
+#### AC-1: Familien-Kanal
+- [x] Gemeinsamer Chat fuer alle Familienmitglieder existiert (auto-erstellt via DB-Trigger)
+- [x] Backfill fuer bestehende Familien ausgefuehrt
+
+#### AC-2: Direktnachrichten
+- [x] 1:1-Chat zwischen zwei Familienmitgliedern moeglich
+- [x] Bestehender DM-Kanal wird wiederverwendet statt doppelt erstellt
+- [x] Self-DM wird serverseitig blockiert
+
+#### AC-3: Nachrichten-Anzeige
+- [x] Sendername wird im Familienchat angezeigt (nicht bei eigenen Nachrichten)
+- [x] Zeitstempel (HH:MM) auf jeder Nachricht
+- [x] Nachrichtentext korrekt angezeigt mit Zeilenumbruechen
+
+#### AC-4: Realtime
+- [x] Supabase Realtime Subscription auf chat_messages
+- [x] Optimistic UI beim Senden (Nachricht erscheint sofort)
+- [x] Deduplication via pendingMutationRef + ID-Check
+
+#### AC-5: Nachrichtenhistorie
+- [x] Cursor-basierte Pagination (50 pro Seite)
+- [x] "Aeltere Nachrichten laden"-Button
+- [x] Scroll-Position bleibt beim Nachladen erhalten
+
+#### AC-6: Eigene Nachrichten rechts, fremde links
+- [x] Eigene Nachrichten: rechts mit Gold-Gradient
+- [x] Fremde Nachrichten: links mit Surface-Hintergrund
+
+#### AC-7: Lesezeichen / Ungelesen-Badge
+- [x] Unread-Count auf jedem Kanal in der Sidebar
+- [x] Read-Receipt wird beim Oeffnen eines Kanals aktualisiert
+- [x] Upsert-Logik fuer chat_read_receipts
+
+#### AC-8: Alle Familienmitglieder koennen schreiben
+- [x] RLS erlaubt INSERT fuer alle channel_members (inkl. Kinder)
+- [x] Auto-add Trigger fuegt neue Familienmitglieder zum Familienchat hinzu
+
+#### AC-9: DM-Privatsphaere
+- [x] RLS auf chat_messages prueft channel_members Mitgliedschaft
+- [x] Nur Teilnehmer koennen DM-Nachrichten lesen
+
+#### AC-10: Kein Edit/Delete in v1
+- [x] Keine Edit/Delete-Funktionen implementiert (by design)
+
+### Edge Cases Status
+
+#### EC-1: Sehr lange Nachrichten (max. 2000 Zeichen)
+- [x] Zod-Schema validiert max. 2000 Zeichen serverseitig
+- [x] HTML maxLength=2000 auf Textarea clientseitig
+- [x] whitespace-pre-wrap + break-words fuer korrekte Anzeige
+
+#### EC-2: Mitglied aus Familie entfernt
+- [x] DB-Trigger entfernt Mitglied aus allen Familien-Channels bei family_id=NULL
+- [x] Alte Nachrichten bleiben in der DB (kein CASCADE auf sender_id)
+
+#### EC-3: Schlechte Verbindung beim Senden
+- [x] Optimistic message wird bei Fehler entfernt
+- [x] Toast-Fehlermeldung wird angezeigt
+
+#### EC-4: Viele DM-Konversationen
+- [x] Sortiert nach letzter Aktivitaet (lastMessageAt)
+- [x] Familien-Kanal immer oben
+
+### Security Audit Results
+- [x] Authentication: Alle Server Actions pruefen auth.getUser() / getCurrentProfile()
+- [x] Authorization: RLS auf allen 4 Tabellen (channels, members, messages, read_receipts)
+- [x] Input validation: Zod-Schemas fuer alle Mutations, max 2000 Zeichen
+- [x] XSS: React escaped Content automatisch, kein dangerouslySetInnerHTML
+- [x] SQL injection: Supabase parametrisierte Queries
+- [x] DM-Isolation: RLS prueft channel_members (nicht nur family_id)
+- [x] Rate limiting: sendMessageAction (30/min)
+- [ ] BUG-P9-4: Fehlende Rate-Limits auf createDirectChannelAction
+
+### Bugs Found
+
+#### BUG-P9-1: Ungueltige Tailwind-Klasse `h-4.5 w-4.5`
+- **Severity:** High
+- **File:** src/components/chat/message-input.tsx:70
+- **Steps to Reproduce:**
+  1. Oeffne /chat
+  2. Schau auf den Senden-Button
+  3. Expected: Send-Icon hat korrekte Groesse (18px)
+  4. Actual: `h-4.5` existiert nicht in Tailwind v3 — Icon-Groesse undefiniert
+- **Fix:** Ersetze `h-4.5 w-4.5` mit `h-5 w-5`
+- **Priority:** Fix before deployment
+
+#### BUG-P9-2: Redundante DB-Query in getChannelsAction
+- **Severity:** Medium
+- **File:** src/lib/actions/chat.ts:107-112
+- **Description:** `lastMessages` Query (limit 1) wird nie verwendet, weil `recentMessages` (limit N*2) immer Vorrang hat im Fallback auf Zeile 124
+- **Impact:** Unnoetige DB-Abfrage bei jedem Chat-Seitenaufruf
+- **Priority:** Fix in next sprint
+
+#### BUG-P9-3: N+1 sequentielle Queries fuer Unread-Counts
+- **Severity:** Medium
+- **File:** src/lib/actions/chat.ts:152-171 und getUnreadCountsAction:510-527
+- **Description:** Eine separate DB-Abfrage pro Kanal fuer Unread-Count
+- **Impact:** Bei 10 Kanaelen = 10 sequentielle Queries. Fuer Familien-App akzeptabel (wenige Kanaele), skaliert aber schlecht
+- **Priority:** Fix in next sprint
+
+#### BUG-P9-4: Fehlende Rate-Limits auf Mutations
+- **Severity:** Medium
+- **File:** src/lib/actions/chat.ts:347 (createDirectChannelAction), :437 (markChannelReadAction)
+- **Description:** Nur sendMessageAction hat Rate-Limiting. createDirectChannelAction und markChannelReadAction fehlen
+- **Impact:** Spam-Erstellung von DM-Kanaelen moeglich
+- **Priority:** Fix before deployment
+
+#### BUG-P9-5: Fehlende .limit() auf mehreren Queries
+- **Severity:** Medium
+- **File:** src/lib/actions/chat.ts:75 (memberships), 101 (allMembers), 139 (receipts)
+- **Description:** Verstoesst gegen Backend-Regel "Use .limit() on all list queries"
+- **Priority:** Fix in next sprint
+
+#### BUG-P9-6: Ungenutzter Import `ArrowLeft`
+- **Severity:** Low
+- **File:** src/components/chat/chat-sidebar.tsx:4
+- **Description:** `ArrowLeft` importiert aber nie verwendet
+- **Priority:** Nice to have
+
+### Unit Tests
+- **File:** src/lib/validations/chat.test.ts
+- **Tests:** 18 passed (sendMessageSchema, getMessagesSchema, createDirectChannelSchema, markReadSchema)
+- **Coverage:** Validation happy paths, edge cases (empty, too long, invalid UUID, whitespace trimming)
+
+### Summary
+- **Acceptance Criteria:** 10/10 passed
+- **Bugs Found:** 6 total (0 critical, 1 high, 4 medium, 1 low)
+- **Security:** Rate-limiting lueckenhaft auf Mutations (BUG-P9-4)
+- **Production Ready:** NO — 1 High Bug (BUG-P9-1) und 1 Medium Security-Bug (BUG-P9-4) muessen zuerst gefixt werden
+- **Recommendation:** Fix BUG-P9-1 (Tailwind) und BUG-P9-4 (Rate-Limits), dann erneut /qa
 
 ## Deployment
 _To be added by /deploy_

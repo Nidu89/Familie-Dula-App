@@ -910,6 +910,35 @@
     }
   },
 
+  "chat": {
+    "pageTitle": "Chat",
+    "pageSubtitle": "Messages familiaux",
+    "pageBreadcrumb": "Bac a sable familial",
+    "loadError": "Impossible de charger le chat.",
+    "familyChannel": "Chat familial",
+    "directMessages": "Messages directs",
+    "newDirectMessage": "Nouveau message direct",
+    "selectMember": "Choisir un membre",
+    "noChannels": "Pas encore de chats",
+    "noChannelsDescription": "Lance le chat familial ou ecris directement a quelqu'un.",
+    "noMessages": "Pas encore de messages",
+    "noMessagesDescription": "Ecris le premier message !",
+    "messagePlaceholder": "Ecrire un message...",
+    "sendMessage": "Envoyer",
+    "loadOlder": "Charger les anciens messages",
+    "loadingMessages": "Chargement des messages...",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "unreadMessages": "{count, plural, one {# message non lu} other {# messages non lus}}",
+    "messageError": "Impossible d'envoyer le message.",
+    "retryMessage": "Reessayer",
+    "you": "Toi",
+    "selectChat": "Choisis un chat dans la barre laterale",
+    "selectChatDescription": "Choisis un chat ou demarre une nouvelle conversation.",
+    "charCount": "{count}/2000",
+    "memberSince": "Membre depuis {date}"
+  },
+
   "layout": {
     "sidebar": {
       "dashboard": "Tableau de bord",
@@ -919,6 +948,7 @@
       "timer": "Minuteur",
       "rituals": "Rituels",
       "shopping": "Courses",
+      "chat": "Chat",
       "recipes": "Recettes",
       "family": "Famille",
       "navigation": "Navigation",
@@ -942,6 +972,7 @@
       "timer": "Minuteur",
       "rituals": "Rituels",
       "shopping": "Courses",
+      "chat": "Chat",
       "recipes": "Recettes",
       "family": "Famille",
       "aria": "Navigation mobile",

@@ -910,6 +910,35 @@
     }
   },
 
+  "chat": {
+    "pageTitle": "Chat",
+    "pageSubtitle": "Family Messages",
+    "pageBreadcrumb": "Family Sandbox",
+    "loadError": "Chat could not be loaded.",
+    "familyChannel": "Family Chat",
+    "directMessages": "Direct Messages",
+    "newDirectMessage": "New Direct Message",
+    "selectMember": "Select member",
+    "noChannels": "No chats yet",
+    "noChannelsDescription": "Start the family chat or message someone directly.",
+    "noMessages": "No messages yet",
+    "noMessagesDescription": "Write the first message!",
+    "messagePlaceholder": "Write a message...",
+    "sendMessage": "Send",
+    "loadOlder": "Load older messages",
+    "loadingMessages": "Loading messages...",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "unreadMessages": "{count, plural, one {# unread message} other {# unread messages}}",
+    "messageError": "Message could not be sent.",
+    "retryMessage": "Retry",
+    "you": "You",
+    "selectChat": "Select a chat from the sidebar",
+    "selectChatDescription": "Choose a chat or start a new conversation.",
+    "charCount": "{count}/2000",
+    "memberSince": "Member since {date}"
+  },
+
   "layout": {
     "sidebar": {
       "dashboard": "Dashboard",
@@ -919,6 +948,7 @@
       "timer": "Timer",
       "rituals": "Rituals",
       "shopping": "Shopping",
+      "chat": "Chat",
       "recipes": "Recipes",
       "family": "Family",
       "navigation": "Page navigation",
@@ -942,6 +972,7 @@
       "timer": "Timer",
       "rituals": "Rituals",
       "shopping": "Shopping",
+      "chat": "Chat",
       "recipes": "Recipes",
       "family": "Family",
       "aria": "Mobile navigation",

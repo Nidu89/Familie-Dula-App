@@ -910,6 +910,35 @@
     }
   },
 
+  "chat": {
+    "pageTitle": "Chat",
+    "pageSubtitle": "Familien-Nachrichten",
+    "pageBreadcrumb": "Familien-Sandbox",
+    "loadError": "Chat konnte nicht geladen werden.",
+    "familyChannel": "Familienchat",
+    "directMessages": "Direktnachrichten",
+    "newDirectMessage": "Neue Direktnachricht",
+    "selectMember": "Mitglied auswaehlen",
+    "noChannels": "Noch keine Chats",
+    "noChannelsDescription": "Starte den Familienchat oder schreibe jemandem direkt.",
+    "noMessages": "Noch keine Nachrichten",
+    "noMessagesDescription": "Schreibe die erste Nachricht!",
+    "messagePlaceholder": "Nachricht schreiben...",
+    "sendMessage": "Senden",
+    "loadOlder": "Aeltere Nachrichten laden",
+    "loadingMessages": "Nachrichten laden...",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "unreadMessages": "{count, plural, one {# ungelesene Nachricht} other {# ungelesene Nachrichten}}",
+    "messageError": "Nachricht konnte nicht gesendet werden.",
+    "retryMessage": "Erneut senden",
+    "you": "Du",
+    "selectChat": "Waehle einen Chat aus der Seitenleiste",
+    "selectChatDescription": "Waehle einen Chat aus oder starte eine neue Konversation.",
+    "charCount": "{count}/2000",
+    "memberSince": "Mitglied seit {date}"
+  },
+
   "layout": {
     "sidebar": {
       "dashboard": "Dashboard",
@@ -919,6 +948,7 @@
       "timer": "Timer",
       "rituals": "Rituale",
       "shopping": "Einkaufslisten",
+      "chat": "Chat",
       "recipes": "Rezepte",
       "family": "Familie",
       "navigation": "Seitennavigation",
@@ -942,6 +972,7 @@
       "timer": "Timer",
       "rituals": "Rituale",
       "shopping": "Einkaufen",
+      "chat": "Chat",
       "recipes": "Rezepte",
       "family": "Familie",
       "aria": "Mobile Navigation",
