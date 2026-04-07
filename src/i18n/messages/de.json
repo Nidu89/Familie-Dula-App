@@ -1088,5 +1088,55 @@
       "saved": "Einstellung gespeichert",
       "error": "Einstellung konnte nicht gespeichert werden."
     }
+  },
+
+  "assistant": {
+    "title": "KI-Assistent",
+    "floatingButtonLabel": "KI-Assistent öffnen",
+    "close": "Schließen",
+    "welcome": "Hallo! Ich bin euer Familien-Assistent. Ich kann euch helfen mit:",
+    "welcomeActions": "Aufgaben erstellen & anzeigen, Kalender-Termine verwalten, Einkaufslisten bearbeiten, Essenspläne erstellen, Rituale anlegen",
+    "welcomeHint": "Probier es aus! Schreib einfach, was du brauchst.",
+    "inputPlaceholder": "Was kann ich für dich tun?",
+    "send": "Senden",
+    "sending": "Antwort wird generiert...",
+    "retry": "Erneut versuchen",
+    "noApiKey": "Noch kein API-Key konfiguriert. Bitte den Admin der Familie fragen.",
+    "errorGeneric": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "newChat": "Neues Gespräch",
+    "toolSuccess": "Aktion erfolgreich ausgeführt",
+    "toolError": "Aktion fehlgeschlagen",
+    "toolLabels": {
+      "list_tasks": "Aufgaben",
+      "create_task": "Aufgabe erstellt",
+      "list_calendar_events": "Kalender",
+      "create_calendar_event": "Termin erstellt",
+      "list_rituals": "Rituale",
+      "create_ritual": "Ritual erstellt",
+      "list_shopping_lists": "Einkaufslisten",
+      "list_shopping_items": "Einkaufsliste",
+      "add_shopping_item": "Artikel hinzugefügt",
+      "get_meal_plan": "Essensplan",
+      "add_meal": "Mahlzeit hinzugefügt"
+    },
+    "apiKeySection": {
+      "title": "KI-Assistent",
+      "description": "Hinterlege deinen Anthropic API-Key, damit alle Familienmitglieder den KI-Assistenten nutzen können.",
+      "configured": "API-Key konfiguriert",
+      "notConfigured": "Kein API-Key hinterlegt",
+      "maskedKey": "Aktueller Key",
+      "change": "Ändern",
+      "delete": "Löschen",
+      "deleteTitle": "API-Key löschen?",
+      "deleteDescription": "Der KI-Assistent ist danach für alle Familienmitglieder deaktiviert.",
+      "inputLabel": "Anthropic API-Key",
+      "inputPlaceholder": "sk-ant-...",
+      "inputHint": "Der Key wird verschlüsselt gespeichert und nie im Klartext übertragen.",
+      "saved": "API-Key gespeichert",
+      "deleted": "API-Key gelöscht",
+      "saveError": "API-Key konnte nicht gespeichert werden.",
+      "deleteError": "API-Key konnte nicht gelöscht werden.",
+      "loading": "Wird geladen..."
+    }
   }
 }

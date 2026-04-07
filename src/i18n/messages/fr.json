@@ -1088,5 +1088,55 @@
       "saved": "Paramètre enregistré",
       "error": "Impossible d'enregistrer le paramètre."
     }
+  },
+
+  "assistant": {
+    "title": "Assistant IA",
+    "floatingButtonLabel": "Ouvrir l'assistant IA",
+    "close": "Fermer",
+    "welcome": "Bonjour ! Je suis votre assistant familial. Je peux vous aider avec :",
+    "welcomeActions": "Créer et voir les tâches, Gérer les événements du calendrier, Modifier les listes de courses, Créer des plans de repas, Configurer des rituels",
+    "welcomeHint": "Essaie ! Écris simplement ce dont tu as besoin.",
+    "inputPlaceholder": "Que puis-je faire pour toi ?",
+    "send": "Envoyer",
+    "sending": "Génération de la réponse...",
+    "retry": "Réessayer",
+    "noApiKey": "Pas de clé API configurée. Demande à l'admin de la famille.",
+    "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+    "newChat": "Nouvelle conversation",
+    "toolSuccess": "Action réalisée avec succès",
+    "toolError": "Action échouée",
+    "toolLabels": {
+      "list_tasks": "Tâches",
+      "create_task": "Tâche créée",
+      "list_calendar_events": "Calendrier",
+      "create_calendar_event": "Événement créé",
+      "list_rituals": "Rituels",
+      "create_ritual": "Rituel créé",
+      "list_shopping_lists": "Listes de courses",
+      "list_shopping_items": "Liste de courses",
+      "add_shopping_item": "Article ajouté",
+      "get_meal_plan": "Plan de repas",
+      "add_meal": "Repas ajouté"
+    },
+    "apiKeySection": {
+      "title": "Assistant IA",
+      "description": "Ajoute ta clé API Anthropic pour que tous les membres puissent utiliser l'assistant IA.",
+      "configured": "Clé API configurée",
+      "notConfigured": "Pas de clé API",
+      "maskedKey": "Clé actuelle",
+      "change": "Modifier",
+      "delete": "Supprimer",
+      "deleteTitle": "Supprimer la clé API ?",
+      "deleteDescription": "L'assistant IA sera désactivé pour tous les membres de la famille.",
+      "inputLabel": "Clé API Anthropic",
+      "inputPlaceholder": "sk-ant-...",
+      "inputHint": "La clé est stockée de manière chiffrée et jamais transmise en clair.",
+      "saved": "Clé API enregistrée",
+      "deleted": "Clé API supprimée",
+      "saveError": "Impossible d'enregistrer la clé API.",
+      "deleteError": "Impossible de supprimer la clé API.",
+      "loading": "Chargement..."
+    }
   }
 }

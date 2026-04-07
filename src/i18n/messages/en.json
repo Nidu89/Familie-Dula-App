@@ -1088,5 +1088,55 @@
       "saved": "Setting saved",
       "error": "Setting could not be saved."
     }
+  },
+
+  "assistant": {
+    "title": "AI Assistant",
+    "floatingButtonLabel": "Open AI Assistant",
+    "close": "Close",
+    "welcome": "Hello! I'm your family assistant. I can help you with:",
+    "welcomeActions": "Create & view tasks, Manage calendar events, Edit shopping lists, Create meal plans, Set up rituals",
+    "welcomeHint": "Try it out! Just write what you need.",
+    "inputPlaceholder": "What can I do for you?",
+    "send": "Send",
+    "sending": "Generating response...",
+    "retry": "Try again",
+    "noApiKey": "No API key configured yet. Please ask the family admin.",
+    "errorGeneric": "An error occurred. Please try again.",
+    "newChat": "New conversation",
+    "toolSuccess": "Action completed successfully",
+    "toolError": "Action failed",
+    "toolLabels": {
+      "list_tasks": "Tasks",
+      "create_task": "Task created",
+      "list_calendar_events": "Calendar",
+      "create_calendar_event": "Event created",
+      "list_rituals": "Rituals",
+      "create_ritual": "Ritual created",
+      "list_shopping_lists": "Shopping lists",
+      "list_shopping_items": "Shopping list",
+      "add_shopping_item": "Item added",
+      "get_meal_plan": "Meal plan",
+      "add_meal": "Meal added"
+    },
+    "apiKeySection": {
+      "title": "AI Assistant",
+      "description": "Add your Anthropic API key so all family members can use the AI assistant.",
+      "configured": "API key configured",
+      "notConfigured": "No API key set",
+      "maskedKey": "Current key",
+      "change": "Change",
+      "delete": "Delete",
+      "deleteTitle": "Delete API key?",
+      "deleteDescription": "The AI assistant will be disabled for all family members.",
+      "inputLabel": "Anthropic API Key",
+      "inputPlaceholder": "sk-ant-...",
+      "inputHint": "The key is stored encrypted and never transmitted in plain text.",
+      "saved": "API key saved",
+      "deleted": "API key deleted",
+      "saveError": "API key could not be saved.",
+      "deleteError": "API key could not be deleted.",
+      "loading": "Loading..."
+    }
   }
 }

@@ -165,8 +165,162 @@ Nutzer → AssistantInput → POST /api/assistant/chat
 |---|---|
 | `@anthropic-ai/sdk` | Offizielle Claude API (Tool Use, Nachrichten) |
 
+## Backend Implementation Notes
+
+**Completed by /backend on 2026-04-07:**
+
+### Files Created
+1. **Database Migration:** `supabase/migrations/20260407_proj17_family_ai_settings.sql`
+   - `family_ai_settings` table (family_id PK, api_key_encrypted, updated_at, updated_by)
+   - RLS: admin-only for SELECT/INSERT/UPDATE/DELETE
+   - `get_family_ai_key()` SECURITY DEFINER function for non-admin family members to read encrypted key
+   - Auto-update trigger for `updated_at`
+   - Index on `updated_by`
+
+2. **Encryption Utility:** `src/lib/crypto.ts`
+   - AES-256-GCM via Node.js crypto
+   - Key from `AI_KEY_ENCRYPTION_SECRET` env var (64-char hex = 32 bytes)
+   - Format: base64(iv + authTag + ciphertext)
+   - `encrypt()`, `decrypt()`, `maskApiKey()` exports
+
+3. **Validation Schemas:** `src/lib/validations/assistant.ts`
+   - `saveApiKeySchema` — validates API key format (sk-ant-* prefix)
+   - `chatRequestSchema` — messages array + locale
+   - Tool input schemas: `listTasksInputSchema`, `createTaskInputSchema`, `listCalendarEventsInputSchema`, `createCalendarEventInputSchema`, `listShoppingItemsInputSchema`, `addShoppingItemInputSchema`, `getMealPlanInputSchema`, `addMealInputSchema`
+
+4. **Server Actions:** `src/lib/actions/assistant.ts`
+   - `saveApiKeyAction()` — encrypt + upsert, admin-only
+   - `deleteApiKeyAction()` — delete key, admin-only
+   - `getApiKeyStatusAction()` — returns configured boolean + masked key for admins
+
+5. **Agent Tools:** `src/lib/assistant/tools.ts`
+   - 11 tool definitions (original 10 + `list_shopping_lists` for list discovery)
+   - `executeTool()` dispatcher
+   - `getFamilyMembers()` helper for system prompt context
+   - All tools use RLS-scoped Supabase client (user identity preserved)
+   - Create tools (task, event, ritual) bypass `verifyAdultOrAdmin()` — children can create via assistant
+
+6. **Route Handler:** `src/app/api/assistant/chat/route.ts`
+   - `POST /api/assistant/chat`
+   - Auth check, rate limiting (20 req/min/user), input validation
+   - Cross-origin blocking
+   - Decrypts API key via SECURITY DEFINER RPC
+   - Agentic loop: max 5 tool iterations
+   - Locale-aware system prompt (de/en/fr)
+   - Claude claude-sonnet-4-6 model
+   - Token management: trims to last 10 messages
+   - Returns `{ message, toolResults }` JSON
+
+7. **Env Example:** `.env.local.example` updated with `AI_KEY_ENCRYPTION_SECRET`
+
+### Design Decisions
+- Added `list_shopping_lists` as an 11th tool (user asked: always ask which list). The assistant must call this first to show available lists before adding items.
+- Children can create tasks, events, and rituals via the assistant — the tool functions insert directly into Supabase with RLS (which allows family members to insert). The `verifyAdultOrAdmin()` check from normal server actions is intentionally bypassed.
+- Rate limit key includes both user ID and IP for defense in depth.
+
 ## QA Test Results
-_To be added by /qa_
+
+**QA Date:** 2026-04-07
+**Tested by:** QA Engineer (code review + automated tests)
+
+### Build & Existing Tests
+- [x] `npm run build` — passes, no errors
+- [x] `npm test` — 162/162 tests pass (including 42 new PROJ-17 tests)
+- [x] No regressions in existing test suites
+
+### Acceptance Criteria — Code Review
+
+#### API-Key-Verwaltung
+- [x] AC-1: Family Settings hat "KI-Assistent" Abschnitt (`api-key-section.tsx` + `family/settings/page.tsx`)
+- [x] AC-2: Nur Admins — `verifyAdmin()` in Server Actions, `{isAdmin && <ApiKeySection />}` im UI, RLS admin-only
+- [x] AC-3: Verschlüsselung — AES-256-GCM in `crypto.ts`, masked output via `maskApiKey()`, Key nie im Klartext an Client
+- [x] AC-4: Kein Key → "Noch kein API-Key konfiguriert" Meldung im Chat-Sheet
+
+#### Floating Button & Chat-Dialog
+- [x] AC-5: Floating Button vorhanden in `app-shell.tsx`, `AssistantButton` Komponente
+- [x] AC-6: Sheet öffnet sich von rechts (shadcn Sheet side="right")
+- [x] AC-7: Welcome-Message mit Aktionsliste beim ersten Öffnen
+- [x] AC-8: Session-only State (React useState, kein DB-Persist)
+- [x] AC-9: Locale-aware System Prompt (de/en/fr in `getSystemPrompt()`)
+
+#### Agent-Tools
+- [x] AC-10–19: 11 Tools definiert und implementiert (10 geplant + `list_shopping_lists`)
+- [x] Tool-Implementierungen nutzen Supabase-Client mit User-Identität (RLS aktiv)
+- [x] Kinder können erstellen (kein `verifyAdultOrAdmin` Bypass nötig, RLS erlaubt INSERT)
+
+#### Sicherheit
+- [x] AC-20: Jeder Tool-Call läuft unter User-Identität (Supabase `createClient()` in jedem Tool)
+- [x] AC-21: API-Key bleibt auf dem Server (entschlüsselt nur im Route Handler, nie an Client)
+- [x] AC-22: Chat-Nachrichten nicht in DB (nur React State)
+
+### Security Audit
+
+| Check | Status | Anmerkung |
+|---|---|---|
+| API-Key Verschlüsselung | PASS | AES-256-GCM, random IV, Auth Tag, korrekte Implementierung |
+| API-Key nie im Client | PASS | Nur masked Version via `getApiKeyStatusAction`, Entschlüsselung nur in Route Handler |
+| RLS auf `family_ai_settings` | PASS | Admin-only SELECT/INSERT/UPDATE/DELETE, SECURITY DEFINER RPC für andere Members |
+| Auth-Check im Route Handler | PASS | `supabase.auth.getUser()` + Profil-Check + Family-Zugehörigkeit |
+| Rate Limiting | PASS | 20 req/min auf Chat, 10 req/min auf Key-Aktionen |
+| Cross-Origin Schutz | PASS | Origin-Header Prüfung in Route Handler |
+| Input-Validierung | PASS | Zod auf allen Eingaben (Chat-Request, API-Key, Tool-Inputs) |
+| XSS-Schutz | PASS | Kein `dangerouslySetInnerHTML`, Chat-Inhalte via `whitespace-pre-wrap` (Text only) |
+| NEXT_PUBLIC Secrets | PASS | `AI_KEY_ENCRYPTION_SECRET` ist nur serverseitig |
+| Tool-Calls via User-RLS | PASS | Alle DB-Operationen über authentifizierten Supabase-Client |
+| Token Management | PASS | Server trimmt auf 10 Nachrichten, max 5 Tool-Iterationen |
+
+### Bugs Found
+
+#### BUG-P17-1: HIGH — API-Key Input doppelt sichtbar im Initialzustand
+**Datei:** `src/components/assistant/api-key-section.tsx`
+**Problem:** Wenn kein Key konfiguriert ist (`!configured && !editing`), werden gleichzeitig der Input-Bereich UND der "Anthropic API-Key" Setup-Button gerendert. Die Bedingung `(!configured || editing)` ist auch bei `!configured && !editing` wahr, sodass das Input-Feld sofort erscheint — zusammen mit dem redundanten Button unten.
+**Erwartetes Verhalten:** Initial nur "Kein API-Key hinterlegt" + Setup-Button. Input erst nach Klick auf den Button.
+**Severity:** HIGH (UX-Blocker, verwirrendes Doppel-UI für Admins)
+
+#### BUG-P17-2: HIGH — handleRetry sendet veraltete Nachrichten an die API
+**Datei:** `src/components/assistant/assistant-sheet.tsx`
+**Problem:** `handleRetry` entfernt Fehlernachrichten via `setMessages()` und ruft sofort `handleSend()` auf. Aber `handleSend` liest `messages` aus dem React-Closure (nicht den neuesten State nach dem `setMessages`-Update). Das führt dazu, dass die API-Anfrage noch die Fehler-/alten Nachrichten enthält, die eigentlich entfernt werden sollten.
+**Erwartetes Verhalten:** `handleSend` sollte mit den bereinigten Nachrichten arbeiten.
+**Severity:** HIGH (Feature-Fehlfunktion: Retry schickt falsche Daten)
+
+#### BUG-P17-3: MEDIUM — Deutsche Übersetzungen verwenden ASCII statt Umlaute
+**Dateien:** `src/i18n/messages/de.json`, `src/i18n/messages/fr.json`
+**Problem:** 15+ deutsche Einträge verwenden "oe/ue/ae" statt "ö/ü/ä" (z.B. "oeffnen" statt "öffnen", "Loeschen" statt "Löschen", "fuer" statt "für"). Französische Einträge haben fehlende Akzente ("cle" statt "clé", "desactive" statt "désactivé").
+**Severity:** MEDIUM (sichtbar für alle Nutzer, unprofessionell)
+
+#### BUG-P17-4: MEDIUM — Tool-Result Labels hardcoded auf Deutsch
+**Datei:** `src/components/assistant/assistant-messages.tsx`
+**Problem:** `TOOL_LABELS` ist ein statisches Objekt mit deutschen Strings ("Aufgabe erstellt", "Termin erstellt" etc.). Bei Locale en/fr sehen Nutzer trotzdem deutsche Labels.
+**Severity:** MEDIUM (i18n-Verletzung, betrifft en/fr Nutzer)
+
+#### BUG-P17-5: LOW — `isLoading` Prop wird an AssistantMessages übergeben aber nicht genutzt
+**Datei:** `src/components/assistant/assistant-messages.tsx:54`
+**Problem:** Der `isLoading` Prop wird in der Props-Destructuring akzeptiert aber nie verwendet (Loading-Indikator wird separat im Sheet gerendert).
+**Severity:** LOW (toter Code, kein Runtime-Problem)
+
+### Unit Tests geschrieben
+
+| Testdatei | Tests | Status |
+|---|---|---|
+| `src/lib/crypto.test.ts` | 8 Tests (encrypt/decrypt roundtrip, tamper detection, env var validation, maskApiKey) | PASS |
+| `src/lib/validations/assistant.test.ts` | 34 Tests (alle 9 Schemas: saveApiKey, chatMessage, chatRequest, 8 Tool-Schemas) | PASS |
+
+### Zusammenfassung
+
+| Kategorie | Ergebnis |
+|---|---|
+| Acceptance Criteria | 22/22 bestanden (Code-Review) |
+| Security Audit | 11/11 Checks bestanden |
+| Bugs gefunden | 2 High, 2 Medium, 1 Low |
+| Unit Tests | 42 neue Tests, alle bestanden |
+| Build | Passes |
+| Regressions | Keine (120 bestehende Tests unverändert) |
+
+### Production-Ready Entscheidung
+
+**NOT READY** — 2 High-Severity Bugs müssen zuerst gefixt werden:
+1. BUG-P17-1: API-Key Doppel-UI
+2. BUG-P17-2: handleRetry sendet falsche Nachrichten
 
 ## Deployment
 _To be added by /deploy_

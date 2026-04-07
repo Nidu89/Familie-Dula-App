@@ -8,6 +8,7 @@ import {
   FamilySettingsHero,
   FamilyActivitySummary,
 } from "@/components/family/family-settings-header"
+import { ApiKeySection } from "@/components/assistant/api-key-section"
 import { getFamilyDataAction } from "@/lib/actions/family"
 
 export default async function FamilySettingsPage() {
@@ -42,6 +43,7 @@ export default async function FamilySettingsPage() {
 
       {/* Bottom settings */}
       <div className="mt-16 max-w-2xl space-y-6">
+        {isAdmin && <ApiKeySection />}
         <LanguageSwitcher />
         <FamilyNameSection familyName={family.name} isAdmin={isAdmin} />
         <LeaveFamilySection isLastAdmin={isLastAdmin} />
