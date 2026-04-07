@@ -1,6 +1,6 @@
 # PROJ-10: Benachrichtigungen
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -212,4 +212,29 @@ Keine neuen Packages nötig — Supabase Realtime und Supabase DB-Trigger sind b
 - **Production Ready:** YES — keine Critical/High Bugs, alle 7 ACs bestanden
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-07
+**Git Tag:** v1.10.0-PROJ-10
+**Branch:** main (034e49f)
+**Trigger:** Vercel auto-deploy via GitHub push
+
+### Deployed Files
+- `supabase/migrations/20260407_proj10_benachrichtigungen.sql` — DB-Schema: notifications, notification_preferences, triggers, RLS
+- `supabase/migrations/20260407_proj10_scope_rpcs.sql` — Bug-Fix: RPCs auf auth.uid() gescoopt
+- `src/lib/validations/notifications.ts` — Zod-Schemas
+- `src/lib/actions/notifications.ts` — Server Actions (getNotifications, markRead, markAllRead, getUnreadCount, getPreferences, updatePreference, triggerMaintenance)
+- `src/components/notifications/notification-bell.tsx` — Bell + Popover Dropdown mit Realtime
+- `src/components/notifications/notification-item.tsx` — Einzelne Notification-Zeile
+- `src/components/notifications/notification-settings-client.tsx` — Einstellungen (Toggles)
+- `src/app/(app)/settings/notifications/page.tsx` — Settings-Seite
+- `src/components/layout/app-top-bar.tsx` — Bell in Top Bar integriert
+- `src/components/layout/app-shell.tsx` — userId durchgereicht
+- `src/app/(app)/layout.tsx` — userId in SessionData
+
+### Post-Deployment Status
+- [ ] Production URL verifizieren
+- [ ] Bell-Icon mit Badge testen
+- [ ] Termin zuweisen → Notification pruefen
+- [ ] Aufgabe zuweisen → Notification pruefen
+- [ ] Chat-Nachricht → Notification pruefen
+- [ ] Einstellungen togglen und verifizieren
