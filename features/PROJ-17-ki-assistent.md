@@ -1,8 +1,8 @@
 # PROJ-17: KI-Assistent (Family AI Agent)
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-07
-**Last Updated:** 2026-04-07 (Architecture added)
+**Last Updated:** 2026-04-07 (Deployed)
 
 ## Dependencies
 - Requires: PROJ-1 (Authentifizierung) — eingeloggter Nutzer für alle Tool-Calls
@@ -318,9 +318,23 @@ Nutzer → AssistantInput → POST /api/assistant/chat
 
 ### Production-Ready Entscheidung
 
-**NOT READY** — 2 High-Severity Bugs müssen zuerst gefixt werden:
-1. BUG-P17-1: API-Key Doppel-UI
-2. BUG-P17-2: handleRetry sendet falsche Nachrichten
+**READY** — Alle 5 Bugs gefixt (2 High, 2 Medium, 1 Low). Build + 162 Tests bestanden.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-07
+**Commit:** 3224293
+**Tag:** v1.17.0-PROJ-17
+**Neue Umgebungsvariable:** `AI_KEY_ENCRYPTION_SECRET` (64-char hex) in Vercel eintragen
+**DB-Migration:** `supabase/migrations/20260407_proj17_family_ai_settings.sql` in Supabase anwenden
+
+### Deployment-Checkliste
+- [x] `npm run build` bestanden
+- [x] `npm run lint` bestanden (0 Errors)
+- [x] Alle 5 QA-Bugs gefixt
+- [x] 162 Unit-Tests bestanden
+- [x] Alle Dateien committed und gepusht (commit 3224293)
+- [x] Vercel auto-deploy ausgelöst (push to main)
+- [ ] `AI_KEY_ENCRYPTION_SECRET` in Vercel Dashboard eintragen
+- [ ] DB-Migration in Supabase anwenden
+- [ ] Produktions-Test: Anthropic API-Key in /family/settings eintragen und Chat testen

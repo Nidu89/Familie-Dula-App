@@ -30,7 +30,7 @@
 
 | PROJ-16 | Wochen-Challenge als pinnable Aufgabe | Deployed | [PROJ-16-wochen-challenge-aufgabe.md](PROJ-16-wochen-challenge-aufgabe.md) | 2026-04-06 |
 
-| PROJ-17 | KI-Assistent (Family AI Agent) | In Review | [PROJ-17-ki-assistent.md](PROJ-17-ki-assistent.md) | 2026-04-07 |
+| PROJ-17 | KI-Assistent (Family AI Agent) | Deployed | [PROJ-17-ki-assistent.md](PROJ-17-ki-assistent.md) | 2026-04-07 |
 
 <!-- Add features above this line -->
 
