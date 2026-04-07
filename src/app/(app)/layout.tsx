@@ -15,6 +15,7 @@ export default async function AppGroupLayout({
 
   const session: SessionData = appSession
     ? {
+        userId: appSession.userId,
         familyId: appSession.familyId,
         role: appSession.role,
         displayName: appSession.displayName,
@@ -22,6 +23,7 @@ export default async function AppGroupLayout({
         locale: appSession.locale,
       }
     : {
+        userId: null,
         familyId: null,
         role: "child",
         displayName: "User",

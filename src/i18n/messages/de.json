@@ -21,6 +21,7 @@
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten.",
     "comingSoon": "Kommt bald",
     "comingSoonDescription": "{label} wird in einem zukuenftigen Update verfuegbar sein.",
+    "justNow": "Gerade eben",
     "points": "Punkte",
     "pts": "Pkt.",
     "minutes": "Minuten",
@@ -959,6 +960,7 @@
     "topBar": {
       "aria": "Kopfleiste",
       "notifications": "Benachrichtigungen",
+      "notificationSettings": "Benachrichtigungen",
       "settings": "Einstellungen",
       "userMenu": "Benutzermenue",
       "familyPrefix": "Familie",
@@ -1061,6 +1063,30 @@
       "fr": "Fran\u00e7ais",
       "saved": "Sprache gespeichert",
       "error": "Sprache konnte nicht gespeichert werden."
+    }
+  },
+
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Keine Benachrichtigungen",
+    "emptyDescription": "Du hast keine neuen Benachrichtigungen.",
+    "markAllRead": "Alle als gelesen markieren",
+    "loadMore": "Aeltere laden",
+    "calendarAssigned": "Neuer Termin: {title}",
+    "taskAssigned": "Aufgabe zugewiesen: {title}",
+    "taskDue": "Aufgabe faellig: {title}",
+    "chatMessage": "{sender}: {preview}",
+    "chatMessageFallback": "Neue Nachricht",
+    "contentDeleted": "Inhalt wurde geloescht",
+    "settings": {
+      "title": "Benachrichtigungs-Einstellungen",
+      "description": "Waehle, welche Benachrichtigungen du erhalten moechtest.",
+      "calendarAssigned": "Neuer Termin zugewiesen",
+      "taskAssigned": "Aufgabe zugewiesen",
+      "taskDue": "Aufgabe faellig",
+      "chatMessage": "Neue Chat-Nachricht",
+      "saved": "Einstellung gespeichert",
+      "error": "Einstellung konnte nicht gespeichert werden."
     }
   }
 }

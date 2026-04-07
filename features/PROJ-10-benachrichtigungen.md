@@ -97,7 +97,119 @@ App Top Bar (bestehend – app-top-bar.tsx erweitern)
 Keine neuen Packages nötig — Supabase Realtime und Supabase DB-Trigger sind bereits im Projekt verfügbar.
 
 ## QA Test Results
-_To be added by /qa_
+
+**Tested:** 2026-04-07
+**App URL:** http://localhost:3000
+**Tester:** QA Engineer (AI)
+
+### Acceptance Criteria Status
+
+#### AC-1: In-App-Benachrichtigungszentrale (Glocken-Icon + Zaehler)
+- [x] Bell icon in Top Bar via `NotificationBell` component
+- [x] Unread count badge (rote Zahl, max "99+")
+- [x] Badge wird beim Mount via `getUnreadCountAction()` geladen
+
+#### AC-2: Benachrichtigungs-Dropdown mit Datum und Link zum Ausloeser
+- [x] Popover-Dropdown mit Notification-Liste
+- [x] Zeitstempel auf jeder Benachrichtigung (relative Anzeige: gerade eben, 5m, 2h, 3d)
+- [x] Klick navigiert zur Quellseite (/calendar, /tasks, /chat)
+- [x] Typ-spezifische Icons (Kalender, Aufgabe, Uhr, Chat)
+
+#### AC-3: Benachrichtigungs-Typen
+- [x] `calendar_assigned` — DB-Trigger auf event_participants INSERT
+- [x] `task_assigned` — DB-Trigger auf tasks INSERT/UPDATE (assigned_to)
+- [x] `task_due` — RPC `create_task_due_notifications()` beim Laden aufgerufen
+- [x] `chat_message` — DB-Trigger auf chat_messages INSERT (Upsert: 1 pro Kanal)
+
+#### AC-4: Benachrichtigungseinstellungen (pro Typ aktivieren/deaktivieren)
+- [x] `/settings/notifications` Seite mit 4 Toggles (Switch von shadcn/ui)
+- [x] Optimistic UI mit Revert bei Fehler
+- [x] Defaults: alle Typen aktiviert
+- [x] Trigger pruefen Preferences vor Insert
+
+#### AC-5: Benachrichtigungen als "gelesen" markieren
+- [x] Klick auf Notification → `markNotificationReadAction()` aufgerufen
+- [x] Gelesene Notifications werden visuell gedimmt (opacity-60)
+- [x] Unread-Dot (blauer Punkt) verschwindet bei gelesen
+
+#### AC-6: "Alle als gelesen markieren"-Funktion
+- [x] Button mit CheckCheck-Icon im Dropdown-Header
+- [x] Nur sichtbar wenn unreadCount > 0
+- [x] Optimistic UI: sofortige visuelle Aktualisierung
+
+#### AC-7: Benachrichtigungen max. 30 Tage gespeichert
+- [x] `cleanup_old_notifications()` loescht WHERE created_at < 30 Tage
+- [x] Wird bei jedem `getNotificationsAction()` aufgerufen (fire-and-forget)
+
+### Edge Cases Status
+
+#### EC-1: Sehr viele Benachrichtigungen (Pagination)
+- [x] Cursor-basierte Pagination (20 pro Seite)
+- [x] "Aeltere laden"-Button im Dropdown
+
+#### EC-2: Geloeschter Termin/Aufgabe mit Benachrichtigung
+- [x] Benachrichtigung bleibt bestehen (kein CASCADE auf reference_id)
+- [x] Link fuehrt zur allgemeinen Seite (/calendar, /tasks, /chat)
+
+#### EC-3: Deaktivierte Benachrichtigungstypen
+- [x] Alle 3 Trigger pruefen `notification_preferences` vor Insert
+- [x] Default: enabled (wenn kein Preference-Eintrag existiert)
+- [x] `create_task_due_notifications()` prueft ebenfalls Preferences
+
+### Security Audit Results
+
+- [x] **Authentication:** Alle Server Actions pruefen `getCurrentUser()`
+- [x] **Authorization (RLS):** notifications SELECT/UPDATE/DELETE nur eigene, kein Client-INSERT
+- [x] **Authorization (RLS):** notification_preferences SELECT/INSERT/UPDATE nur eigene
+- [x] **Input validation:** Zod-Schemas fuer alle Mutations
+- [x] **XSS:** React escaped Content automatisch
+- [x] **SQL injection:** Supabase parametrisierte Queries
+- [x] **SECURITY DEFINER:** Alle Trigger mit `SET search_path = public`
+- [x] **Realtime filter:** `user_id=eq.${userId}` + RLS schuetzt vor fremden Daten
+- [x] **Rate limiting:** markNotificationRead (60/min), markAllRead (10/min), updatePreference (20/min)
+- [ ] BUG-P10-1: RPC-Funktionen sind von jedem authentifizierten Nutzer aufrufbar
+- [ ] BUG-P10-2: Fehlende Rate-Limits auf getNotificationsAction (triggert RPCs)
+
+### Bugs Found
+
+#### BUG-P10-1: RPC-Funktionen oeffentlich aufrufbar
+- **Severity:** Medium
+- **File:** supabase/migrations/20260407_proj10_benachrichtigungen.sql (Functions Zeile 268, 314)
+- **Description:** `create_task_due_notifications()` und `cleanup_old_notifications()` sind SECURITY DEFINER RPCs die von jedem authentifizierten Nutzer via `supabase.rpc()` aufgerufen werden koennen. Sie operieren auf ALLEN Nutzerdaten.
+- **Impact:** Gering — beide Funktionen sind idempotent (Upsert/Delete). Worst case: unnoetige DB-Operationen.
+- **Fix:** `REVOKE EXECUTE ON FUNCTION create_task_due_notifications() FROM authenticated;` und stattdessen nur via Service-Role oder in Server Action mit Admin-Check aufrufen.
+- **Priority:** Fix in next sprint
+
+#### BUG-P10-2: RPCs feuern bei jedem getNotificationsAction-Aufruf
+- **Severity:** Medium
+- **File:** src/lib/actions/notifications.ts:65-66
+- **Description:** `create_task_due_notifications` und `cleanup_old_notifications` werden bei JEDEM Aufruf von `getNotificationsAction` gefeuert — auch bei Pagination ("Aeltere laden"). Sollte maximal einmal pro Session/Tag laufen.
+- **Impact:** Unnoetige DB-Last bei haeufigem Oeffnen/Blaettern.
+- **Fix:** RPC-Aufrufe in eine separate `checkTaskDueAction()` auslagern, die nur beim ersten Oeffnen aufgerufen wird, oder Throttling im Server Action.
+- **Priority:** Fix in next sprint
+
+#### BUG-P10-3: Fehlende Zurueck-Navigation auf Settings-Seite
+- **Severity:** Low
+- **File:** src/components/notifications/notification-settings-client.tsx
+- **Description:** `/settings/notifications` hat keinen Zurueck-Button oder Breadcrumb. Nutzer muss Browser-Zurueck verwenden.
+- **Priority:** Nice to have
+
+#### BUG-P10-4: RPC-Fehler werden verschluckt
+- **Severity:** Low
+- **File:** src/lib/actions/notifications.ts:65-66
+- **Description:** Fire-and-forget `.then(() => {})` ohne Error-Handling. Wenn RPCs fehlschlagen, gibt es kein Logging.
+- **Priority:** Nice to have
+
+### Unit Tests
+- **File:** src/lib/validations/notifications.test.ts
+- **Tests:** 17 passed (getNotificationsSchema, markNotificationReadSchema, updatePreferenceSchema)
+- **Coverage:** Validation happy paths, edge cases (invalid UUID, out-of-range limit, invalid type, missing fields)
+
+### Summary
+- **Acceptance Criteria:** 7/7 passed
+- **Bugs Found:** 4 total (0 critical, 0 high, 2 medium, 2 low)
+- **Security:** RPC-Zugriff sollte eingeschraenkt werden (BUG-P10-1)
+- **Production Ready:** YES — keine Critical/High Bugs, alle 7 ACs bestanden
 
 ## Deployment
 _To be added by /deploy_

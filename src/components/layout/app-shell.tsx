@@ -8,6 +8,7 @@ import { AppTopBar } from "@/components/layout/app-top-bar"
 import { BottomNav } from "@/components/layout/bottom-nav"
 
 export interface SessionData {
+  userId: string | null
   familyId: string | null
   role: "admin" | "adult" | "child"
   displayName: string
@@ -40,6 +41,7 @@ export function AppShell({ session, children }: AppShellProps) {
               displayName={session.displayName}
               familyName={session.familyName}
               isAdmin={isAdmin}
+              userId={session.userId || ""}
             />
           </>
         )}

@@ -21,6 +21,7 @@
     "unexpectedError": "Une erreur inattendue s'est produite.",
     "comingSoon": "Bientôt disponible",
     "comingSoonDescription": "{label} sera disponible dans une prochaine mise à jour.",
+    "justNow": "À l'instant",
     "points": "Points",
     "pts": "Pts",
     "minutes": "Minutes",
@@ -959,6 +960,7 @@
     "topBar": {
       "aria": "Barre supérieure",
       "notifications": "Notifications",
+      "notificationSettings": "Notifications",
       "settings": "Paramètres",
       "userMenu": "Menu utilisateur",
       "familyPrefix": "Famille",
@@ -1061,6 +1063,30 @@
       "fr": "Français",
       "saved": "Langue enregistrée",
       "error": "Impossible d'enregistrer la langue."
+    }
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "emptyDescription": "Tu n'as pas de nouvelles notifications.",
+    "markAllRead": "Tout marquer comme lu",
+    "loadMore": "Charger plus anciennes",
+    "calendarAssigned": "Nouveau rendez-vous : {title}",
+    "taskAssigned": "Tâche assignée : {title}",
+    "taskDue": "Tâche échue : {title}",
+    "chatMessage": "{sender} : {preview}",
+    "chatMessageFallback": "Nouveau message",
+    "contentDeleted": "Le contenu a été supprimé",
+    "settings": {
+      "title": "Paramètres de notification",
+      "description": "Choisis quelles notifications tu souhaites recevoir.",
+      "calendarAssigned": "Nouveau rendez-vous assigné",
+      "taskAssigned": "Tâche assignée",
+      "taskDue": "Tâche échue",
+      "chatMessage": "Nouveau message de chat",
+      "saved": "Paramètre enregistré",
+      "error": "Impossible d'enregistrer le paramètre."
     }
   }
 }

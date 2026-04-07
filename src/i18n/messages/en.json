@@ -21,6 +21,7 @@
     "unexpectedError": "An unexpected error occurred.",
     "comingSoon": "Coming soon",
     "comingSoonDescription": "{label} will be available in a future update.",
+    "justNow": "Just now",
     "points": "Points",
     "pts": "pts",
     "minutes": "Minutes",
@@ -959,6 +960,7 @@
     "topBar": {
       "aria": "Top bar",
       "notifications": "Notifications",
+      "notificationSettings": "Notifications",
       "settings": "Settings",
       "userMenu": "User menu",
       "familyPrefix": "Family",
@@ -1061,6 +1063,30 @@
       "fr": "Français",
       "saved": "Language saved",
       "error": "Language could not be saved."
+    }
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "emptyDescription": "You have no new notifications.",
+    "markAllRead": "Mark all as read",
+    "loadMore": "Load older",
+    "calendarAssigned": "New event: {title}",
+    "taskAssigned": "Task assigned: {title}",
+    "taskDue": "Task due: {title}",
+    "chatMessage": "{sender}: {preview}",
+    "chatMessageFallback": "New message",
+    "contentDeleted": "Content has been deleted",
+    "settings": {
+      "title": "Notification Settings",
+      "description": "Choose which notifications you want to receive.",
+      "calendarAssigned": "New event assigned",
+      "taskAssigned": "Task assigned",
+      "taskDue": "Task due",
+      "chatMessage": "New chat message",
+      "saved": "Setting saved",
+      "error": "Setting could not be saved."
     }
   }
 }

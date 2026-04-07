@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
-import { Bell, Settings, LogOut } from "lucide-react"
+import { Settings, LogOut, Bell } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -13,18 +13,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import { logoutAction } from "@/lib/actions/auth"
 
 interface AppTopBarProps {
   displayName: string
   familyName: string
   isAdmin: boolean
+  userId: string
 }
 
 export function AppTopBar({
   displayName,
   familyName,
   isAdmin,
+  userId,
 }: AppTopBarProps) {
   const t = useTranslations("layout.topBar")
   const tSidebar = useTranslations("layout.sidebar")
@@ -60,13 +63,7 @@ export function AppTopBar({
 
       {/* Right actions */}
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-muted transition-colors"
-          aria-label={t("notifications")}
-        >
-          <Bell className="h-5 w-5 text-foreground" />
-        </button>
+        <NotificationBell userId={userId} />
 
         {isAdmin && (
           <Link
@@ -99,6 +96,13 @@ export function AppTopBar({
                 {t("familyPrefix")} {familyName}
               </p>
             </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/settings/notifications">
+                <Bell className="mr-2 h-4 w-4" />
+                {t("notificationSettings")}
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}
