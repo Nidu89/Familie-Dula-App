@@ -14,34 +14,39 @@ import { useToast } from "@/hooks/use-toast"
 
 interface ShoppingItemRowProps {
   item: ShoppingItem
-  onUpdated: () => void
+  onToggled: (itemId: string, isDone: boolean) => void
+  onDeleted: (itemId: string) => void
+  onRevert: (itemId: string, prevState: ShoppingItem) => void
 }
 
-export function ShoppingItemRow({ item, onUpdated }: ShoppingItemRowProps) {
+export function ShoppingItemRow({
+  item,
+  onToggled,
+  onDeleted,
+  onRevert,
+}: ShoppingItemRowProps) {
   const tc = useTranslations("common")
   const t = useTranslations("shopping")
   const { toast } = useToast()
-  const [optimisticDone, setOptimisticDone] = useState(item.isDone)
   const [isDeleting, setIsDeleting] = useState(false)
 
   async function handleToggle(checked: boolean) {
-    // Optimistic update
-    setOptimisticDone(checked)
+    // Optimistic update via parent
+    onToggled(item.id, checked)
 
     try {
       const result = await toggleShoppingItemAction(item.id, checked)
       if ("error" in result) {
-        setOptimisticDone(!checked) // revert
+        // Revert via parent
+        onRevert(item.id, item)
         toast({
           title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
-        return
       }
-      onUpdated()
     } catch {
-      setOptimisticDone(!checked) // revert
+      onRevert(item.id, item)
       toast({
         title: tc("error"),
         description: tc("unexpectedError"),
@@ -52,18 +57,22 @@ export function ShoppingItemRow({ item, onUpdated }: ShoppingItemRowProps) {
 
   async function handleDelete() {
     setIsDeleting(true)
+    // Optimistic delete via parent
+    onDeleted(item.id)
+
     try {
       const result = await deleteShoppingItemAction(item.id)
       if ("error" in result) {
+        // Revert: add item back
+        onRevert(item.id, item)
         toast({
           title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
-        return
       }
-      onUpdated()
     } catch {
+      onRevert(item.id, item)
       toast({
         title: tc("error"),
         description: tc("unexpectedError"),
@@ -77,14 +86,14 @@ export function ShoppingItemRow({ item, onUpdated }: ShoppingItemRowProps) {
   return (
     <div
       className={`group flex items-center gap-3 rounded-xl p-3.5 min-h-16 transition-colors ${
-        optimisticDone
+        item.isDone
           ? "bg-muted/50"
           : "bg-card hover:bg-muted/30"
       }`}
     >
       {/* Checkbox */}
       <Checkbox
-        checked={optimisticDone}
+        checked={item.isDone}
         onCheckedChange={(checked) => handleToggle(checked === true)}
         className="h-6 w-6 rounded-lg border-2 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
         aria-label={t("toggleItem", { name: item.productName })}
@@ -94,7 +103,7 @@ export function ShoppingItemRow({ item, onUpdated }: ShoppingItemRowProps) {
       <div className="flex-1 min-w-0">
         <p
           className={`font-medium text-sm leading-tight transition-all ${
-            optimisticDone
+            item.isDone
               ? "line-through text-muted-foreground/60"
               : "text-foreground"
           }`}
@@ -109,7 +118,7 @@ export function ShoppingItemRow({ item, onUpdated }: ShoppingItemRowProps) {
       </div>
 
       {/* Category badge */}
-      {item.category && !optimisticDone && (
+      {item.category && !item.isDone && (
         <span className="hidden sm:inline-flex text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-secondary-container text-secondary whitespace-nowrap">
           {t(`categories.${item.category}`, { defaultMessage: item.category })}
         </span>

@@ -8,15 +8,17 @@ import { Skeleton } from "@/components/ui/skeleton"
 import {
   getSuggestedItemsAction,
   addShoppingItemAction,
+  type ShoppingItem,
 } from "@/lib/actions/shopping"
 import { useToast } from "@/hooks/use-toast"
 
 interface SuggestionsBarProps {
   listId: string
-  onAdded: () => void
+  onItemAdded: (tempItem: ShoppingItem) => void
+  onAddReverted: (tempId: string) => void
 }
 
-export function SuggestionsBar({ listId, onAdded }: SuggestionsBarProps) {
+export function SuggestionsBar({ listId, onItemAdded, onAddReverted }: SuggestionsBarProps) {
   const t = useTranslations("shopping")
   const tc = useTranslations("common")
   const { toast } = useToast()
@@ -42,23 +44,41 @@ export function SuggestionsBar({ listId, onAdded }: SuggestionsBarProps) {
 
   async function handleAddSuggestion(name: string) {
     setAddingItem(name)
+
+    // Optimistic add
+    const tempId = `temp-sug-${Date.now()}-${Math.random()}`
+    const tempItem: ShoppingItem = {
+      id: tempId,
+      listId,
+      productName: name,
+      quantity: null,
+      unit: null,
+      category: null,
+      isDone: false,
+      createdBy: "",
+      createdByName: null,
+      createdAt: new Date().toISOString(),
+    }
+    onItemAdded(tempItem)
+    setSuggestions((prev) => prev.filter((s) => s !== name))
+
     try {
       const result = await addShoppingItemAction({
         listId,
         productName: name,
       })
       if ("error" in result) {
+        onAddReverted(tempId)
+        setSuggestions((prev) => [...prev, name])
         toast({
           title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
-        return
       }
-      // Remove from suggestions
-      setSuggestions((prev) => prev.filter((s) => s !== name))
-      onAdded()
     } catch {
+      onAddReverted(tempId)
+      setSuggestions((prev) => [...prev, name])
       toast({
         title: tc("error"),
         description: tc("unexpectedError"),

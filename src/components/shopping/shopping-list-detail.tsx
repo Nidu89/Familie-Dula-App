@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect, useMemo } from "react"
+import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import {
@@ -58,12 +58,15 @@ export function ShoppingListDetail({
   const [isDeleting, setIsDeleting] = useState(false)
   const [isClearingCompleted, setIsClearingCompleted] = useState(false)
 
+  // Track pending local mutations to skip realtime refetch
+  const pendingMutationRef = useRef(false)
+  const realtimeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const fetchDetail = useCallback(async () => {
     setIsLoading(true)
     try {
       const result = await getShoppingListDetailAction(listId)
       if ("error" in result) {
-        // List might have been deleted
         if (result.error === "Einkaufsliste nicht gefunden.") {
           toast({ title: t("listDeletedToast") })
           router.push("/shopping")
@@ -89,7 +92,20 @@ export function ShoppingListDetail({
     }
   }, [listId, toast, tc, t, router])
 
-  // Realtime subscription
+  // Debounced realtime handler — skips if we just did a local mutation
+  const handleRealtimeChange = useCallback(() => {
+    if (pendingMutationRef.current) {
+      pendingMutationRef.current = false
+      return
+    }
+    // Debounce: coalesce rapid changes (e.g., bulk operations)
+    if (realtimeTimerRef.current) clearTimeout(realtimeTimerRef.current)
+    realtimeTimerRef.current = setTimeout(() => {
+      fetchDetail()
+    }, 500)
+  }, [fetchDetail])
+
+  // Realtime subscription (only syncs external changes)
   useEffect(() => {
     const supabase = createClient()
     const channel = supabase
@@ -102,7 +118,7 @@ export function ShoppingListDetail({
           table: "shopping_items",
           filter: `list_id=eq.${listId}`,
         },
-        () => fetchDetail()
+        () => handleRealtimeChange()
       )
       .on(
         "postgres_changes",
@@ -112,7 +128,6 @@ export function ShoppingListDetail({
           table: "shopping_lists",
         },
         (payload) => {
-          // Check if our list was deleted
           if (payload.old && (payload.old as { id?: string }).id === listId) {
             toast({ title: t("listDeletedToast") })
             router.push("/shopping")
@@ -123,15 +138,59 @@ export function ShoppingListDetail({
 
     return () => {
       supabase.removeChannel(channel)
+      if (realtimeTimerRef.current) clearTimeout(realtimeTimerRef.current)
     }
-  }, [listId, fetchDetail, toast, t, router])
+  }, [listId, handleRealtimeChange, toast, t, router])
 
-  // Group items by category, with unchecked first, then checked at bottom
-  const { activeItems, completedItems, groupedActive } = useMemo(() => {
+  // --- Optimistic state mutators ---
+
+  const handleItemAdded = useCallback(
+    (tempItem: ShoppingItem) => {
+      pendingMutationRef.current = true
+      setItems((prev) => [tempItem, ...prev])
+    },
+    []
+  )
+
+  const handleItemToggled = useCallback(
+    (itemId: string, isDone: boolean) => {
+      pendingMutationRef.current = true
+      setItems((prev) =>
+        prev.map((i) => (i.id === itemId ? { ...i, isDone } : i))
+      )
+    },
+    []
+  )
+
+  const handleItemDeleted = useCallback(
+    (itemId: string) => {
+      pendingMutationRef.current = true
+      setItems((prev) => prev.filter((i) => i.id !== itemId))
+    },
+    []
+  )
+
+  const handleItemRevert = useCallback(
+    (itemId: string, prevState: ShoppingItem) => {
+      setItems((prev) =>
+        prev.map((i) => (i.id === itemId ? prevState : i))
+      )
+    },
+    []
+  )
+
+  const handleItemAddReverted = useCallback(
+    (tempId: string) => {
+      setItems((prev) => prev.filter((i) => i.id !== tempId))
+    },
+    []
+  )
+
+  // Group items by category
+  const { completedItems, groupedActive } = useMemo(() => {
     const active = items.filter((i) => !i.isDone)
     const completed = items.filter((i) => i.isDone)
 
-    // Group active items by category
     const groups = new Map<string, ShoppingItem[]>()
     for (const item of active) {
       const cat = item.category || "uncategorized"
@@ -139,11 +198,7 @@ export function ShoppingListDetail({
       groups.get(cat)!.push(item)
     }
 
-    return {
-      activeItems: active,
-      completedItems: completed,
-      groupedActive: groups,
-    }
+    return { completedItems: completed, groupedActive: groups }
   }, [items])
 
   const completedCount = completedItems.length
@@ -176,9 +231,17 @@ export function ShoppingListDetail({
 
   async function handleClearCompleted() {
     setIsClearingCompleted(true)
+    // Optimistic: remove completed items
+    const removedItems = completedItems
+    const count = removedItems.length
+    pendingMutationRef.current = true
+    setItems((prev) => prev.filter((i) => !i.isDone))
+
     try {
       const result = await clearCompletedItemsAction(listId)
       if ("error" in result) {
+        // Revert
+        setItems((prev) => [...prev, ...removedItems])
         toast({
           title: tc("error"),
           description: result.error,
@@ -187,10 +250,10 @@ export function ShoppingListDetail({
         return
       }
       toast({
-        title: t("clearedCompleted", { count: result.deletedCount }),
+        title: t("clearedCompleted", { count }),
       })
-      fetchDetail()
     } catch {
+      setItems((prev) => [...prev, ...removedItems])
       toast({
         title: tc("error"),
         description: tc("unexpectedError"),
@@ -201,7 +264,6 @@ export function ShoppingListDetail({
     }
   }
 
-  // Category label helper
   function getCategoryLabel(category: string): string {
     if (category === "uncategorized") return t("uncategorized")
     return t(`categories.${category}`, { defaultMessage: category })
@@ -228,9 +290,7 @@ export function ShoppingListDetail({
           </h1>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Clear completed */}
           {completedCount > 0 && (
             <button
               type="button"
@@ -245,7 +305,6 @@ export function ShoppingListDetail({
             </button>
           )}
 
-          {/* Delete list (adults only) */}
           {isAdultOrAdmin && (
             <button
               type="button"
@@ -261,12 +320,12 @@ export function ShoppingListDetail({
 
       {/* Quick add input */}
       <div className="mb-6 mt-6">
-        <QuickAddInput listId={listId} onAdded={fetchDetail} />
+        <QuickAddInput listId={listId} onItemAdded={handleItemAdded} onAddReverted={handleItemAddReverted} />
       </div>
 
       {/* Suggestions */}
       <div className="mb-6">
-        <SuggestionsBar listId={listId} onAdded={fetchDetail} />
+        <SuggestionsBar listId={listId} onItemAdded={handleItemAdded} onAddReverted={handleItemAddReverted} />
       </div>
 
       {/* Items list */}
@@ -284,7 +343,6 @@ export function ShoppingListDetail({
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Active items grouped by category */}
           {groupedActive.size > 0 && (
             <div className="space-y-6">
               {[...groupedActive.entries()].map(([category, categoryItems]) => (
@@ -297,7 +355,9 @@ export function ShoppingListDetail({
                       <ShoppingItemRow
                         key={item.id}
                         item={item}
-                        onUpdated={fetchDetail}
+                        onToggled={handleItemToggled}
+                        onDeleted={handleItemDeleted}
+                        onRevert={handleItemRevert}
                       />
                     ))}
                   </div>
@@ -306,7 +366,6 @@ export function ShoppingListDetail({
             </div>
           )}
 
-          {/* Completed items */}
           {completedItems.length > 0 && (
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 px-1">
@@ -317,14 +376,15 @@ export function ShoppingListDetail({
                   <ShoppingItemRow
                     key={item.id}
                     item={item}
-                    onUpdated={fetchDetail}
+                    onToggled={handleItemToggled}
+                    onDeleted={handleItemDeleted}
+                    onRevert={handleItemRevert}
                   />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Loading indicator */}
           {isLoading && (
             <div className="space-y-2">
               {[1, 2].map((i) => (

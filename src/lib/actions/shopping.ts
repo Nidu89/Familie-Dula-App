@@ -381,18 +381,7 @@ export async function addShoppingItemAction(data: {
 
   const supabase = await createClient()
 
-  // Verify list belongs to family
-  const { data: list } = await supabase
-    .from("shopping_lists")
-    .select("id")
-    .eq("id", parsed.data.listId)
-    .eq("family_id", profile.family_id)
-    .single()
-
-  if (!list) {
-    return { error: "Einkaufsliste nicht gefunden." }
-  }
-
+  // RLS enforces family_id ownership — insert will fail if list doesn't belong to family
   const { data: item, error: insertError } = await supabase
     .from("shopping_items")
     .insert({
@@ -411,12 +400,6 @@ export async function addShoppingItemAction(data: {
     return { error: "Artikel konnte nicht hinzugefuegt werden." }
   }
 
-  // Touch the list's updated_at
-  await supabase
-    .from("shopping_lists")
-    .update({ updated_at: new Date().toISOString() })
-    .eq("id", parsed.data.listId)
-
   return { item: { id: item.id } }
 }
 
@@ -433,24 +416,13 @@ export async function toggleShoppingItemAction(
     return { error: "Ungueltige Eingaben." }
   }
 
-  const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
-
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Nicht angemeldet." }
 
-  // Verify item belongs to family through list
-  const { data: item } = await supabase
-    .from("shopping_items")
-    .select("id, list_id, shopping_lists!inner(family_id)")
-    .eq("id", parsed.data.itemId)
-    .eq("shopping_lists.family_id", profile.family_id)
-    .single()
-
-  if (!item) {
-    return { error: "Artikel nicht gefunden." }
-  }
-
+  // RLS enforces family ownership — update only succeeds for family members
   const { error: updateError } = await supabase
     .from("shopping_items")
     .update({ is_done: parsed.data.isDone })
@@ -475,24 +447,13 @@ export async function deleteShoppingItemAction(
     return { error: "Ungueltige Artikel-ID." }
   }
 
-  const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
-
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Nicht angemeldet." }
 
-  // Verify item belongs to family through list
-  const { data: item } = await supabase
-    .from("shopping_items")
-    .select("id, list_id, shopping_lists!inner(family_id)")
-    .eq("id", parsed.data.itemId)
-    .eq("shopping_lists.family_id", profile.family_id)
-    .single()
-
-  if (!item) {
-    return { error: "Artikel nicht gefunden." }
-  }
-
+  // RLS enforces family ownership — delete only succeeds for family members
   const { error: deleteError } = await supabase
     .from("shopping_items")
     .delete()

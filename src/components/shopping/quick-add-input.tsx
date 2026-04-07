@@ -12,16 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { addShoppingItemAction } from "@/lib/actions/shopping"
+import { addShoppingItemAction, type ShoppingItem } from "@/lib/actions/shopping"
 import { SHOPPING_CATEGORIES } from "@/lib/validations/shopping"
 import { useToast } from "@/hooks/use-toast"
 
 interface QuickAddInputProps {
   listId: string
-  onAdded: () => void
+  onItemAdded: (tempItem: ShoppingItem) => void
+  onAddReverted: (tempId: string) => void
 }
 
-export function QuickAddInput({ listId, onAdded }: QuickAddInputProps) {
+export function QuickAddInput({ listId, onItemAdded, onAddReverted }: QuickAddInputProps) {
   const t = useTranslations("shopping")
   const tc = useTranslations("common")
   const { toast } = useToast()
@@ -37,29 +38,49 @@ export function QuickAddInput({ listId, onAdded }: QuickAddInputProps) {
     if (!productName.trim()) return
 
     setIsSubmitting(true)
+    const trimmedName = productName.trim()
+    const trimmedQty = quantity.trim() || null
+    const selectedCategory = category && category !== "none" ? category : null
+
+    // Create optimistic item
+    const tempId = `temp-${Date.now()}-${Math.random()}`
+    const tempItem: ShoppingItem = {
+      id: tempId,
+      listId,
+      productName: trimmedName,
+      quantity: trimmedQty,
+      unit: null,
+      category: selectedCategory,
+      isDone: false,
+      createdBy: "",
+      createdByName: null,
+      createdAt: new Date().toISOString(),
+    }
+
+    // Optimistic add
+    onItemAdded(tempItem)
+    setProductName("")
+    setQuantity("")
+    inputRef.current?.focus()
+
     try {
       const result = await addShoppingItemAction({
         listId,
-        productName: productName.trim(),
-        quantity: quantity.trim() || undefined,
-        category: category || undefined,
+        productName: trimmedName,
+        quantity: trimmedQty || undefined,
+        category: selectedCategory || undefined,
       })
 
       if ("error" in result) {
+        onAddReverted(tempId)
         toast({
           title: tc("error"),
           description: result.error,
           variant: "destructive",
         })
-        return
       }
-
-      setProductName("")
-      setQuantity("")
-      // Keep category for batch adding of same category
-      onAdded()
-      inputRef.current?.focus()
     } catch {
+      onAddReverted(tempId)
       toast({
         title: tc("error"),
         description: tc("unexpectedError"),
@@ -85,7 +106,6 @@ export function QuickAddInput({ listId, onAdded }: QuickAddInputProps) {
             className="rounded-xl bg-card pr-10 h-14 text-base placeholder:text-muted-foreground/60"
             aria-label={t("quickAddLabel")}
           />
-          {/* Expand options toggle */}
           <button
             type="button"
             onClick={() => setShowOptions(!showOptions)}
@@ -100,7 +120,6 @@ export function QuickAddInput({ listId, onAdded }: QuickAddInputProps) {
           </button>
         </div>
 
-        {/* Add button */}
         <button
           type="submit"
           disabled={isSubmitting || !productName.trim()}
