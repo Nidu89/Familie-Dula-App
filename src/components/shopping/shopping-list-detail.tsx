@@ -179,6 +179,15 @@ export function ShoppingListDetail({
     []
   )
 
+  const handleItemIdResolved = useCallback(
+    (tempId: string, realId: string) => {
+      setItems((prev) =>
+        prev.map((i) => (i.id === tempId ? { ...i, id: realId } : i))
+      )
+    },
+    []
+  )
+
   const handleItemAddReverted = useCallback(
     (tempId: string) => {
       setItems((prev) => prev.filter((i) => i.id !== tempId))
@@ -320,12 +329,12 @@ export function ShoppingListDetail({
 
       {/* Quick add input */}
       <div className="mb-6 mt-6">
-        <QuickAddInput listId={listId} onItemAdded={handleItemAdded} onAddReverted={handleItemAddReverted} />
+        <QuickAddInput listId={listId} onItemAdded={handleItemAdded} onAddReverted={handleItemAddReverted} onIdResolved={handleItemIdResolved} />
       </div>
 
       {/* Suggestions */}
       <div className="mb-6">
-        <SuggestionsBar listId={listId} onItemAdded={handleItemAdded} onAddReverted={handleItemAddReverted} />
+        <SuggestionsBar listId={listId} onItemAdded={handleItemAdded} onAddReverted={handleItemAddReverted} onIdResolved={handleItemIdResolved} />
       </div>
 
       {/* Items list */}

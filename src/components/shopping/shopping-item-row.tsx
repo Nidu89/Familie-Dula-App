@@ -30,14 +30,17 @@ export function ShoppingItemRow({
   const { toast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false)
 
+  const isTempItem = item.id.startsWith("temp-")
+
   async function handleToggle(checked: boolean) {
-    // Optimistic update via parent
     onToggled(item.id, checked)
+
+    // Temp items haven't been persisted yet — skip server call
+    if (isTempItem) return
 
     try {
       const result = await toggleShoppingItemAction(item.id, checked)
       if ("error" in result) {
-        // Revert via parent
         onRevert(item.id, item)
         toast({
           title: tc("error"),
@@ -57,13 +60,17 @@ export function ShoppingItemRow({
 
   async function handleDelete() {
     setIsDeleting(true)
-    // Optimistic delete via parent
     onDeleted(item.id)
+
+    // Temp items haven't been persisted yet — no server call needed
+    if (isTempItem) {
+      setIsDeleting(false)
+      return
+    }
 
     try {
       const result = await deleteShoppingItemAction(item.id)
       if ("error" in result) {
-        // Revert: add item back
         onRevert(item.id, item)
         toast({
           title: tc("error"),

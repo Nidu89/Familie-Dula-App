@@ -16,9 +16,10 @@ interface SuggestionsBarProps {
   listId: string
   onItemAdded: (tempItem: ShoppingItem) => void
   onAddReverted: (tempId: string) => void
+  onIdResolved: (tempId: string, realId: string) => void
 }
 
-export function SuggestionsBar({ listId, onItemAdded, onAddReverted }: SuggestionsBarProps) {
+export function SuggestionsBar({ listId, onItemAdded, onAddReverted, onIdResolved }: SuggestionsBarProps) {
   const t = useTranslations("shopping")
   const tc = useTranslations("common")
   const { toast } = useToast()
@@ -75,6 +76,8 @@ export function SuggestionsBar({ listId, onItemAdded, onAddReverted }: Suggestio
           description: result.error,
           variant: "destructive",
         })
+      } else {
+        onIdResolved(tempId, result.item.id)
       }
     } catch {
       onAddReverted(tempId)

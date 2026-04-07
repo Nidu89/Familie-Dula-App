@@ -20,9 +20,10 @@ interface QuickAddInputProps {
   listId: string
   onItemAdded: (tempItem: ShoppingItem) => void
   onAddReverted: (tempId: string) => void
+  onIdResolved: (tempId: string, realId: string) => void
 }
 
-export function QuickAddInput({ listId, onItemAdded, onAddReverted }: QuickAddInputProps) {
+export function QuickAddInput({ listId, onItemAdded, onAddReverted, onIdResolved }: QuickAddInputProps) {
   const t = useTranslations("shopping")
   const tc = useTranslations("common")
   const { toast } = useToast()
@@ -78,6 +79,9 @@ export function QuickAddInput({ listId, onItemAdded, onAddReverted }: QuickAddIn
           description: result.error,
           variant: "destructive",
         })
+      } else {
+        // Replace temp ID with real ID from server
+        onIdResolved(tempId, result.item.id)
       }
     } catch {
       onAddReverted(tempId)
