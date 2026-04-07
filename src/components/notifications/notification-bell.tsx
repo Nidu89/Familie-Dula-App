@@ -22,21 +22,17 @@ import { createClient } from "@/lib/supabase/client"
 
 interface NotificationBellProps {
   userId: string
+  initialUnreadCount: number
 }
 
-export function NotificationBell({ userId }: NotificationBellProps) {
+export function NotificationBell({ userId, initialUnreadCount }: NotificationBellProps) {
   const t = useTranslations("notifications")
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount)
   const [hasMore, setHasMore] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const maintenanceRanRef = useRef(false)
-
-  // Load unread count on mount
-  useEffect(() => {
-    getUnreadCountAction().then((r) => setUnreadCount(r.count))
-  }, [])
 
   // Supabase Realtime: listen for new notifications
   useEffect(() => {

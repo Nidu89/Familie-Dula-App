@@ -14,6 +14,7 @@ export interface SessionData {
   displayName: string
   familyName: string | null
   locale: "de" | "en" | "fr"
+  unreadNotificationCount: number
 }
 
 interface AppShellProps {
@@ -42,6 +43,7 @@ export function AppShell({ session, children }: AppShellProps) {
               familyName={session.familyName}
               isAdmin={isAdmin}
               userId={session.userId || ""}
+              initialUnreadCount={session.unreadNotificationCount}
             />
           </>
         )}

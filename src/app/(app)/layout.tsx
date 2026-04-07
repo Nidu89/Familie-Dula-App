@@ -1,4 +1,5 @@
 import { getAppSession } from "@/lib/session"
+import { createClient } from "@/lib/supabase/server"
 import { AppShell, type SessionData } from "@/components/layout/app-shell"
 
 /**
@@ -13,6 +14,18 @@ export default async function AppGroupLayout({
 }) {
   const appSession = await getAppSession()
 
+  // Fetch unread notification count in parallel (avoids extra client-side roundtrip)
+  let unreadNotificationCount = 0
+  if (appSession) {
+    const supabase = await createClient()
+    const { count } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", appSession.userId)
+      .eq("is_read", false)
+    unreadNotificationCount = count || 0
+  }
+
   const session: SessionData = appSession
     ? {
         userId: appSession.userId,
@@ -21,6 +34,7 @@ export default async function AppGroupLayout({
         displayName: appSession.displayName,
         familyName: appSession.familyName,
         locale: appSession.locale,
+        unreadNotificationCount,
       }
     : {
         userId: null,
@@ -29,6 +43,7 @@ export default async function AppGroupLayout({
         displayName: "User",
         familyName: null,
         locale: "en",
+        unreadNotificationCount: 0,
       }
 
   return <AppShell session={session}>{children}</AppShell>

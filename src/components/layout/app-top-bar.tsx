@@ -21,6 +21,7 @@ interface AppTopBarProps {
   familyName: string
   isAdmin: boolean
   userId: string
+  initialUnreadCount: number
 }
 
 export function AppTopBar({
@@ -28,6 +29,7 @@ export function AppTopBar({
   familyName,
   isAdmin,
   userId,
+  initialUnreadCount,
 }: AppTopBarProps) {
   const t = useTranslations("layout.topBar")
   const tSidebar = useTranslations("layout.sidebar")
@@ -63,7 +65,7 @@ export function AppTopBar({
 
       {/* Right actions */}
       <div className="flex items-center gap-2">
-        <NotificationBell userId={userId} />
+        <NotificationBell userId={userId} initialUnreadCount={initialUnreadCount} />
 
         {isAdmin && (
           <Link
