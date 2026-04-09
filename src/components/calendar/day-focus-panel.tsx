@@ -121,10 +121,14 @@ export function DayFocusPanel({
       ) : (
         <div className="flex flex-col gap-3">
           {sortedEvents.map((event) => {
-            const categoryColor =
-              CATEGORY_COLORS[event.category] || CATEGORY_COLORS.other
-            const categoryLabel =
-              t(`categories.${event.category}` as "categories.school" | "categories.work" | "categories.leisure" | "categories.health" | "categories.other")
+            const ext = event as CalendarEvent & { _isExternal?: boolean; _provider?: string; _calendarName?: string | null }
+            const isExternal = !!ext._isExternal
+            const categoryColor = isExternal
+              ? ext._provider === "google" ? "hsl(0, 70%, 65%)" : "hsl(210, 70%, 60%)"
+              : CATEGORY_COLORS[event.category] || CATEGORY_COLORS.other
+            const categoryLabel = isExternal
+              ? (ext._provider === "google" ? "Google" : "iCloud")
+              : t(`categories.${event.category}` as "categories.school" | "categories.work" | "categories.leisure" | "categories.health" | "categories.other")
 
             const timeLabel = event.allDay
               ? tc("allDay")
@@ -134,10 +138,10 @@ export function DayFocusPanel({
               <button
                 key={event.id + "-" + event.startAt}
                 type="button"
-                onClick={() => onSelectEvent(event)}
-                className="group flex w-full flex-col gap-2.5 rounded-lg bg-card p-4 text-left transition-colors hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => !isExternal && onSelectEvent(event)}
+                className={`group flex w-full flex-col gap-2.5 rounded-lg bg-card p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isExternal ? "cursor-default opacity-80" : "hover:bg-surface-low"}`}
                 style={{
-                  borderLeft: `4px solid ${categoryColor}`,
+                  borderLeft: `4px ${isExternal ? "dashed" : "solid"} ${categoryColor}`,
                 }}
               >
                 {/* Title */}
@@ -165,6 +169,11 @@ export function DayFocusPanel({
                   >
                     {categoryLabel}
                   </span>
+                  {isExternal && ext._calendarName && (
+                    <span className="inline-flex items-center rounded-full bg-secondary-container px-2.5 py-0.5 text-[10px] font-medium text-secondary">
+                      {ext._calendarName}
+                    </span>
+                  )}
                   {event.participants.map((p) => (
                     <span
                       key={p.profileId}

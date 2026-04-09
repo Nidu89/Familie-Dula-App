@@ -35,6 +35,10 @@ import {
   getEventsForRangeAction,
   type CalendarEvent,
 } from "@/lib/actions/calendar"
+import {
+  getExternalEventsForRangeAction,
+  type ExternalCalendarEvent,
+} from "@/lib/actions/calendar-integrations"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -57,8 +61,35 @@ interface FamilyMember {
   displayName: string
 }
 
+/** Convert external events to CalendarEvent-compatible shape for rendering */
+function externalToCalendarEvent(e: ExternalCalendarEvent): CalendarEvent {
+  return {
+    id: `ext_${e.id}`,
+    familyId: "",
+    createdBy: "",
+    title: e.title,
+    description: e.description,
+    location: e.location,
+    startAt: e.startAt,
+    endAt: e.endAt,
+    allDay: e.allDay,
+    category: "other",
+    recurrenceRule: null,
+    recurrenceParentId: null,
+    isException: false,
+    reminderMinutes: null,
+    createdAt: "",
+    participants: [],
+    // Extended fields for external event display
+    _isExternal: true,
+    _provider: e.provider,
+    _calendarName: e.calendarName,
+  } as CalendarEvent & { _isExternal: boolean; _provider: string; _calendarName: string | null }
+}
+
 interface CalendarViewProps {
   initialEvents: CalendarEvent[]
+  initialExternalEvents?: ExternalCalendarEvent[]
   members: FamilyMember[]
   isAdultOrAdmin: boolean
   currentUserId: string
@@ -66,6 +97,7 @@ interface CalendarViewProps {
 
 export function CalendarView({
   initialEvents,
+  initialExternalEvents = [],
   members,
   isAdultOrAdmin,
   currentUserId,
@@ -75,6 +107,7 @@ export function CalendarView({
   const { toast } = useToast()
   const searchParams = useSearchParams()
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
+  const [externalEvents, setExternalEvents] = useState<ExternalCalendarEvent[]>(initialExternalEvents)
   const [view, setView] = useState<CalendarViewType>("month")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isLoading, setIsLoading] = useState(false)
@@ -105,10 +138,16 @@ export function CalendarView({
         const rangeStart = new Date(date.getFullYear(), date.getMonth() - 1, 1)
         const rangeEnd = new Date(date.getFullYear(), date.getMonth() + 2, 0)
 
-        const result = await getEventsForRangeAction(
-          rangeStart.toISOString(),
-          rangeEnd.toISOString()
-        )
+        const [result, extResult] = await Promise.all([
+          getEventsForRangeAction(
+            rangeStart.toISOString(),
+            rangeEnd.toISOString()
+          ),
+          getExternalEventsForRangeAction(
+            rangeStart.toISOString(),
+            rangeEnd.toISOString()
+          ),
+        ])
 
         if ("error" in result) {
           toast({
@@ -120,6 +159,9 @@ export function CalendarView({
         }
 
         setEvents(result.events)
+        if ("events" in extResult) {
+          setExternalEvents(extResult.events)
+        }
       } catch {
         toast({
           title: tc("error"),
@@ -235,8 +277,13 @@ export function CalendarView({
       }
     }
 
+    // Append external events (already flat, no recurrence expansion needed)
+    for (const ext of externalEvents) {
+      result.push(externalToCalendarEvent(ext))
+    }
+
     return result
-  }, [events, filteredEvents, currentDate])
+  }, [events, filteredEvents, currentDate, externalEvents])
 
   // Map expanded events to react-big-calendar format (used for non-month views)
   const rbcEvents: CalendarEventRBC[] = useMemo(() => {
@@ -286,6 +333,9 @@ export function CalendarView({
   }
 
   function handleSelectEvent(rbcEvent: CalendarEventRBC) {
+    // External events are read-only — don't open edit dialog
+    const evt = rbcEvent.resource as CalendarEvent & { _isExternal?: boolean }
+    if (evt._isExternal) return
     if (isAdultOrAdmin) {
       setSelectedEvent(rbcEvent.resource)
       setDialogOpen(true)
@@ -293,6 +343,9 @@ export function CalendarView({
   }
 
   function handleSelectCalendarEvent(event: CalendarEvent) {
+    // External events are read-only
+    const evt = event as CalendarEvent & { _isExternal?: boolean }
+    if (evt._isExternal) return
     if (isAdultOrAdmin) {
       setSelectedEvent(event)
       setDialogOpen(true)
@@ -327,7 +380,7 @@ export function CalendarView({
     fetchEvents(currentDate)
   }
 
-  // Supabase Realtime: refresh events when other family members make changes
+  // Supabase Realtime: refresh events when family members make changes
   useEffect(() => {
     const supabase = createClient()
     const channel = supabase
@@ -335,6 +388,13 @@ export function CalendarView({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "calendar_events" },
+        () => {
+          fetchEvents(currentDate)
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "external_calendar_events" },
         () => {
           fetchEvents(currentDate)
         }
@@ -347,9 +407,27 @@ export function CalendarView({
   }, [currentDate, fetchEvents])
 
   function eventStyleGetter(event: CalendarEventRBC) {
+    const ext = event.resource as CalendarEvent & { _isExternal?: boolean; _provider?: string }
+    const isPast = event.end && event.end < new Date()
+
+    if (ext._isExternal) {
+      // External events get a distinct dashed-border style
+      const providerColor = ext._provider === "google" ? "hsl(0, 70%, 65%)" : "hsl(210, 70%, 60%)"
+      return {
+        style: {
+          backgroundColor: providerColor,
+          opacity: isPast ? 0.4 : 0.8,
+          borderRadius: "4px",
+          border: "2px dashed rgba(255,255,255,0.5)",
+          color: "#fff",
+          fontSize: "0.75rem",
+          padding: "2px 4px",
+        },
+      }
+    }
+
     const color =
       CATEGORY_COLORS[event.resource.category] || CATEGORY_COLORS.other
-    const isPast = event.end && event.end < new Date()
     return {
       style: {
         backgroundColor: color,

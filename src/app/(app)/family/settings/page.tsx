@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import Link from "next/link"
 
 import { MemberListSection } from "@/components/family/member-list-section"
 import { FamilyNameSection } from "@/components/family/family-name-section"
@@ -9,6 +10,7 @@ import {
   FamilyActivitySummary,
 } from "@/components/family/family-settings-header"
 import { ApiKeySection } from "@/components/assistant/api-key-section"
+import { CalendarIntegrationLink } from "@/components/calendar/calendar-integration-link"
 import { getFamilyDataAction } from "@/lib/actions/family"
 
 export default async function FamilySettingsPage() {
@@ -43,6 +45,7 @@ export default async function FamilySettingsPage() {
 
       {/* Bottom settings */}
       <div className="mt-16 max-w-2xl space-y-6">
+        <CalendarIntegrationLink />
         {isAdmin && <ApiKeySection />}
         <LanguageSwitcher />
         <FamilyNameSection familyName={family.name} isAdmin={isAdmin} />
