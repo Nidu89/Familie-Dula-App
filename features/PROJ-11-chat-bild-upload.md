@@ -1,6 +1,6 @@
 # PROJ-11: Bild-Upload im Chat
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-03-18
 **Last Updated:** 2026-03-18
 
@@ -165,4 +165,17 @@ Keine neuen Packages nötig — Supabase Storage ist bereits im Projekt vorhande
 **NOT READY** — BUG-P11-1 (HIGH) must be fixed. The delete button is inaccessible on touch/mobile devices, which is a core functionality gap for a responsive web app.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-04-09
+**Production URL:** https://familie-dula-a9jyp2znd-nidu89s-projects.vercel.app
+**Commit:** de29e70
+**Git Tag:** v1.11.0-PROJ-11
+
+**What was deployed:**
+- Private `chat-images` Supabase Storage bucket with family-scoped RLS
+- Image upload button in chat input (JPEG/PNG/GIF/WebP, max 10 MB)
+- Thumbnail display with lightbox viewer
+- Signed URLs (1h) for private bucket access
+- Delete button for own images (mobile-friendly: always visible)
+- Optimistic preview using local blob URL
+- Placeholder for deleted image-only messages
