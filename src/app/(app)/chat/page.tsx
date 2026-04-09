@@ -28,6 +28,7 @@ export default async function ChatPage() {
       initialChannels={initialChannels}
       currentUserId={session.userId}
       currentUserName={session.displayName}
+      currentUserRole={session.role}
       familyMembers={members}
     />
   )

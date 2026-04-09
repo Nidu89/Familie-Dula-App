@@ -937,7 +937,19 @@
     "selectChat": "Select a chat from the sidebar",
     "selectChatDescription": "Choose a chat or start a new conversation.",
     "charCount": "{count}/2000",
-    "memberSince": "Member since {date}"
+    "memberSince": "Member since {date}",
+    "attachImage": "Attach image",
+    "removeImage": "Remove image",
+    "imagePreview": "Image preview",
+    "imageFullView": "Full-size image",
+    "closeImage": "Close image",
+    "chatImage": "Image",
+    "deleteImage": "Delete image",
+    "imageDeleted": "Image has been deleted.",
+    "imageUploadError": "Image could not be uploaded.",
+    "imageFormatError": "Only JPEG, PNG, GIF, and WebP are allowed.",
+    "imageSizeError": "Image must not exceed 10 MB.",
+    "imageRemoved": "Image was removed"
   },
 
   "layout": {

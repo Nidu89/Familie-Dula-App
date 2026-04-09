@@ -937,7 +937,19 @@
     "selectChat": "Choisis un chat dans la barre laterale",
     "selectChatDescription": "Choisis un chat ou demarre une nouvelle conversation.",
     "charCount": "{count}/2000",
-    "memberSince": "Membre depuis {date}"
+    "memberSince": "Membre depuis {date}",
+    "attachImage": "Joindre une image",
+    "removeImage": "Supprimer l'image",
+    "imagePreview": "Aperçu de l'image",
+    "imageFullView": "Image en taille réelle",
+    "closeImage": "Fermer l'image",
+    "chatImage": "Image",
+    "deleteImage": "Supprimer l'image",
+    "imageDeleted": "L'image a été supprimée.",
+    "imageUploadError": "Impossible de télécharger l'image.",
+    "imageFormatError": "Seuls les formats JPEG, PNG, GIF et WebP sont autorisés.",
+    "imageSizeError": "L'image ne doit pas dépasser 10 Mo.",
+    "imageRemoved": "L'image a été supprimée"
   },
 
   "layout": {

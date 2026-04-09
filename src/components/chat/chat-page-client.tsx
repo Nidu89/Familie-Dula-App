@@ -12,6 +12,7 @@ interface ChatPageClientProps {
   initialChannels: ChatChannel[]
   currentUserId: string
   currentUserName: string
+  currentUserRole: string
   familyMembers: { id: string; displayName: string }[]
 }
 
@@ -19,6 +20,7 @@ export function ChatPageClient({
   initialChannels,
   currentUserId,
   currentUserName,
+  currentUserRole,
   familyMembers,
 }: ChatPageClientProps) {
   const t = useTranslations("chat")
@@ -100,6 +102,7 @@ export function ChatPageClient({
             channel={activeChannel}
             currentUserId={currentUserId}
             currentUserName={currentUserName}
+            currentUserRole={currentUserRole}
             onChannelRead={handleChannelRead}
             onNewMessage={handleNewMessage}
           />

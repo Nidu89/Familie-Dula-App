@@ -6,10 +6,14 @@ import { Users, Loader2 } from "lucide-react"
 
 import { MessageBubble } from "@/components/chat/message-bubble"
 import { MessageInput } from "@/components/chat/message-input"
+import { ImageLightbox } from "@/components/chat/image-lightbox"
 import {
   getMessagesAction,
   sendMessageAction,
   markChannelReadAction,
+  uploadChatImageAction,
+  deleteChatImageAction,
+  getSignedImageUrlAction,
   type ChatChannel,
   type ChatMessage,
 } from "@/lib/actions/chat"
@@ -20,6 +24,7 @@ interface ChatThreadProps {
   channel: ChatChannel
   currentUserId: string
   currentUserName: string
+  currentUserRole: string
   onChannelRead: (channelId: string) => void
   onNewMessage: (channelId: string, preview: string, senderName: string) => void
 }
@@ -28,6 +33,7 @@ export function ChatThread({
   channel,
   currentUserId,
   currentUserName,
+  currentUserRole,
   onChannelRead,
   onNewMessage,
 }: ChatThreadProps) {
@@ -40,11 +46,15 @@ export function ChatThread({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const pendingMutationRef = useRef(false)
   const isInitialLoadRef = useRef(true)
+
+  const isAdminOrAdult = currentUserRole === "admin" || currentUserRole === "adult"
 
   // Scroll to bottom
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
@@ -107,7 +117,7 @@ export function ChatThread({
           table: "chat_messages",
           filter: `channel_id=eq.${channel.id}`,
         },
-        (payload) => {
+        async (payload) => {
           // Skip if we just sent this message (optimistic already added it)
           if (pendingMutationRef.current) {
             pendingMutationRef.current = false
@@ -123,11 +133,17 @@ export function ChatThread({
             created_at: string
           }
 
+          // Resolve signed URL for image if present
+          let imageUrl = newMsg.image_url
+          if (imageUrl) {
+            const urlResult = await getSignedImageUrlAction({ path: imageUrl })
+            imageUrl = "url" in urlResult ? urlResult.url : null
+          }
+
           // Skip if already in list (dedup)
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev
 
-            // Find sender name from channel members
             const sender = channel.members.find((m) => m.id === newMsg.sender_id)
             const message: ChatMessage = {
               id: newMsg.id,
@@ -135,7 +151,7 @@ export function ChatThread({
               senderId: newMsg.sender_id,
               senderName: sender?.displayName || "Unbekannt",
               content: newMsg.content,
-              imageUrl: newMsg.image_url,
+              imageUrl,
               createdAt: newMsg.created_at,
             }
 
@@ -144,11 +160,10 @@ export function ChatThread({
 
           // Update sidebar preview
           const sender = channel.members.find((m) => m.id === newMsg.sender_id)
-          onNewMessage(
-            channel.id,
-            newMsg.content.substring(0, 100),
-            sender?.displayName || "Unbekannt"
-          )
+          const preview = newMsg.content
+            ? newMsg.content.substring(0, 100)
+            : t("chatImage")
+          onNewMessage(channel.id, preview, sender?.displayName || "Unbekannt")
 
           // Mark as read & scroll
           markChannelReadAction({ channelId: channel.id })
@@ -161,7 +176,7 @@ export function ChatThread({
     return () => {
       supabase.removeChannel(subscription)
     }
-  }, [channel.id, channel.members, onNewMessage, onChannelRead, scrollToBottom])
+  }, [channel.id, channel.members, onNewMessage, onChannelRead, scrollToBottom, t])
 
   // Load older messages
   async function handleLoadOlder() {
@@ -190,13 +205,45 @@ export function ChatThread({
     }
   }
 
-  // Send message
-  async function handleSend(content: string) {
+  // Send message (with optional image)
+  async function handleSend(content: string, file?: File) {
     if (isSending) return
     setIsSending(true)
     pendingMutationRef.current = true
 
-    // Optimistic add
+    let uploadedPath: string | null = null
+    // Create a local blob URL for instant preview in optimistic message
+    const localBlobUrl = file ? URL.createObjectURL(file) : null
+
+    // Upload image first if present
+    if (file) {
+      setIsUploading(true)
+      try {
+        const formData = new FormData()
+        formData.append("file", file)
+        const uploadResult = await uploadChatImageAction(formData)
+        if ("error" in uploadResult) {
+          toast({ title: tc("error"), description: uploadResult.error, variant: "destructive" })
+          if (localBlobUrl) URL.revokeObjectURL(localBlobUrl)
+          setIsUploading(false)
+          setIsSending(false)
+          pendingMutationRef.current = false
+          return
+        }
+        uploadedPath = uploadResult.path
+      } catch {
+        toast({ title: tc("error"), description: t("imageUploadError"), variant: "destructive" })
+        if (localBlobUrl) URL.revokeObjectURL(localBlobUrl)
+        setIsUploading(false)
+        setIsSending(false)
+        pendingMutationRef.current = false
+        return
+      } finally {
+        setIsUploading(false)
+      }
+    }
+
+    // Optimistic add with local blob URL for instant image preview
     const tempId = `temp-${Date.now()}`
     const tempMsg: ChatMessage = {
       id: tempId,
@@ -204,27 +251,42 @@ export function ChatThread({
       senderId: currentUserId,
       senderName: currentUserName,
       content,
-      imageUrl: null,
+      imageUrl: localBlobUrl,
       createdAt: new Date().toISOString(),
     }
     setMessages((prev) => [...prev, tempMsg])
-    onNewMessage(channel.id, content.substring(0, 100), currentUserName)
+
+    const preview = content ? content.substring(0, 100) : t("chatImage")
+    onNewMessage(channel.id, preview, currentUserName)
     setTimeout(() => scrollToBottom(), 50)
 
     try {
-      const result = await sendMessageAction({ channelId: channel.id, content })
+      const result = await sendMessageAction({
+        channelId: channel.id,
+        content,
+        imageUrl: uploadedPath,
+      })
       if ("error" in result) {
-        // Remove optimistic message
         setMessages((prev) => prev.filter((m) => m.id !== tempId))
         pendingMutationRef.current = false
+        if (localBlobUrl) URL.revokeObjectURL(localBlobUrl)
         toast({ title: tc("error"), description: result.error, variant: "destructive" })
         return
       }
+
+      // Get signed URL for the uploaded image, then revoke the blob URL
+      let signedUrl: string | null = null
+      if (uploadedPath) {
+        const urlResult = await getSignedImageUrlAction({ path: uploadedPath })
+        signedUrl = "url" in urlResult ? urlResult.url : null
+      }
+      if (localBlobUrl) URL.revokeObjectURL(localBlobUrl)
+
       // Replace temp with real
       setMessages((prev) =>
         prev.map((m) =>
           m.id === tempId
-            ? { ...m, id: result.message.id, createdAt: result.message.createdAt }
+            ? { ...m, id: result.message.id, createdAt: result.message.createdAt, imageUrl: signedUrl }
             : m
         )
       )
@@ -232,10 +294,25 @@ export function ChatThread({
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
       pendingMutationRef.current = false
+      if (localBlobUrl) URL.revokeObjectURL(localBlobUrl)
       toast({ title: tc("error"), description: t("messageError"), variant: "destructive" })
     } finally {
       setIsSending(false)
     }
+  }
+
+  // Delete image from a message
+  async function handleDeleteImage(messageId: string) {
+    const result = await deleteChatImageAction({ messageId })
+    if ("error" in result) {
+      toast({ title: tc("error"), description: result.error, variant: "destructive" })
+      return
+    }
+    // Remove imageUrl from local state
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, imageUrl: null } : m))
+    )
+    toast({ description: t("imageDeleted") })
   }
 
   // Group messages by date
@@ -331,6 +408,11 @@ export function ChatThread({
                 msg.senderId !== currentUserId &&
                 (!prevMsg || prevMsg.senderId !== msg.senderId || showDateSeparator)
 
+              // Can delete image: own message or admin/adult
+              const canDeleteImage =
+                !!msg.imageUrl &&
+                (msg.senderId === currentUserId || isAdminOrAdult)
+
               return (
                 <div key={msg.id}>
                   {showDateSeparator && (
@@ -344,6 +426,9 @@ export function ChatThread({
                     message={msg}
                     isOwn={msg.senderId === currentUserId}
                     showSenderName={showSenderName}
+                    canDeleteImage={canDeleteImage}
+                    onImageClick={setLightboxSrc}
+                    onDeleteImage={handleDeleteImage}
                   />
                 </div>
               )
@@ -354,7 +439,10 @@ export function ChatThread({
       </div>
 
       {/* Message input */}
-      <MessageInput onSend={handleSend} isSending={isSending} />
+      <MessageInput onSend={handleSend} isSending={isSending} isUploading={isUploading} />
+
+      {/* Lightbox */}
+      <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
     </div>
   )
 }

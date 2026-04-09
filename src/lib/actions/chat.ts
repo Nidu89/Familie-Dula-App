@@ -8,6 +8,9 @@ import {
   getMessagesSchema,
   createDirectChannelSchema,
   markReadSchema,
+  chatImageFileSchema,
+  deleteChatImageSchema,
+  getSignedImageUrlSchema,
 } from "@/lib/validations/chat"
 
 // ============================================================
@@ -266,6 +269,26 @@ export async function getMessagesAction(data: {
   const hasMore = (rawMessages?.length || 0) > parsed.data.limit
   const trimmed = (rawMessages || []).slice(0, parsed.data.limit)
 
+  // Batch generate signed URLs for messages with images
+  const imagePaths = trimmed
+    .filter((m) => m.image_url)
+    .map((m) => m.image_url as string)
+
+  const signedUrlMap = new Map<string, string>()
+  if (imagePaths.length > 0) {
+    const { data: signedUrls } = await supabase.storage
+      .from("chat-images")
+      .createSignedUrls(imagePaths, 3600) // 1 hour expiry
+
+    if (signedUrls) {
+      for (const item of signedUrls) {
+        if (item.signedUrl && !item.error) {
+          signedUrlMap.set(item.path ?? "", item.signedUrl)
+        }
+      }
+    }
+  }
+
   const messages: ChatMessage[] = trimmed.map((m) => {
     const sender = m.sender as unknown
     const senderName = Array.isArray(sender)
@@ -278,7 +301,7 @@ export async function getMessagesAction(data: {
       senderId: m.sender_id,
       senderName,
       content: m.content,
-      imageUrl: m.image_url,
+      imageUrl: m.image_url ? (signedUrlMap.get(m.image_url) ?? null) : null,
       createdAt: m.created_at,
     }
   })
@@ -296,6 +319,7 @@ export async function getMessagesAction(data: {
 export async function sendMessageAction(data: {
   channelId: string
   content: string
+  imageUrl?: string | null
 }): Promise<{ message: { id: string; createdAt: string } } | { error: string }> {
   const parsed = sendMessageSchema.safeParse(data)
   if (!parsed.success) {
@@ -319,7 +343,8 @@ export async function sendMessageAction(data: {
     .insert({
       channel_id: parsed.data.channelId,
       sender_id: user.id,
-      content: parsed.data.content,
+      content: parsed.data.content || "",
+      image_url: parsed.data.imageUrl || null,
     })
     .select("id, created_at")
     .single()
@@ -561,4 +586,161 @@ export async function getFamilyChannelIdAction(): Promise<
   }
 
   return { channelId: channel.id }
+}
+
+// ============================================================
+// PROJ-11: Bild-Upload im Chat – Server Actions
+// ============================================================
+
+/**
+ * Upload an image to the chat-images bucket.
+ * Returns the storage path (not a URL) to be stored in image_url.
+ */
+export async function uploadChatImageAction(
+  formData: FormData
+): Promise<{ path: string } | { error: string }> {
+  const ip = await getIP()
+  if (!checkRateLimit(`chatImgUp:${ip}`, 15, 60 * 1000)) {
+    return { error: "Zu viele Uploads. Bitte kurz warten." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const file = formData.get("file")
+  if (!file || !(file instanceof File)) {
+    return { error: "Keine Datei ausgewaehlt." }
+  }
+
+  // Validate file type and size
+  const fileValidation = chatImageFileSchema.safeParse({
+    type: file.type,
+    size: file.size,
+  })
+  if (!fileValidation.success) {
+    return { error: fileValidation.error.issues[0].message }
+  }
+
+  // Determine extension from MIME type
+  const extMap: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+  }
+  const ext = extMap[file.type] || "jpg"
+  const uuid = crypto.randomUUID()
+  const storagePath = `${profile.family_id}/${uuid}.${ext}`
+
+  const supabase = await createClient()
+  const { error: uploadError } = await supabase.storage
+    .from("chat-images")
+    .upload(storagePath, file, {
+      contentType: file.type,
+      upsert: false,
+    })
+
+  if (uploadError) {
+    return { error: "Bild konnte nicht hochgeladen werden." }
+  }
+
+  return { path: storagePath }
+}
+
+/**
+ * Delete a chat image — own images or admin/adult can delete any.
+ * Removes from storage and clears image_url on the message.
+ */
+export async function deleteChatImageAction(data: {
+  messageId: string
+}): Promise<{ success: true } | { error: string }> {
+  const parsed = deleteChatImageSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: "Ungueltige Eingaben." }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`chatImgDel:${ip}`, 15, 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  // Fetch the message to get image_url and verify ownership
+  const { data: msg } = await supabase
+    .from("chat_messages")
+    .select("id, sender_id, image_url, channel_id")
+    .eq("id", parsed.data.messageId)
+    .single()
+
+  if (!msg || !msg.image_url) {
+    return { error: "Nachricht oder Bild nicht gefunden." }
+  }
+
+  // Authorization: own message OR admin/adult
+  const isOwn = msg.sender_id === profile.id
+  const isAdminOrAdult = profile.role === "admin" || profile.role === "adult"
+  if (!isOwn && !isAdminOrAdult) {
+    return { error: "Keine Berechtigung zum Loeschen." }
+  }
+
+  // Delete from storage (RLS also enforces this)
+  const { error: storageError } = await supabase.storage
+    .from("chat-images")
+    .remove([msg.image_url])
+
+  if (storageError) {
+    return { error: "Bild konnte nicht geloescht werden." }
+  }
+
+  // Clear image_url on the message
+  const { error: updateError } = await supabase
+    .from("chat_messages")
+    .update({ image_url: null })
+    .eq("id", parsed.data.messageId)
+
+  if (updateError) {
+    return { error: "Nachricht konnte nicht aktualisiert werden." }
+  }
+
+  return { success: true }
+}
+
+/**
+ * Get a signed URL for a chat image (1 hour expiry).
+ * Used for realtime messages where signed URL is not pre-generated.
+ */
+export async function getSignedImageUrlAction(data: {
+  path: string
+}): Promise<{ url: string } | { error: string }> {
+  const parsed = getSignedImageUrlSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: "Ungueltige Eingaben." }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`chatImgUrl:${ip}`, 60, 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Nicht angemeldet." }
+
+  const { data: signedUrlData, error: signError } = await supabase.storage
+    .from("chat-images")
+    .createSignedUrl(parsed.data.path, 3600) // 1 hour
+
+  if (signError || !signedUrlData?.signedUrl) {
+    return { error: "URL konnte nicht erstellt werden." }
+  }
+
+  return { url: signedUrlData.signedUrl }
 }
