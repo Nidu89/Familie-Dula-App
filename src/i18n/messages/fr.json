@@ -352,7 +352,14 @@
       "msgRain": "N'oublie pas ton parapluie !",
       "msgSnow": "Couvre-toi bien, il neige !",
       "msgSnowShower": "Averses de neige possibles.",
-      "msgThunderstorm": "Mieux vaut rester à l'intérieur !"
+      "msgThunderstorm": "Mieux vaut rester à l'intérieur !",
+      "highLow": "H:{high}° B:{low}°",
+      "showMore": "Voir les prévisions",
+      "showLess": "Voir moins",
+      "hourlyTitle": "12 prochaines heures",
+      "weekTitle": "Prévisions sur 7 jours",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain"
     }
   },
 

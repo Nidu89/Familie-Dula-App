@@ -337,7 +337,7 @@
       "title": "Lokales Wetter",
       "loading": "Wird geladen...",
       "clear": "Klar",
-      "cloudy": "Bewoelkt",
+      "cloudy": "Bewölkt",
       "foggy": "Nebelig",
       "drizzle": "Nieselregen",
       "rain": "Regen",
@@ -346,13 +346,20 @@
       "snowShower": "Schneeschauer",
       "thunderstorm": "Gewitter",
       "unknown": "Unbekannt",
-      "msgClear": "Perfektes Wetter fuer draussen!",
+      "msgClear": "Perfektes Wetter für draussen!",
       "msgCloudy": "Ein paar Wolken, aber angenehm.",
       "msgFoggy": "Vorsicht, schlechte Sicht!",
       "msgRain": "Regenschirm nicht vergessen!",
       "msgSnow": "Warm anziehen, es schneit!",
-      "msgSnowShower": "Schneeschauer moeglich.",
-      "msgThunderstorm": "Besser drinnen bleiben!"
+      "msgSnowShower": "Schneeschauer möglich.",
+      "msgThunderstorm": "Besser drinnen bleiben!",
+      "highLow": "H:{high}° T:{low}°",
+      "showMore": "Prognose anzeigen",
+      "showLess": "Weniger anzeigen",
+      "hourlyTitle": "Nächste 12 Stunden",
+      "weekTitle": "7-Tage-Prognose",
+      "today": "Heute",
+      "tomorrow": "Morgen"
     }
   },
 

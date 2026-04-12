@@ -352,7 +352,14 @@
       "msgRain": "Don't forget your umbrella!",
       "msgSnow": "Bundle up, it's snowing!",
       "msgSnowShower": "Snow showers possible.",
-      "msgThunderstorm": "Better stay indoors!"
+      "msgThunderstorm": "Better stay indoors!",
+      "highLow": "H:{high}° L:{low}°",
+      "showMore": "Show forecast",
+      "showLess": "Show less",
+      "hourlyTitle": "Next 12 hours",
+      "weekTitle": "7-day forecast",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
     }
   },
 
