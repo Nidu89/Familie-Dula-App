@@ -206,10 +206,26 @@
     },
     "mealPlan": {
       "title": "Meal Plan",
-      "subtitle": "Coming soon in PROJ-8",
-      "dinner": "Dinner",
-      "scheduling": "Scheduling",
-      "schedulingDescription": "Plan meals for the whole week"
+      "todayLabel": "Today",
+      "mealBreakfast": "Breakfast",
+      "mealLunch": "Lunch",
+      "mealDinner": "Dinner",
+      "emptyToday": "No meals planned for today.",
+      "openMealPlan": "Open meal plan"
+    },
+    "shoppingWidget": {
+      "title": "Shopping Lists",
+      "empty": "No shopping lists yet.",
+      "noItems": "No items",
+      "itemStatus": "{remaining} of {total} remaining",
+      "remaining": "{count} items remaining in total",
+      "viewAll": "View all lists"
+    },
+    "quote": {
+      "default": "Family is not the most important thing. It is everything. – Michael J. Fox",
+      "edit": "Edit quote",
+      "placeholder": "Your family quote...",
+      "saved": "Quote saved"
     },
     "quickActions": {
       "calendar": "Calendar",
@@ -956,7 +972,18 @@
     "imageUploadError": "Image could not be uploaded.",
     "imageFormatError": "Only JPEG, PNG, GIF, and WebP are allowed.",
     "imageSizeError": "Image must not exceed 10 MB.",
-    "imageRemoved": "Image was removed"
+    "imageRemoved": "Image was removed",
+    "editMessage": "Edit",
+    "deleteMessage": "Delete",
+    "messageDeleted": "Message deleted.",
+    "messageEdited": "Message edited.",
+    "editCancel": "Cancel",
+    "editSave": "Save",
+    "editSaving": "Saving...",
+    "deleteChannel": "Delete chat",
+    "deleteChannelTitle": "Delete chat?",
+    "deleteChannelDescription": "All messages with {name} will be permanently deleted.",
+    "channelDeleted": "Chat deleted."
   },
 
   "layout": {

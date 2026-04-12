@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { Users, MessageCircle, Plus } from "lucide-react"
+import { Users, MessageCircle, Plus, Trash2 } from "lucide-react"
 
 import {
   Sheet,
@@ -10,25 +10,39 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { createDirectChannelAction, type ChatChannel } from "@/lib/actions/chat"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { createDirectChannelAction, deleteChannelAction, type ChatChannel } from "@/lib/actions/chat"
 import { useToast } from "@/hooks/use-toast"
 
 interface ChatSidebarProps {
   channels: ChatChannel[]
   activeChannelId: string | null
   currentUserId: string
+  currentUserRole: string
   familyMembers: { id: string; displayName: string }[]
   onSelectChannel: (channelId: string) => void
   onChannelCreated: (channel: ChatChannel) => void
+  onChannelDeleted: (channelId: string) => void
 }
 
 export function ChatSidebar({
   channels,
   activeChannelId,
   currentUserId,
+  currentUserRole,
   familyMembers,
   onSelectChannel,
   onChannelCreated,
+  onChannelDeleted,
 }: ChatSidebarProps) {
   const t = useTranslations("chat")
   const tc = useTranslations("common")
@@ -36,7 +50,10 @@ export function ChatSidebar({
   const [dmSheetOpen, setDmSheetOpen] = useState(false)
   const [creatingDm, setCreatingDm] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<ChatChannel | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
+  const isAdminOrAdult = currentUserRole === "admin" || currentUserRole === "adult"
   const familyChannel = channels.find((c) => c.type === "family")
   const dmChannels = channels.filter((c) => c.type === "direct")
 
@@ -78,6 +95,25 @@ export function ChatSidebar({
       toast({ title: tc("error"), description: tc("unexpectedError"), variant: "destructive" })
     } finally {
       setCreatingDm(null)
+    }
+  }
+
+  async function handleDeleteChannel() {
+    if (!deleteTarget || isDeleting) return
+    setIsDeleting(true)
+    try {
+      const result = await deleteChannelAction({ channelId: deleteTarget.id })
+      if ("error" in result) {
+        toast({ title: tc("error"), description: result.error, variant: "destructive" })
+        return
+      }
+      onChannelDeleted(deleteTarget.id)
+      toast({ description: t("channelDeleted") })
+    } catch {
+      toast({ title: tc("error"), description: tc("unexpectedError"), variant: "destructive" })
+    } finally {
+      setIsDeleting(false)
+      setDeleteTarget(null)
     }
   }
 
@@ -163,45 +199,65 @@ export function ChatSidebar({
           </p>
         ) : (
           dmChannels.map((ch) => (
-            <button
-              key={ch.id}
-              type="button"
-              onClick={() => handleSelect(ch.id)}
-              className={`flex items-center gap-3 w-full px-4 py-3 rounded-2xl transition-all ${
-                activeChannelId === ch.id
-                  ? "bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-md"
-                  : "hover:bg-muted"
-              }`}
-            >
-              <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full shrink-0 text-xs font-bold ${
+            <div key={ch.id} className="group/dm relative">
+              <button
+                type="button"
+                onClick={() => handleSelect(ch.id)}
+                className={`flex items-center gap-3 w-full px-4 py-3 rounded-2xl transition-all ${
                   activeChannelId === ch.id
-                    ? "bg-white/20 text-white"
-                    : "bg-secondary-container text-secondary"
+                    ? "bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-md"
+                    : "hover:bg-muted"
                 }`}
               >
-                {ch.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="font-medium text-sm truncate">{ch.name}</p>
-                {ch.lastMessage && (
-                  <p
-                    className={`text-xs truncate mt-0.5 ${
-                      activeChannelId === ch.id
-                        ? "text-white/70"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {ch.lastMessage}
-                  </p>
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-full shrink-0 text-xs font-bold ${
+                    activeChannelId === ch.id
+                      ? "bg-white/20 text-white"
+                      : "bg-secondary-container text-secondary"
+                  }`}
+                >
+                  {ch.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-medium text-sm truncate">{ch.name}</p>
+                  {ch.lastMessage && (
+                    <p
+                      className={`text-xs truncate mt-0.5 ${
+                        activeChannelId === ch.id
+                          ? "text-white/70"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {ch.lastMessage}
+                    </p>
+                  )}
+                </div>
+                {ch.unreadCount > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5">
+                    {ch.unreadCount}
+                  </span>
                 )}
-              </div>
-              {ch.unreadCount > 0 && (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5">
-                  {ch.unreadCount}
-                </span>
+              </button>
+
+              {/* Delete DM button — admin/adult only */}
+              {isAdminOrAdult && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDeleteTarget(ch)
+                  }}
+                  className={`absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-full transition-all opacity-0 group-hover/dm:opacity-100 ${
+                    activeChannelId === ch.id
+                      ? "text-white/60 hover:text-white hover:bg-white/20"
+                      : "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  }`}
+                  aria-label={t("deleteChannel")}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               )}
-            </button>
+            </div>
           ))
         )}
       </div>
@@ -291,6 +347,28 @@ export function ChatSidebar({
           {channelList}
         </SheetContent>
       </Sheet>
+
+      {/* Delete DM confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteChannelTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteChannelDescription", { name: deleteTarget?.name || "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteChannel}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? tc("deleting") : tc("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

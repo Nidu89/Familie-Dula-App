@@ -52,6 +52,29 @@ export const getSignedImageUrlSchema = z.object({
 
 export type GetSignedImageUrlValues = z.infer<typeof getSignedImageUrlSchema>
 
+export const deleteMessageSchema = z.object({
+  messageId: z.string().uuid("Ungültige Nachrichten-ID."),
+})
+
+export type DeleteMessageValues = z.infer<typeof deleteMessageSchema>
+
+export const editMessageSchema = z.object({
+  messageId: z.string().uuid("Ungültige Nachrichten-ID."),
+  content: z
+    .string()
+    .trim()
+    .min(1, "Nachricht darf nicht leer sein.")
+    .max(2000, "Nachricht darf maximal 2000 Zeichen lang sein."),
+})
+
+export type EditMessageValues = z.infer<typeof editMessageSchema>
+
+export const deleteChannelSchema = z.object({
+  channelId: z.string().uuid("Ungültige Kanal-ID."),
+})
+
+export type DeleteChannelValues = z.infer<typeof deleteChannelSchema>
+
 export const getMessagesSchema = z.object({
   channelId: z.string().uuid("Ungueltige Kanal-ID."),
   cursor: z.string().datetime().optional(),

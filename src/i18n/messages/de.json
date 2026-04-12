@@ -6,9 +6,9 @@
     "saving": "Speichern...",
     "create": "Erstellen",
     "creating": "Erstellen...",
-    "delete": "Loeschen",
-    "deleting": "Loeschen...",
-    "back": "Zurueck",
+    "delete": "Löschen",
+    "deleting": "Löschen...",
+    "back": "Zurück",
     "loading": "Laden...",
     "email": "E-Mail",
     "password": "Passwort",
@@ -17,32 +17,31 @@
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort verbergen",
     "notLoggedIn": "Nicht angemeldet.",
-    "noFamily": "Du gehoerst keiner Familie an.",
+    "noFamily": "Du gehörst keiner Familie an.",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten.",
     "comingSoon": "Kommt bald",
-    "comingSoonDescription": "{label} wird in einem zukuenftigen Update verfuegbar sein.",
+    "comingSoonDescription": "{label} wird in einem zukünftigen Update verfügbar sein.",
     "justNow": "Gerade eben",
     "points": "Punkte",
     "pts": "Pkt.",
     "minutes": "Minuten",
     "min": "Min.",
     "steps": "Schritte",
-    "allDay": "Ganztaegig",
+    "allDay": "Ganztägig",
     "today": "Heute",
     "tomorrow": "Morgen",
     "description": "Beschreibung",
     "descriptionOptional": "Beschreibung (optional)",
     "descriptionPlaceholder": "Optionale Beschreibung...",
     "continue": "Fortfahren",
-    "confirm": "Bestaetigen",
+    "confirm": "Bestätigen",
     "family": "Familie",
     "edit": "Bearbeiten",
     "actions": "Aktionen"
   },
-
   "auth": {
     "login": {
-      "title": "Willkommen zurueck!",
+      "title": "Willkommen zurück!",
       "subtitle": "Melde dich an, um zu deiner Familie zu gelangen.",
       "emailLabel": "E-Mail",
       "passwordLabel": "Passwort",
@@ -57,60 +56,60 @@
       "subtitle": "Registriere dich, um mit deiner Familie loszulegen.",
       "displayNameLabel": "Anzeigename",
       "displayNamePlaceholder": "Dein Name",
-      "confirmPasswordLabel": "Passwort bestaetigen",
+      "confirmPasswordLabel": "Passwort bestätigen",
       "confirmPasswordPlaceholder": "Passwort wiederholen",
       "submitLoading": "Registrieren...",
       "submit": "Registrieren",
       "hasAccount": "Bereits ein Konto?",
       "login": "Jetzt anmelden",
       "confirmTitle": "Fast geschafft!",
-      "confirmSubtitle": "Wir haben dir eine Bestaetigungs-E-Mail gesendet.",
-      "confirmText": "Bitte oeffne deine E-Mails und klicke auf den Bestaetigungslink, um dein Konto zu aktivieren.",
+      "confirmSubtitle": "Wir haben dir eine Bestätigungs-E-Mail gesendet.",
+      "confirmText": "Bitte öffne deine E-Mails und klicke auf den Bestätigungslink, um dein Konto zu aktivieren.",
       "noEmailReceived": "Keine E-Mail erhalten?",
       "resending": "Wird gesendet...",
       "resent": "E-Mail gesendet!",
       "resend": "Erneut senden",
-      "backToLogin": "Zurueck zur Anmeldung"
+      "backToLogin": "Zurück zur Anmeldung"
     },
     "forgotPassword": {
       "title": "Passwort vergessen?",
       "subtitle": "Kein Problem! Gib deine E-Mail ein und wir senden dir einen Reset-Link.",
       "submitLoading": "Senden...",
       "submit": "Reset-Link senden",
-      "backToLogin": "Zurueck zur Anmeldung",
+      "backToLogin": "Zurück zur Anmeldung",
       "sentTitle": "E-Mail gesendet!",
-      "sentSubtitle": "Pruefe dein Postfach fuer den Passwort-Reset-Link.",
-      "sentText": "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link zum Zuruecksetzen deines Passworts geschickt.",
+      "sentSubtitle": "Prüfe dein Postfach für den Passwort-Reset-Link.",
+      "sentText": "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link zum Zurücksetzen deines Passworts geschickt.",
       "noEmailReceived": "Keine E-Mail erhalten?",
       "retry": "Erneut versuchen"
     },
     "confirm": {
-      "loadingTitle": "E-Mail wird bestaetigt...",
-      "successTitle": "E-Mail bestaetigt!",
-      "errorTitle": "Bestaetigung fehlgeschlagen",
+      "loadingTitle": "E-Mail wird bestätigt...",
+      "successTitle": "E-Mail bestätigt!",
+      "errorTitle": "Bestätigung fehlgeschlagen",
       "loadingText": "Bitte warte einen Moment...",
-      "successText": "Deine E-Mail-Adresse wurde erfolgreich bestaetigt. Du kannst dich jetzt anmelden.",
-      "errorText": "Der Bestaetigungslink ist ungueltig oder abgelaufen. Bitte fordere einen neuen Link an.",
+      "successText": "Deine E-Mail-Adresse wurde erfolgreich bestätigt. Du kannst dich jetzt anmelden.",
+      "errorText": "Der Bestätigungslink ist ungültig oder abgelaufen. Bitte fordere einen neuen Link an.",
       "toLogin": "Zur Anmeldung",
-      "requestNewLink": "Neuen Bestaetigungslink anfordern"
+      "requestNewLink": "Neuen Bestätigungslink anfordern"
     },
     "resendConfirmation": {
       "title": "Neuen Link anfordern",
-      "subtitle": "Gib deine E-Mail ein, um den Bestaetigungslink erneut zu erhalten.",
+      "subtitle": "Gib deine E-Mail ein, um den Bestätigungslink erneut zu erhalten.",
       "submitLoading": "Senden...",
-      "submit": "Bestaetigungslink senden",
-      "backToLogin": "Zurueck zur Anmeldung",
+      "submit": "Bestätigungslink senden",
+      "backToLogin": "Zurück zur Anmeldung",
       "sentTitle": "E-Mail gesendet!",
-      "sentSubtitle": "Pruefe dein Postfach fuer den neuen Bestaetigungslink.",
-      "sentText": "Falls ein unbestaetiges Konto mit dieser E-Mail existiert, haben wir dir einen neuen Bestaetigungslink geschickt."
+      "sentSubtitle": "Prüfe dein Postfach für den neuen Bestätigungslink.",
+      "sentText": "Falls ein unbestätiges Konto mit dieser E-Mail existiert, haben wir dir einen neuen Bestätigungslink geschickt."
     },
     "resetPassword": {
       "title": "Neues Passwort",
       "titleInvited": "Passwort festlegen",
-      "subtitle": "Waehle ein neues, sicheres Passwort fuer dein Konto.",
-      "subtitleInvited": "Lege ein Passwort fest, um dich kuenftig einloggen zu koennen.",
+      "subtitle": "Wähle ein neues, sicheres Passwort für dein Konto.",
+      "subtitleInvited": "Lege ein Passwort fest, um dich künftig einloggen zu können.",
       "newPasswordLabel": "Neues Passwort",
-      "confirmPasswordLabel": "Passwort bestaetigen",
+      "confirmPasswordLabel": "Passwort bestätigen",
       "confirmPasswordPlaceholder": "Passwort wiederholen",
       "submitLoading": "Speichern...",
       "submit": "Passwort speichern",
@@ -118,10 +117,10 @@
       "successSubtitleInvited": "Willkommen! Du wirst weitergeleitet...",
       "successSubtitle": "Du kannst dich jetzt mit deinem neuen Passwort anmelden.",
       "successTextInvited": "Dein Passwort wurde gespeichert. Du wirst zum Dashboard weitergeleitet...",
-      "successText": "Dein Passwort wurde erfolgreich zurueckgesetzt. Du wirst zur Anmeldung weitergeleitet...",
+      "successText": "Dein Passwort wurde erfolgreich zurückgesetzt. Du wirst zur Anmeldung weitergeleitet...",
       "toDashboard": "Zum Dashboard",
       "toLogin": "Zur Anmeldung",
-      "error": "Passwort konnte nicht zurueckgesetzt werden. Der Link ist moeglicherweise abgelaufen.",
+      "error": "Passwort konnte nicht zurückgesetzt werden. Der Link ist möglicherweise abgelaufen.",
       "requestNewLink": "Neuen Link anfordern"
     },
     "onboarding": {
@@ -147,7 +146,6 @@
       "joinSubmit": "Familie beitreten"
     }
   },
-
   "dashboard": {
     "greetingMorning": "Guten Morgen",
     "greetingAfternoon": "Guten Tag",
@@ -156,21 +154,20 @@
     "familyPrefix": "Familie {familyName}",
     "hello": "Hallo, {displayName}!",
     "loadError": "Dashboard konnte nicht geladen werden. Bitte Seite neu laden.",
-    "weeklyHighlight": "Woechentliches Highlight",
+    "weeklyHighlight": "Wöchentliches Highlight",
     "familyMoments": "Familienmomente",
     "familyMomentsDescription": "Haltet besondere Erlebnisse fest — kommt bald.",
     "shoppingList": "Einkaufsliste",
-    "addItem": "+ Hinzufuegen",
+    "addItem": "+ Hinzufügen",
     "familyQuote": "Familie ist nicht das Wichtigste. Es ist alles. – Michael J. Fox",
-
     "calendar": {
-      "title": "Naechste Termine",
+      "title": "Nächste Termine",
       "toCalendar": "Zum Kalender",
       "empty": "Keine anstehenden Termine"
     },
     "tasks": {
       "title": "Top Aufgaben",
-      "overdue": "UEBERFAELLIG",
+      "overdue": "ÜBERFÄLLIG",
       "allDone": "Alle Aufgaben erledigt!",
       "viewAll": "Alle Aufgaben ansehen"
     },
@@ -179,7 +176,7 @@
       "noChildren": "Noch keine Kinder in der Familie",
       "noPoints": "Noch keine Punkte gesammelt",
       "noPointsDescription": "Erledige Aufgaben, um Punkte zu sammeln",
-      "nextLevel": "noch {points} Punkte bis zum naechsten Level",
+      "nextLevel": "noch {points} Punkte bis zum nächsten Level",
       "viewAll": "Alle Belohnungen",
       "levelStarter": "Starter",
       "levelExplorer": "Entdecker",
@@ -189,15 +186,15 @@
     },
     "timer": {
       "title": "Timer",
-      "running": "Laeuft",
+      "running": "Läuft",
       "paused": "Pausiert",
       "noTemplates": "Noch keine Timer-Vorlagen.",
-      "open": "Timer oeffnen"
+      "open": "Timer öffnen"
     },
     "rituals": {
       "title": "Rituale",
       "noRituals": "Noch keine Rituale erstellt.",
-      "open": "Rituale oeffnen"
+      "open": "Rituale öffnen"
     },
     "chat": {
       "title": "Familienchat",
@@ -206,10 +203,26 @@
     },
     "mealPlan": {
       "title": "Essensplan",
-      "subtitle": "Kommt bald in PROJ-8",
-      "dinner": "Abendessen",
-      "scheduling": "Zeitplanung",
-      "schedulingDescription": "Mahlzeiten fuer die ganze Woche planen"
+      "todayLabel": "Heute",
+      "mealBreakfast": "Frühstück",
+      "mealLunch": "Mittag",
+      "mealDinner": "Abend",
+      "emptyToday": "Heute kein Essensplan eingetragen.",
+      "openMealPlan": "Essensplan öffnen"
+    },
+    "shoppingWidget": {
+      "title": "Einkaufslisten",
+      "empty": "Noch keine Einkaufslisten.",
+      "noItems": "Keine Artikel",
+      "itemStatus": "Noch {remaining} von {total} offen",
+      "remaining": "Insgesamt noch {count} Artikel offen",
+      "viewAll": "Alle Listen ansehen"
+    },
+    "quote": {
+      "default": "Familie ist nicht das Wichtigste. Es ist alles. – Michael J. Fox",
+      "edit": "Zitat bearbeiten",
+      "placeholder": "Euer Familienzitat...",
+      "saved": "Zitat gespeichert"
     },
     "quickActions": {
       "calendar": "Kalender",
@@ -220,7 +233,7 @@
     },
     "kidsView": {
       "hello": "Hallo, {displayName}!",
-      "subtitle": "Deine persoenliche Uebersicht",
+      "subtitle": "Deine persönliche Übersicht",
       "myTasks": "Meine Aufgaben",
       "openTasks": "{count} offen",
       "allDone": "Alles erledigt!",
@@ -229,7 +242,6 @@
       "earnPointsHint": "Erledige Aufgaben, um Punkte zu sammeln!"
     }
   },
-
   "calendar": {
     "title": "Familienkalender",
     "loadError": "Kalender konnte nicht geladen werden. Bitte Seite neu laden.",
@@ -238,16 +250,16 @@
     "allPersons": "Alle Personen",
     "filterByPerson": "Nach Person filtern",
     "filterByCategory": "Nach Kategorie filtern",
-    "resetFilters": "Filter zuruecksetzen",
+    "resetFilters": "Filter zurücksetzen",
     "filter": "Filter",
     "newEvent": "Neuer Termin",
-    "addEvent": "Termin hinzufuegen",
+    "addEvent": "Termin hinzufügen",
     "viewMonth": "Monat",
     "viewWeek": "Woche",
     "viewDay": "Tag",
     "viewList": "Liste",
     "prevMonth": "Vorheriger Monat",
-    "nextMonth": "Naechster Monat",
+    "nextMonth": "Nächster Monat",
     "dayFocus": "Tagesfokus",
     "noEventsDay": "Keine Termine an diesem Tag",
     "noEventsRange": "Keine Termine in diesem Zeitraum.",
@@ -256,7 +268,6 @@
     "time": "Uhrzeit",
     "event": "Termin",
     "categoriesLegend": "Kategorien-Legende",
-
     "categories": {
       "school": "Schule",
       "work": "Arbeit",
@@ -274,8 +285,8 @@
       "su": "SO"
     },
     "bigCalendar": {
-      "allDay": "Ganztaegig",
-      "previous": "Zurueck",
+      "allDay": "Ganztägig",
+      "previous": "Zurück",
       "next": "Weiter",
       "today": "Heute",
       "month": "Monat",
@@ -287,12 +298,11 @@
       "event": "Termin",
       "noEvents": "Keine Termine in diesem Zeitraum."
     },
-
     "eventForm": {
       "editTitle": "Termin bearbeiten",
       "createTitle": "Neuer Termin",
-      "editDescription": "Aendere die Details dieses Termins.",
-      "createDescription": "Erstelle einen neuen Termin fuer die Familie.",
+      "editDescription": "Ändere die Details dieses Termins.",
+      "createDescription": "Erstelle einen neuen Termin für die Familie.",
       "titleLabel": "Titel *",
       "titlePlaceholder": "z.B. Elternabend",
       "titleRequired": "Titel ist erforderlich",
@@ -307,7 +317,7 @@
       "endDateRequired": "Enddatum ist erforderlich",
       "endTimeRequired": "Endzeit ist erforderlich",
       "category": "Kategorie",
-      "categoryPlaceholder": "Kategorie waehlen",
+      "categoryPlaceholder": "Kategorie wählen",
       "participants": "Teilnehmende",
       "noMembers": "Keine Familienmitglieder gefunden.",
       "recurrence": "Wiederholung",
@@ -320,19 +330,18 @@
       "updatedDescription": "Der Termin wurde erfolgreich aktualisiert.",
       "created": "Termin erstellt",
       "createdDescription": "Der Termin wurde erfolgreich erstellt.",
-      "deleted": "Termin geloescht",
-      "deletedDescription": "Der Termin wurde erfolgreich geloescht.",
+      "deleted": "Termin gelöscht",
+      "deletedDescription": "Der Termin wurde erfolgreich gelöscht.",
       "recurrenceNone": "Keine Wiederholung",
-      "recurrenceDaily": "Taeglich",
-      "recurrenceWeekly": "Woechentlich",
+      "recurrenceDaily": "Täglich",
+      "recurrenceWeekly": "Wöchentlich",
       "recurrenceMonthly": "Monatlich",
-      "recurrenceYearly": "Jaehrlich",
+      "recurrenceYearly": "Jährlich",
       "reminderNone": "Keine Erinnerung",
       "reminder15": "15 Minuten vorher",
       "reminder30": "30 Minuten vorher",
       "reminder60": "1 Stunde vorher"
     },
-
     "weather": {
       "title": "Lokales Wetter",
       "loading": "Wird geladen...",
@@ -362,7 +371,6 @@
       "tomorrow": "Morgen"
     }
   },
-
   "tasks": {
     "pageTitle": "Aufgaben-Spass",
     "pageSubtitle": "Was erledigen wir heute?",
@@ -370,7 +378,6 @@
     "loadError": "Aufgaben konnten nicht geladen werden. Bitte Seite neu laden.",
     "loadErrorToast": "Aufgaben konnten nicht geladen werden.",
     "newTask": "Neue Aufgabe",
-
     "header": {
       "filterByPerson": "Nach Person filtern",
       "allPersons": "Alle Personen",
@@ -380,13 +387,12 @@
       "open": "Offen",
       "inProgress": "In Bearbeitung",
       "done": "Erledigt",
-      "filterByDue": "Nach Faelligkeit filtern",
-      "allDueDates": "Alle Faelligkeiten",
-      "overdue": "Ueberfaellig",
+      "filterByDue": "Nach Fälligkeit filtern",
+      "allDueDates": "Alle Fälligkeiten",
+      "overdue": "Überfällig",
       "today": "Heute",
       "thisWeek": "Diese Woche"
     },
-
     "list": {
       "household": "Haushalt",
       "active": "Aktiv",
@@ -405,15 +411,14 @@
       "unpinChallenge": "Wochen-Challenge entfernen",
       "weekProgress": "Wochen-Fortschritt",
       "noChallengeTitle": "Keine Wochen-Challenge",
-      "noChallengeDescription": "Pinne eine Aufgabe ueber das Menue als Wochen-Challenge.",
+      "noChallengeDescription": "Pinne eine Aufgabe über das Menü als Wochen-Challenge.",
       "challengeCompleted": "Erledigt",
       "challengeOpen": "Offen",
       "assignedTo": "Zugewiesen an",
       "completedBy": "Erledigt von"
     },
-
     "card": {
-      "overdue": "Ueberfaellig",
+      "overdue": "Überfällig",
       "hoursLeft": "Noch {hours} Stunden",
       "daysLeft": "Noch {count} {count, plural, one {Tag} other {Tage}}",
       "completed": "Aufgabe erledigt!",
@@ -426,17 +431,16 @@
       "doneHousehold": "Erledigt!",
       "pointsShort": "+{points} Pkt."
     },
-
     "form": {
       "editTitle": "Aufgabe bearbeiten",
       "createTitle": "Neue Aufgabe",
-      "editDescription": "Aendere die Details dieser Aufgabe.",
-      "createDescription": "Erstelle eine neue Aufgabe fuer die Familie.",
+      "editDescription": "Ändere die Details dieser Aufgabe.",
+      "createDescription": "Erstelle eine neue Aufgabe für die Familie.",
       "titleLabel": "Titel *",
-      "titlePlaceholder": "z.B. Zimmer aufraeumen",
+      "titlePlaceholder": "z.B. Zimmer aufräumen",
       "titleRequired": "Titel ist erforderlich",
-      "dueDate": "Faelligkeitsdatum",
-      "priority": "Prioritaet",
+      "dueDate": "Fälligkeitsdatum",
+      "priority": "Priorität",
       "priorityLow": "Niedrig",
       "priorityMedium": "Mittel",
       "priorityHigh": "Hoch",
@@ -450,8 +454,8 @@
       "pointsOptional": "Punkte (optional)",
       "recurrence": "Wiederholung",
       "recurrenceNone": "Keine",
-      "recurrenceDaily": "Taeglich",
-      "recurrenceWeekly": "Woechentlich",
+      "recurrenceDaily": "Täglich",
+      "recurrenceWeekly": "Wöchentlich",
       "recurrenceMonthly": "Monatlich",
       "noRecurrence": "Keine Wiederholung",
       "subtasks": "Unteraufgaben",
@@ -466,21 +470,19 @@
       "updatedDescription": "Die Aufgabe wurde erfolgreich aktualisiert.",
       "created": "Aufgabe erstellt",
       "createdDescription": "Die Aufgabe wurde erfolgreich erstellt.",
-      "deleted": "Aufgabe geloescht",
-      "deletedDescription": "Die Aufgabe wurde erfolgreich geloescht."
+      "deleted": "Aufgabe gelöscht",
+      "deletedDescription": "Die Aufgabe wurde erfolgreich gelöscht."
     }
   },
-
   "rewards": {
     "pageTitle": "Belohnungen & Erfolge",
-    "pageSubtitle": "Punkte sammeln, Belohnungen einloesen und gemeinsam Ziele erreichen.",
+    "pageSubtitle": "Punkte sammeln, Belohnungen einlösen und gemeinsam Ziele erreichen.",
     "loadError": "Belohnungen konnten nicht geladen werden. Bitte Seite neu laden.",
     "refreshError": "Daten konnten nicht aktualisiert werden.",
     "childFallback": "Kind",
-
     "overview": {
       "noChildren": "Keine Kinder in der Familie",
-      "noChildrenDescription": "Fuege ein Kind zur Familie hinzu, um das Belohnungssystem zu nutzen."
+      "noChildrenDescription": "Füge ein Kind zur Familie hinzu, um das Belohnungssystem zu nutzen."
     },
     "childCard": {
       "points": "Punkte",
@@ -488,13 +490,13 @@
     },
     "manualPoints": {
       "title": "Punkte vergeben",
-      "description": "Punkte manuell fuer {childName} hinzufuegen oder abziehen.",
+      "description": "Punkte manuell für {childName} hinzufügen oder abziehen.",
       "currentBalance": "Aktueller Stand",
       "amountLabel": "Betrag",
       "amountPlaceholder": "z.B. 10 oder -5",
-      "amountHint": "Positiv = hinzufuegen, negativ = abziehen",
+      "amountHint": "Positiv = hinzufügen, negativ = abziehen",
       "commentLabel": "Kommentar (optional)",
-      "commentPlaceholder": "z.B. Bonus fuer gutes Benehmen",
+      "commentPlaceholder": "z.B. Bonus für gutes Benehmen",
       "newBalance": "Neuer Stand nach Buchung",
       "submitLoading": "Buchen...",
       "submit": "Buchen",
@@ -505,12 +507,12 @@
     },
     "history": {
       "title": "Punkteverlauf - {childName}",
-      "description": "Alle Buchungen fuer {childName} im Ueberblick.",
+      "description": "Alle Buchungen für {childName} im Überblick.",
       "empty": "Noch keine Punkte gesammelt",
       "taskCompleted": "Aufgabe erledigt",
-      "manualAdd": "Manuell hinzugefuegt",
+      "manualAdd": "Manuell hinzugefügt",
       "manualSub": "Manuell abgezogen",
-      "rewardRedeemed": "Belohnung eingeloest",
+      "rewardRedeemed": "Belohnung eingelöst",
       "goalContribution": "Familienziel-Beitrag",
       "balance": "Saldo: {balance}",
       "loadError": "Punktehistorie konnte nicht geladen werden."
@@ -529,7 +531,7 @@
     "achievements": {
       "title": "Deine Erfolge",
       "badge": "Badges",
-      "empty": "Noch keine Abzeichen verfuegbar."
+      "empty": "Noch keine Abzeichen verfügbar."
     },
     "goal": {
       "title": "Familienziel",
@@ -539,7 +541,7 @@
       "reached": "Ziel erreicht!",
       "reachedDescription": "Die Familie hat gemeinsam {points} Punkte gesammelt!",
       "remaining": "Noch {points} Punkte bis zum Ziel",
-      "lastContributions": "Letzte Beitraege",
+      "lastContributions": "Letzte Beiträge",
       "contribute": "Punkte beisteuern",
       "newGoalBtn": "Neues Ziel",
       "completing": "Wird abgeschlossen...",
@@ -573,7 +575,7 @@
       "title": "Neues Familienziel",
       "description": "Erstelle ein gemeinsames Ziel, auf das die ganze Familie hinarbeitet.",
       "emojiLabel": "Emoji",
-      "emojiPlaceholder": "z.B. \ud83c\udfa2",
+      "emojiPlaceholder": "z.B. 🎢",
       "nameLabel": "Zielname",
       "namePlaceholder": "z.B. Grosser Zoobesuch",
       "descriptionLabel": "Beschreibung (optional)",
@@ -596,54 +598,52 @@
       "refreshError": "Shop konnte nicht aktualisiert werden.",
       "loading": "Belohnungs-Shop wird geladen",
       "pageTitle": "Belohnungs-Shop",
-      "pageSubtitle": "Alle verfuegbaren Belohnungen im Ueberblick.",
-      "backToRewards": "Zurueck zu Belohnungen"
+      "pageSubtitle": "Alle verfügbaren Belohnungen im Überblick.",
+      "backToRewards": "Zurück zu Belohnungen"
     },
     "rewardCard": {
       "disabled": "Deaktiviert",
       "editAria": "{title} bearbeiten",
-      "redeeming": "Wird eingeloest...",
-      "redeem": "Einloesen",
+      "redeeming": "Wird eingelöst...",
+      "redeem": "Einlösen",
       "pointsNeeded": "Noch {points} Pkt.",
-      "redeemed": "Belohnung eingeloest!",
-      "redeemError": "Belohnung konnte nicht eingeloest werden."
+      "redeemed": "Belohnung eingelöst!",
+      "redeemError": "Belohnung konnte nicht eingelöst werden."
     },
     "rewardForm": {
       "editTitle": "Belohnung bearbeiten",
       "createTitle": "Neue Belohnung",
-      "editDescription": "Aendere die Details dieser Belohnung.",
-      "createDescription": "Erstelle eine neue Belohnung fuer den Shop.",
+      "editDescription": "Ändere die Details dieser Belohnung.",
+      "createDescription": "Erstelle eine neue Belohnung für den Shop.",
       "emojiLabel": "Emoji-Icon",
-      "emojiPlaceholder": "z.B. \ud83c\udfae",
+      "emojiPlaceholder": "z.B. 🎮",
       "titleLabel": "Titel",
       "titlePlaceholder": "z.B. 30 Min. Spielzeit",
       "descriptionLabel": "Beschreibung (optional)",
       "descriptionPlaceholder": "Kurze Beschreibung der Belohnung",
       "costLabel": "Punktekosten",
       "visibleToggle": "Sichtbar im Shop",
-      "visibleHint": "Deaktivierte Belohnungen sind fuer Kinder nicht sichtbar.",
+      "visibleHint": "Deaktivierte Belohnungen sind für Kinder nicht sichtbar.",
       "updated": "Belohnung aktualisiert",
       "created": "Belohnung erstellt",
       "error": "Belohnung konnte nicht gespeichert werden."
     }
   },
-
   "timer": {
     "pageTitle": "Familien-Timer",
-    "pageSubtitle": "Countdown-Timer fuer die ganze Familie",
+    "pageSubtitle": "Countdown-Timer für die ganze Familie",
     "loadError": "Timer konnte nicht geladen werden. Bitte Seite neu laden.",
     "childIdleMessage": "Kein Timer aktiv. Ein Elternteil kann den Timer starten.",
-
     "display": {
       "finished": "Zeit abgelaufen!",
-      "running": "Laeuft",
+      "running": "Läuft",
       "paused": "Pausiert",
       "expired": "Abgelaufen"
     },
     "controls": {
       "pause": "Timer pausieren",
       "resume": "Timer fortsetzen",
-      "reset": "Timer zuruecksetzen"
+      "reset": "Timer zurücksetzen"
     },
     "alarm": {
       "ariaLabel": "Timer abgelaufen",
@@ -651,15 +651,15 @@
       "description": "Der Timer ist abgelaufen.",
       "audioBlocked": "Ton blockiert — bitte Autoplay im Browser erlauben.",
       "confirm": "OK, verstanden",
-      "childMessage": "Ein Elternteil muss den Timer bestaetigen."
+      "childMessage": "Ein Elternteil muss den Timer bestätigen."
     },
     "duration": {
       "minutesLabel": "Minuten",
       "secondsLabel": "Sekunden",
       "decreaseMinutes": "Minuten verringern",
-      "increaseMinutes": "Minuten erhoehen",
+      "increaseMinutes": "Minuten erhöhen",
       "decreaseSeconds": "Sekunden verringern",
-      "increaseSeconds": "Sekunden erhoehen",
+      "increaseSeconds": "Sekunden erhöhen",
       "minDuration": "Mindestdauer ist 1 Minute.",
       "maxDuration": "Maximale Dauer ist 60 Minuten. Bitte Sekunden auf 0 setzen.",
       "start": "Timer starten",
@@ -670,8 +670,8 @@
       "new": "Neue Vorlage",
       "empty": "Noch keine Vorlagen erstellt.",
       "system": "Systemvorlage",
-      "deleteTitle": "Vorlage loeschen?",
-      "deleteDescription": "Diese Vorlage wird unwiderruflich geloescht.",
+      "deleteTitle": "Vorlage löschen?",
+      "deleteDescription": "Diese Vorlage wird unwiderruflich gelöscht.",
       "replaceTitle": "Laufender Timer ersetzen?",
       "replaceDescription": "Der aktive Timer wird abgebrochen und durch \"{name}\" ersetzt. Fortfahren?"
     },
@@ -688,15 +688,14 @@
       "saving": "Speichert..."
     }
   },
-
   "rituals": {
     "pageTitle": "Familien-Rituale",
-    "pageSubtitle": "Wiederkehrende Routinen fuer die ganze Familie",
+    "pageSubtitle": "Wiederkehrende Routinen für die ganze Familie",
     "loadError": "Rituale konnten nicht geladen werden. Bitte Seite neu laden.",
     "newRitual": "Neues Ritual",
-    "deleteTitle": "Ritual loeschen?",
-    "deleteDescription": "Moechtest du \"{name}\" wirklich loeschen? Diese Aktion kann nicht rueckgaengig gemacht werden.",
-    "noActiveRitual": "Kein Ritual laeuft gerade.",
+    "deleteTitle": "Ritual löschen?",
+    "deleteDescription": "Möchtest du \"{name}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "noActiveRitual": "Kein Ritual läuft gerade.",
     "askParent": "Frag Mama oder Papa!",
     "cancelTitle": "Ritual abbrechen?",
     "cancelDescription": "Der Fortschritt wird verworfen und Punkte werden nicht vergeben.",
@@ -704,14 +703,13 @@
     "timeUp": "Zeit abgelaufen!",
     "timeUpHint": "Du kannst die Schritte trotzdem weiter abhaken.",
     "timeUpConfirm": "OK, verstanden",
-
     "card": {
       "template": "Vorlage",
       "moreSteps": "weitere Schritte",
       "start": "Starten",
       "finishFirst": "Ritual zuerst beenden",
       "edit": "Ritual bearbeiten",
-      "delete": "Ritual loeschen"
+      "delete": "Ritual löschen"
     },
     "form": {
       "editTitle": "Ritual bearbeiten",
@@ -726,7 +724,7 @@
       "moveUp": "Nach oben verschieben",
       "moveDown": "Nach unten verschieben",
       "removeStep": "Schritt {index} entfernen",
-      "addStep": "Schritt hinzufuegen",
+      "addStep": "Schritt hinzufügen",
       "timerToggle": "Gesamt-Timer",
       "pointsToggle": "Belohnungspunkte",
       "nameRequired": "Name ist erforderlich.",
@@ -734,7 +732,7 @@
     },
     "stepItem": {
       "aria": "Schritt {order}: {title}",
-      "resetAria": "Schritt \"{title}\" zuruecksetzen"
+      "resetAria": "Schritt \"{title}\" zurücksetzen"
     },
     "active": {
       "progress": "Fortschritt",
@@ -742,10 +740,10 @@
       "stepsLabel": "Schritten",
       "stepsAria": "Ritual-Schritte",
       "doneAria": "erledigt",
-      "running": "Laeuft",
+      "running": "Läuft",
       "paused": "Pausiert",
       "timeUp": "Zeit abgelaufen!",
-      "fullCompletion": "vollstaendigem Abschluss",
+      "fullCompletion": "vollständigem Abschluss",
       "pause": "Pausieren",
       "resume": "Fortsetzen"
     },
@@ -754,18 +752,17 @@
       "title": "Ritual abgeschlossen!",
       "description": "\"{name}\" wurde erfolgreich abgeschlossen.",
       "pointsEarned": "Punkte verdient",
-      "timeRemaining": "Zeit uebrig: {time}",
+      "timeRemaining": "Zeit übrig: {time}",
       "great": "Super!",
       "restart": "Nochmal starten"
     },
     "list": {
       "emptyAdmin": "Noch keine Rituale erstellt.",
-      "emptyAdminDescription": "Erstelle ein neues Ritual, um wiederkehrende Ablaeufe zu organisieren.",
-      "emptyChild": "Kein Ritual laeuft gerade.",
+      "emptyAdminDescription": "Erstelle ein neues Ritual, um wiederkehrende Abläufe zu organisieren.",
+      "emptyChild": "Kein Ritual läuft gerade.",
       "emptyChildDescription": "Frag Mama oder Papa!"
     }
   },
-
   "recipes": {
     "pageTitle": "Rezepte & Essensplan",
     "pageSubtitle": "Was kochen wir diese Woche?",
@@ -776,10 +773,10 @@
     "loadError": "Rezepte konnten nicht geladen werden.",
     "newRecipe": "Neues Rezept",
     "editRecipe": "Rezept bearbeiten",
-    "deleteRecipe": "Rezept loeschen",
-    "deleteRecipeTitle": "Rezept loeschen?",
-    "deleteRecipeDescription": "Das Rezept und alle Zutaten werden unwiderruflich geloescht. Essensplan-Eintraege bleiben erhalten.",
-    "recipeDeleted": "Rezept geloescht.",
+    "deleteRecipe": "Rezept löschen",
+    "deleteRecipeTitle": "Rezept löschen?",
+    "deleteRecipeDescription": "Das Rezept und alle Zutaten werden unwiderruflich gelöscht. Essensplan-Einträge bleiben erhalten.",
+    "recipeDeleted": "Rezept gelöscht",
     "recipeCreated": "Rezept erstellt!",
     "recipeUpdated": "Rezept aktualisiert!",
     "recipeTitle": "Titel",
@@ -793,32 +790,32 @@
     "imageTooLarge": "Datei ist zu gross (max. 5 MB).",
     "imageInvalidType": "Nur JPEG, PNG und WebP sind erlaubt.",
     "recipeTags": "Tags",
-    "customTagPlaceholder": "Eigenen Tag hinzufuegen...",
-    "addTag": "Hinzufuegen",
+    "customTagPlaceholder": "Eigenen Tag hinzufügen...",
+    "addTag": "Hinzufügen",
     "removeTag": "Tag \"{tag}\" entfernen",
     "recipeIngredients": "Zutaten",
     "ingredientNamePlaceholder": "Zutat",
     "ingredientQuantityPlaceholder": "Menge",
     "ingredientUnitPlaceholder": "Einheit",
-    "addIngredient": "Zutat hinzufuegen",
+    "addIngredient": "Zutat hinzufügen",
     "removeIngredient": "Zutat entfernen",
     "ingredientCount": "{count, plural, one {# Zutat} other {# Zutaten}}",
     "noIngredients": "Keine Zutaten",
     "recipeActions": "Rezept-Aktionen",
     "addToShoppingList": "Zur Einkaufsliste",
-    "addToShoppingListTitle": "Zutaten zur Einkaufsliste hinzufuegen",
-    "addToShoppingListDescription": "Waehle eine Einkaufsliste fuer die Zutaten von \"{recipe}\".",
+    "addToShoppingListTitle": "Zutaten zur Einkaufsliste hinzufügen",
+    "addToShoppingListDescription": "Wähle eine Einkaufsliste für die Zutaten von \"{recipe}\".",
     "noShoppingLists": "Noch keine Einkaufslisten vorhanden.",
     "noIngredientsToAdd": "Dieses Rezept hat keine Zutaten.",
-    "ingredientsAdded": "{count, plural, one {# Zutat hinzugefuegt} other {# Zutaten hinzugefuegt}}",
+    "ingredientsAdded": "{count, plural, one {# Zutat hinzugefügt} other {# Zutaten hinzugefügt}}",
     "item": "Artikel",
     "items": "Artikel",
     "emptyTitle": "Noch keine Rezepte",
     "emptyDescription": "Erstelle dein erstes Rezept, um Mahlzeiten zu planen und Zutaten zu sammeln.",
     "noFilterResults": "Keine Rezepte gefunden",
-    "noFilterResultsDescription": "Kein Rezept passt zu den ausgewaehlten Tags. Versuche andere Filter.",
+    "noFilterResultsDescription": "Kein Rezept passt zu den ausgewählten Tags. Versuche andere Filter.",
     "filterByTags": "Nach Tags filtern",
-    "clearFilters": "Filter zuruecksetzen",
+    "clearFilters": "Filter zurücksetzen",
     "createdBy": "von {name}",
     "descriptionLabel": "Beschreibung",
     "ingredientsLabel": "Zutaten",
@@ -839,33 +836,31 @@
       "sun": "So"
     },
     "meals": {
-      "breakfast": "Fruehstueck",
+      "breakfast": "Frühstück",
       "lunch": "Mittagessen",
       "dinner": "Abendessen"
     },
     "previousWeek": "Vorherige Woche",
-    "nextWeek": "Naechste Woche",
+    "nextWeek": "Nächste Woche",
     "thisWeek": "Diese Woche",
     "mealPlanLoadError": "Essensplan konnte nicht geladen werden.",
-    "addMealEntry": "Mahlzeit hinzufuegen",
+    "addMealEntry": "Mahlzeit hinzufügen",
     "removeMealEntry": "Eintrag entfernen",
-    "selectRecipe": "Rezept waehlen",
+    "selectRecipe": "Rezept wählen",
     "orFreeText": "Freitext",
     "freeTextLabel": "Freitext eingeben",
     "freeTextPlaceholder": "z.B. Reste, Auswarts essen...",
-    "backToRecipes": "Zurueck",
-    "addEntry": "Hinzufuegen",
+    "backToRecipes": "Zurück",
+    "addEntry": "Hinzufügen",
     "searchRecipes": "Rezept suchen...",
     "noRecipesAvailable": "Noch keine Rezepte vorhanden.",
     "noSearchResults": "Kein Rezept gefunden.",
-    "recipeDeleted": "Rezept geloescht",
     "addWeekToShoppingList": "Wochenzutaten zur Einkaufsliste",
-    "addWeekToShoppingListTitle": "Alle Zutaten dieser Woche hinzufuegen",
-    "addWeekToShoppingListDescription": "Waehle eine Einkaufsliste — alle Zutaten der eingeplanten Rezepte werden hinzugefuegt.",
+    "addWeekToShoppingListTitle": "Alle Zutaten dieser Woche hinzufügen",
+    "addWeekToShoppingListDescription": "Wähle eine Einkaufsliste — alle Zutaten der eingeplanten Rezepte werden hinzugefügt.",
     "noRecipesThisWeek": "Keine Rezepte in dieser Woche eingeplant.",
-    "weekIngredientsAdded": "{count, plural, one {# Zutat hinzugefuegt} other {# Zutaten hinzugefuegt}}"
+    "weekIngredientsAdded": "{count, plural, one {# Zutat hinzugefügt} other {# Zutaten hinzugefügt}}"
   },
-
   "shopping": {
     "pageTitle": "Einkaufslisten",
     "pageSubtitle": "Was brauchen wir?",
@@ -876,48 +871,47 @@
     "listName": "Listenname",
     "listNamePlaceholder": "z.B. Wocheneinkauf, Drogerie...",
     "listCreated": "Einkaufsliste erstellt!",
-    "listDeleted": "Einkaufsliste geloescht.",
-    "listDeletedToast": "Diese Liste wurde geloescht.",
-    "deleteList": "Liste loeschen",
-    "deleteListTitle": "Liste loeschen?",
-    "deleteListDescription": "Alle Artikel dieser Liste werden unwiderruflich geloescht. Diese Aktion kann nicht rueckgaengig gemacht werden.",
+    "listDeleted": "Einkaufsliste gelöscht.",
+    "listDeletedToast": "Diese Liste wurde gelöscht.",
+    "deleteList": "Liste löschen",
+    "deleteListTitle": "Liste löschen?",
+    "deleteListDescription": "Alle Artikel dieser Liste werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
     "emptyTitle": "Noch keine Einkaufslisten",
-    "emptyDescription": "Erstelle deine erste Einkaufsliste, um Artikel fuer die ganze Familie zu sammeln.",
+    "emptyDescription": "Erstelle deine erste Einkaufsliste, um Artikel für die ganze Familie zu sammeln.",
     "emptyListTitle": "Liste ist leer",
-    "emptyListDescription": "Fuege den ersten Artikel hinzu — tippe einfach oben ins Eingabefeld.",
+    "emptyListDescription": "Füge den ersten Artikel hinzu — tippe einfach oben ins Eingabefeld.",
     "createdBy": "von {name}",
     "noItems": "Keine Artikel",
     "itemCount": "{count, plural, one {# Artikel} other {# Artikel}}",
     "doneCount": "{count} erledigt",
     "remainingItems": "{count, plural, one {Noch # Artikel} other {Noch # Artikel}}",
-    "quickAddPlaceholder": "Artikel hinzufuegen...",
-    "quickAddLabel": "Artikel schnell hinzufuegen",
+    "quickAddPlaceholder": "Artikel hinzufügen...",
+    "quickAddLabel": "Artikel schnell hinzufügen",
     "moreOptions": "Weitere Optionen",
-    "addItem": "Hinzufuegen",
+    "addItem": "Hinzufügen",
     "toggleItem": "{name} abhaken",
-    "deleteItem": "Artikel loeschen",
+    "deleteItem": "Artikel löschen",
     "quantityPlaceholder": "Menge (z.B. 2x, 500g)",
-    "categoryPlaceholder": "Kategorie waehlen",
+    "categoryPlaceholder": "Kategorie wählen",
     "noCategory": "Keine Kategorie",
     "uncategorized": "Sonstiges",
-    "clearCompleted": "Erledigte loeschen",
-    "clearedCompleted": "{count, plural, one {# erledigter Artikel geloescht} other {# erledigte Artikel geloescht}}",
+    "clearCompleted": "Erledigte löschen",
+    "clearedCompleted": "{count, plural, one {# erledigter Artikel gelöscht} other {# erledigte Artikel gelöscht}}",
     "completedSection": "Erledigt ({count})",
-    "suggestions": "Vorschlaege",
+    "suggestions": "Vorschläge",
     "categories": {
-      "fruits_vegetables": "Obst & Gemuese",
+      "fruits_vegetables": "Obst & Gemüse",
       "dairy": "Milchprodukte",
       "meat_fish": "Fleisch & Fisch",
       "bakery": "Backwaren",
-      "beverages": "Getraenke",
-      "frozen": "Tiefkuehl",
-      "snacks": "Snacks & Suessigkeiten",
+      "beverages": "Getränke",
+      "frozen": "Tiefkühl",
+      "snacks": "Snacks & Süssigkeiten",
       "household": "Haushalt",
-      "personal_care": "Koerperpflege",
+      "personal_care": "Körperpflege",
       "other": "Sonstiges"
     }
   },
-
   "chat": {
     "pageTitle": "Chat",
     "pageSubtitle": "Familien-Nachrichten",
@@ -926,14 +920,14 @@
     "familyChannel": "Familienchat",
     "directMessages": "Direktnachrichten",
     "newDirectMessage": "Neue Direktnachricht",
-    "selectMember": "Mitglied auswaehlen",
+    "selectMember": "Mitglied auswählen",
     "noChannels": "Noch keine Chats",
     "noChannelsDescription": "Starte den Familienchat oder schreibe jemandem direkt.",
     "noMessages": "Noch keine Nachrichten",
     "noMessagesDescription": "Schreibe die erste Nachricht!",
     "messagePlaceholder": "Nachricht schreiben...",
     "sendMessage": "Senden",
-    "loadOlder": "Aeltere Nachrichten laden",
+    "loadOlder": "Ältere Nachrichten laden",
     "loadingMessages": "Nachrichten laden...",
     "today": "Heute",
     "yesterday": "Gestern",
@@ -941,8 +935,8 @@
     "messageError": "Nachricht konnte nicht gesendet werden.",
     "retryMessage": "Erneut senden",
     "you": "Du",
-    "selectChat": "Waehle einen Chat aus der Seitenleiste",
-    "selectChatDescription": "Waehle einen Chat aus oder starte eine neue Konversation.",
+    "selectChat": "Wähle einen Chat aus der Seitenleiste",
+    "selectChatDescription": "Wähle einen Chat aus oder starte eine neue Konversation.",
     "charCount": "{count}/2000",
     "memberSince": "Mitglied seit {date}",
     "attachImage": "Bild anhängen",
@@ -956,9 +950,19 @@
     "imageUploadError": "Bild konnte nicht hochgeladen werden.",
     "imageFormatError": "Nur JPEG, PNG, GIF und WebP sind erlaubt.",
     "imageSizeError": "Bild darf maximal 10 MB groß sein.",
-    "imageRemoved": "Bild wurde entfernt"
+    "imageRemoved": "Bild wurde entfernt",
+    "editMessage": "Bearbeiten",
+    "deleteMessage": "Löschen",
+    "messageDeleted": "Nachricht gelöscht.",
+    "messageEdited": "Nachricht bearbeitet.",
+    "editCancel": "Abbrechen",
+    "editSave": "Speichern",
+    "editSaving": "Speichern...",
+    "deleteChannel": "Chat löschen",
+    "deleteChannelTitle": "Chat löschen?",
+    "deleteChannelDescription": "Alle Nachrichten mit {name} werden unwiderruflich gelöscht.",
+    "channelDeleted": "Chat gelöscht."
   },
-
   "layout": {
     "sidebar": {
       "dashboard": "Dashboard",
@@ -981,7 +985,7 @@
       "notifications": "Benachrichtigungen",
       "notificationSettings": "Benachrichtigungen",
       "settings": "Einstellungen",
-      "userMenu": "Benutzermenue",
+      "userMenu": "Benutzermenü",
       "familyPrefix": "Familie",
       "loggingOut": "Abmelden..."
     },
@@ -999,23 +1003,21 @@
       "aria": "Mobile Navigation",
       "more": "Mehr",
       "createNew": "Neu erstellen",
-      "createTitle": "Was moechtest du erstellen?",
+      "createTitle": "Was möchtest du erstellen?",
       "newTask": "Neue Aufgabe",
       "newEvent": "Neuer Termin",
       "newTimer": "Neuer Timer"
     }
   },
-
   "family": {
     "settingsBreadcrumb": "Familien-Sandbox",
     "settingsTitle": "Die Crew",
-    "settingsSubtitle": "Jede Sandbox braucht ihre Macher. Verwalte Rollen und den Spassfaktor fuer das ganze Team.",
-    "activity": "Familien-Aktivitaet",
-    "activityDescription": "Alles auf einen Blick — eure Familie waechst und gedeiht!",
+    "settingsSubtitle": "Jede Sandbox braucht ihre Macher. Verwalte Rollen und den Spassfaktor für das ganze Team.",
+    "activity": "Familien-Aktivität",
+    "activityDescription": "Alles auf einen Blick — eure Familie wächst und gedeiht!",
     "members": "Mitglieder",
     "admins": "Admins",
     "funFactor": "Spassfaktor",
-
     "nameSection": {
       "title": "Familienname",
       "description": "Der Name eurer Familiengruppe.",
@@ -1034,19 +1036,19 @@
       "emailSubmit": "Einladen",
       "codeTitle": "Einladungscode",
       "codeCopy": "Code kopieren",
-      "codeValidUntil": "Gueltig bis {date}",
+      "codeValidUntil": "Gültig bis {date}",
       "codeGenerate": "Code generieren",
       "codeGenerating": "Generieren...",
       "codeGenerateNew": "Neuen Code generieren",
-      "codeDescription": "Generiere einen 6-stelligen Code, den Familienmitglieder beim Beitreten eingeben koennen.",
+      "codeDescription": "Generiere einen 6-stelligen Code, den Familienmitglieder beim Beitreten eingeben können.",
       "codeError": "Code konnte nicht generiert werden."
     },
     "leave": {
       "title": "Familie verlassen",
-      "description": "Wenn du die Familie verlaesst, verlierst du den Zugriff auf alle gemeinsamen Daten.",
+      "description": "Wenn du die Familie verlässt, verlierst du den Zugriff auf alle gemeinsamen Daten.",
       "lastAdminWarning": "Du bist der letzte Admin dieser Familie. Ernenne zuerst ein anderes Mitglied zum Admin, bevor du die Familie verlassen kannst.",
       "confirmTitle": "Familie wirklich verlassen?",
-      "confirmDescription": "Du verlierst sofort den Zugriff auf alle Familiendaten. Diese Aktion kann nicht rueckgaengig gemacht werden. Du kannst der Familie spaeter nur per Einladung wieder beitreten.",
+      "confirmDescription": "Du verlierst sofort den Zugriff auf alle Familiendaten. Diese Aktion kann nicht rückgängig gemacht werden. Du kannst der Familie später nur per Einladung wieder beitreten.",
       "confirmButton": "Ja, Familie verlassen",
       "leaving": "Verlassen..."
     },
@@ -1061,54 +1063,51 @@
       "addMemberDescription": "Erweitere die Sandbox und lade jemanden ein",
       "addMemberButton": "Mitglied einladen",
       "editDialogTitle": "Profil bearbeiten",
-      "editDialogDescription": "Rolle von {name} aendern oder Mitglied entfernen.",
+      "editDialogDescription": "Rolle von {name} ändern oder Mitglied entfernen.",
       "roleLabel": "Rolle",
       "removeMember": "Mitglied entfernen",
       "removeConfirmTitle": "Mitglied entfernen",
-      "removeConfirmDescription": "Moechtest du {name} wirklich aus der Familie entfernen? Diese Person verliert sofort den Zugriff auf alle Familiendaten.",
+      "removeConfirmDescription": "Möchtest du {name} wirklich aus der Familie entfernen? Diese Person verliert sofort den Zugriff auf alle Familiendaten.",
       "removing": "Entfernen...",
       "remove": "Entfernen",
-      "roleChangeError": "Rolle konnte nicht geaendert werden.",
+      "roleChangeError": "Rolle konnte nicht geändert werden.",
       "removeError": "Mitglied konnte nicht entfernt werden.",
       "inviteDialogTitle": "Mitglied einladen",
       "inviteDialogDescription": "Lade neue Mitglieder per E-Mail oder Einladungscode ein."
     },
-
     "language": {
       "title": "Sprache",
-      "description": "Waehle deine bevorzugte Sprache fuer die App.",
+      "description": "Wähle deine bevorzugte Sprache für die App.",
       "de": "Deutsch",
       "en": "English",
-      "fr": "Fran\u00e7ais",
+      "fr": "Français",
       "saved": "Sprache gespeichert",
       "error": "Sprache konnte nicht gespeichert werden."
     }
   },
-
   "notifications": {
     "title": "Benachrichtigungen",
     "empty": "Keine Benachrichtigungen",
     "emptyDescription": "Du hast keine neuen Benachrichtigungen.",
     "markAllRead": "Alle als gelesen markieren",
-    "loadMore": "Aeltere laden",
+    "loadMore": "Ältere laden",
     "calendarAssigned": "Neuer Termin: {title}",
     "taskAssigned": "Aufgabe zugewiesen: {title}",
-    "taskDue": "Aufgabe faellig: {title}",
+    "taskDue": "Aufgabe fällig: {title}",
     "chatMessage": "{sender}: {preview}",
     "chatMessageFallback": "Neue Nachricht",
-    "contentDeleted": "Inhalt wurde geloescht",
+    "contentDeleted": "Inhalt wurde gelöscht",
     "settings": {
       "title": "Benachrichtigungs-Einstellungen",
-      "description": "Waehle, welche Benachrichtigungen du erhalten moechtest.",
+      "description": "Wähle, welche Benachrichtigungen du erhalten möchtest.",
       "calendarAssigned": "Neuer Termin zugewiesen",
       "taskAssigned": "Aufgabe zugewiesen",
-      "taskDue": "Aufgabe faellig",
+      "taskDue": "Aufgabe fällig",
       "chatMessage": "Neue Chat-Nachricht",
       "saved": "Einstellung gespeichert",
       "error": "Einstellung konnte nicht gespeichert werden."
     }
   },
-
   "assistant": {
     "title": "KI-Assistent",
     "floatingButtonLabel": "KI-Assistent öffnen",
@@ -1158,7 +1157,6 @@
       "loading": "Wird geladen..."
     }
   },
-
   "calendarIntegrations": {
     "title": "Kalender-Verbindungen",
     "subtitle": "Verbinde externe Kalender mit deinem Familienkalender.",

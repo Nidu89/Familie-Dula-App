@@ -71,6 +71,17 @@ export function ChatPageClient({
     [activeChannelId]
   )
 
+  const handleChannelDeleted = useCallback(
+    (channelId: string) => {
+      setChannels((prev) => prev.filter((c) => c.id !== channelId))
+      if (activeChannelId === channelId) {
+        const remaining = channels.filter((c) => c.id !== channelId)
+        setActiveChannelId(remaining.find((c) => c.type === "family")?.id || remaining[0]?.id || null)
+      }
+    },
+    [activeChannelId, channels]
+  )
+
   return (
     <div className="mx-auto max-w-7xl px-0 sm:px-4 md:px-6">
       {/* Header */}
@@ -90,9 +101,11 @@ export function ChatPageClient({
           channels={channels}
           activeChannelId={activeChannelId}
           currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
           familyMembers={familyMembers}
           onSelectChannel={setActiveChannelId}
           onChannelCreated={handleChannelCreated}
+          onChannelDeleted={handleChannelDeleted}
         />
 
         {/* Thread or empty state */}

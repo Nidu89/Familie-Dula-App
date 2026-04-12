@@ -205,11 +205,27 @@
       "empty": "Aucun message pour l'instant"
     },
     "mealPlan": {
-      "title": "Menu de la semaine",
-      "subtitle": "Bientôt dans PROJ-8",
-      "dinner": "Dîner",
-      "scheduling": "Planification",
-      "schedulingDescription": "Planifie les repas pour toute la semaine"
+      "title": "Menu",
+      "todayLabel": "Aujourd'hui",
+      "mealBreakfast": "Petit-déj.",
+      "mealLunch": "Déjeuner",
+      "mealDinner": "Dîner",
+      "emptyToday": "Aucun repas prévu aujourd'hui.",
+      "openMealPlan": "Ouvrir le menu"
+    },
+    "shoppingWidget": {
+      "title": "Listes de courses",
+      "empty": "Pas encore de listes.",
+      "noItems": "Aucun article",
+      "itemStatus": "Encore {remaining} sur {total}",
+      "remaining": "Encore {count} articles au total",
+      "viewAll": "Voir toutes les listes"
+    },
+    "quote": {
+      "default": "La famille n'est pas la chose la plus importante. C'est tout. – Michael J. Fox",
+      "edit": "Modifier la citation",
+      "placeholder": "Votre citation familiale...",
+      "saved": "Citation sauvegardée"
     },
     "quickActions": {
       "calendar": "Calendrier",
@@ -956,7 +972,18 @@
     "imageUploadError": "Impossible de télécharger l'image.",
     "imageFormatError": "Seuls les formats JPEG, PNG, GIF et WebP sont autorisés.",
     "imageSizeError": "L'image ne doit pas dépasser 10 Mo.",
-    "imageRemoved": "L'image a été supprimée"
+    "imageRemoved": "L'image a été supprimée",
+    "editMessage": "Modifier",
+    "deleteMessage": "Supprimer",
+    "messageDeleted": "Message supprimé.",
+    "messageEdited": "Message modifié.",
+    "editCancel": "Annuler",
+    "editSave": "Enregistrer",
+    "editSaving": "Enregistrement...",
+    "deleteChannel": "Supprimer le chat",
+    "deleteChannelTitle": "Supprimer le chat ?",
+    "deleteChannelDescription": "Tous les messages avec {name} seront définitivement supprimés.",
+    "channelDeleted": "Chat supprimé."
   },
 
   "layout": {

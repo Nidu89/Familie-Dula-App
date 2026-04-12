@@ -79,7 +79,7 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
     <button
       type="button"
       onClick={handleClick}
-      className={`flex items-start gap-3 w-full px-4 py-3 text-left transition-colors rounded-xl ${
+      className={`flex items-start gap-3 w-full px-4 py-3 text-left transition-colors rounded-lg ${
         notification.isRead
           ? "opacity-60 hover:bg-muted/50"
           : "hover:bg-muted"

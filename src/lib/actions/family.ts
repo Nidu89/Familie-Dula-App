@@ -609,3 +609,60 @@ export async function getFamilyDataAction() {
     weekChallengeTaskId: (family.week_challenge_task_id as string | null) ?? null,
   }
 }
+
+// ============================================================
+// Family Quote – get/update custom dashboard quote
+// ============================================================
+
+export async function getFamilyQuoteAction(): Promise<
+  { quote: string | null } | { error: string }
+> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Nicht angemeldet." }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("family_id")
+    .eq("id", user.id)
+    .single()
+  if (!profile?.family_id) return { error: "Keine Familie." }
+
+  const { data: family } = await supabase
+    .from("families")
+    .select("custom_quote")
+    .eq("id", profile.family_id)
+    .single()
+
+  return { quote: (family?.custom_quote as string | null) ?? null }
+}
+
+export async function updateFamilyQuoteAction(quote: string): Promise<
+  { success: true } | { error: string }
+> {
+  if (quote.length > 500) return { error: "Zitat darf maximal 500 Zeichen lang sein." }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Nicht angemeldet." }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("family_id, role")
+    .eq("id", user.id)
+    .single()
+  if (!profile?.family_id) return { error: "Keine Familie." }
+  if (profile.role !== "admin") return { error: "Nur Admins können das Zitat ändern." }
+
+  const { error: updateError } = await supabase
+    .from("families")
+    .update({ custom_quote: quote || null })
+    .eq("id", profile.family_id)
+
+  if (updateError) return { error: "Zitat konnte nicht gespeichert werden." }
+  return { success: true }
+}

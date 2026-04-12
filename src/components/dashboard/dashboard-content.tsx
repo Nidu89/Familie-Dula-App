@@ -1,16 +1,17 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { ShoppingCart } from "lucide-react"
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { CalendarWidget } from "@/components/dashboard/calendar-widget"
 import { TasksWidget } from "@/components/dashboard/tasks-widget"
 import { RewardsWidget } from "@/components/dashboard/rewards-widget"
 import { MealPlanWidget } from "@/components/dashboard/meal-plan-widget"
+import { ShoppingWidget } from "@/components/dashboard/shopping-widget"
 import { TimerWidget } from "@/components/dashboard/timer-widget"
 import { RitualsWidget } from "@/components/dashboard/rituals-widget"
 import { KidsView } from "@/components/dashboard/kids-view"
+import { DashboardQuote } from "@/components/dashboard/dashboard-quote"
 
 interface DashboardContentProps {
   user: { id: string; displayName: string }
@@ -80,48 +81,8 @@ export function DashboardContent({
           />
           <RitualsWidget isAdult={isAdmin || role === "adult"} />
           <MealPlanWidget />
-
-          {/* Shopping list placeholder */}
-          <section className="rounded-[2rem] bg-card p-8 shadow-sm">
-            <div className="mb-6 flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold">
-                {t("shoppingList")}
-              </h3>
-              <ShoppingCart className="h-5 w-5 text-secondary" />
-            </div>
-            <div className="space-y-3">
-              {["Hafermilch", "Parmesan", "Avocados"].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-3 rounded-xl bg-muted p-3"
-                >
-                  <div className="h-2 w-2 shrink-0 rounded-full bg-secondary" />
-                  <span className="font-medium text-muted-foreground">
-                    {item}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="mt-6 w-full rounded-xl border-2 border-dashed border-border py-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted"
-            >
-              {t("addItem")}
-            </button>
-          </section>
-
-          {/* Quote bubble */}
-          <div
-            className="flex items-start gap-4 bg-primary/10 p-8 italic text-muted-foreground"
-            style={{
-              borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%",
-            }}
-          >
-            <span className="mt-0.5 shrink-0 text-xl text-primary-foreground">
-              &ldquo;
-            </span>
-            <p className="text-sm font-medium">{t("familyQuote")}</p>
-          </div>
+          <ShoppingWidget />
+          <DashboardQuote familyId={family.id} isAdmin={isAdmin} />
         </div>
       </div>
     </main>

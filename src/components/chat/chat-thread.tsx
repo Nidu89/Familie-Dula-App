@@ -14,6 +14,8 @@ import {
   uploadChatImageAction,
   deleteChatImageAction,
   getSignedImageUrlAction,
+  deleteMessageAction,
+  editMessageAction,
   type ChatChannel,
   type ChatMessage,
 } from "@/lib/actions/chat"
@@ -315,6 +317,30 @@ export function ChatThread({
     toast({ description: t("imageDeleted") })
   }
 
+  // Delete a message
+  async function handleDeleteMessage(messageId: string) {
+    const result = await deleteMessageAction({ messageId })
+    if ("error" in result) {
+      toast({ title: tc("error"), description: result.error, variant: "destructive" })
+      return
+    }
+    setMessages((prev) => prev.filter((m) => m.id !== messageId))
+    toast({ description: t("messageDeleted") })
+  }
+
+  // Edit a message
+  async function handleEditMessage(messageId: string, content: string) {
+    const result = await editMessageAction({ messageId, content })
+    if ("error" in result) {
+      toast({ title: tc("error"), description: result.error, variant: "destructive" })
+      return
+    }
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, content } : m))
+    )
+    toast({ description: t("messageEdited") })
+  }
+
   // Group messages by date
   function getDateLabel(dateStr: string): string {
     const date = new Date(dateStr)
@@ -429,6 +455,8 @@ export function ChatThread({
                     canDeleteImage={canDeleteImage}
                     onImageClick={setLightboxSrc}
                     onDeleteImage={handleDeleteImage}
+                    onDeleteMessage={handleDeleteMessage}
+                    onEditMessage={handleEditMessage}
                   />
                 </div>
               )

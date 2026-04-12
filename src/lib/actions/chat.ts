@@ -11,6 +11,9 @@ import {
   chatImageFileSchema,
   deleteChatImageSchema,
   getSignedImageUrlSchema,
+  deleteMessageSchema,
+  editMessageSchema,
+  deleteChannelSchema,
 } from "@/lib/validations/chat"
 
 // ============================================================
@@ -586,6 +589,163 @@ export async function getFamilyChannelIdAction(): Promise<
   }
 
   return { channelId: channel.id }
+}
+
+// ============================================================
+// deleteMessageAction – delete a chat message (own or admin/adult)
+// ============================================================
+
+export async function deleteMessageAction(data: {
+  messageId: string
+}): Promise<{ success: true } | { error: string }> {
+  const parsed = deleteMessageSchema.safeParse(data)
+  if (!parsed.success) return { error: "Ungültige Eingaben." }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`delMsg:${ip}`, 30, 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+
+  const supabase = await createClient()
+
+  const { data: msg } = await supabase
+    .from("chat_messages")
+    .select("id, sender_id, image_url")
+    .eq("id", parsed.data.messageId)
+    .single()
+
+  if (!msg) return { error: "Nachricht nicht gefunden." }
+
+  const isOwn = msg.sender_id === profile.id
+  const isAdminOrAdult = profile.role === "admin" || profile.role === "adult"
+  if (!isOwn && !isAdminOrAdult) {
+    return { error: "Keine Berechtigung." }
+  }
+
+  // Delete associated image from storage if present
+  if (msg.image_url) {
+    await supabase.storage.from("chat-images").remove([msg.image_url])
+  }
+
+  const { error: deleteError } = await supabase
+    .from("chat_messages")
+    .delete()
+    .eq("id", parsed.data.messageId)
+
+  if (deleteError) return { error: "Nachricht konnte nicht gelöscht werden." }
+
+  return { success: true }
+}
+
+// ============================================================
+// editMessageAction – edit a chat message (own only)
+// ============================================================
+
+export async function editMessageAction(data: {
+  messageId: string
+  content: string
+}): Promise<{ success: true } | { error: string }> {
+  const parsed = editMessageSchema.safeParse(data)
+  if (!parsed.success) return { error: "Ungültige Eingaben." }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`editMsg:${ip}`, 30, 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+
+  const supabase = await createClient()
+
+  const { data: msg } = await supabase
+    .from("chat_messages")
+    .select("id, sender_id")
+    .eq("id", parsed.data.messageId)
+    .single()
+
+  if (!msg) return { error: "Nachricht nicht gefunden." }
+  if (msg.sender_id !== profile.id) {
+    return { error: "Nur eigene Nachrichten können bearbeitet werden." }
+  }
+
+  const { error: updateError } = await supabase
+    .from("chat_messages")
+    .update({ content: parsed.data.content })
+    .eq("id", parsed.data.messageId)
+
+  if (updateError) return { error: "Nachricht konnte nicht bearbeitet werden." }
+
+  return { success: true }
+}
+
+// ============================================================
+// deleteChannelAction – delete a DM channel (admin/adult only)
+// ============================================================
+
+export async function deleteChannelAction(data: {
+  channelId: string
+}): Promise<{ success: true } | { error: string }> {
+  const parsed = deleteChannelSchema.safeParse(data)
+  if (!parsed.success) return { error: "Ungültige Eingaben." }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`delChan:${ip}`, 10, 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+
+  const isAdminOrAdult = profile.role === "admin" || profile.role === "adult"
+  if (!isAdminOrAdult) {
+    return { error: "Nur Admins und Erwachsene können Chats löschen." }
+  }
+
+  const supabase = await createClient()
+
+  // Verify it's a DM channel (family channels cannot be deleted)
+  const { data: channel } = await supabase
+    .from("chat_channels")
+    .select("id, type, family_id")
+    .eq("id", parsed.data.channelId)
+    .single()
+
+  if (!channel) return { error: "Kanal nicht gefunden." }
+  if (channel.type === "family") {
+    return { error: "Der Familienchat kann nicht gelöscht werden." }
+  }
+
+  // Delete all messages' images from storage
+  const { data: imgMessages } = await supabase
+    .from("chat_messages")
+    .select("image_url")
+    .eq("channel_id", parsed.data.channelId)
+    .not("image_url", "is", null)
+
+  if (imgMessages && imgMessages.length > 0) {
+    const paths = imgMessages.map((m) => m.image_url).filter(Boolean) as string[]
+    if (paths.length > 0) {
+      await supabase.storage.from("chat-images").remove(paths)
+    }
+  }
+
+  // Delete read receipts, members, messages, then channel (cascade should handle this but let's be explicit)
+  await supabase.from("chat_read_receipts").delete().eq("channel_id", parsed.data.channelId)
+  await supabase.from("chat_messages").delete().eq("channel_id", parsed.data.channelId)
+  await supabase.from("chat_channel_members").delete().eq("channel_id", parsed.data.channelId)
+
+  const { error: deleteError } = await supabase
+    .from("chat_channels")
+    .delete()
+    .eq("id", parsed.data.channelId)
+
+  if (deleteError) return { error: "Chat konnte nicht gelöscht werden." }
+
+  return { success: true }
 }
 
 // ============================================================
