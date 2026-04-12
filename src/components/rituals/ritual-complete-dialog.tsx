@@ -7,6 +7,8 @@ import { PartyPopper, Star, RotateCcw } from "lucide-react"
 interface RitualCompleteDialogProps {
   ritualName: string
   rewardPoints: number | null
+  assignedToName: string | null
+  isAssignedUser: boolean
   timeRemaining: number | null
   isAdult: boolean
   onRestart: () => void
@@ -22,6 +24,8 @@ function formatTime(seconds: number): string {
 export function RitualCompleteDialog({
   ritualName,
   rewardPoints,
+  assignedToName,
+  isAssignedUser,
   timeRemaining,
   isAdult,
   onRestart,
@@ -29,6 +33,15 @@ export function RitualCompleteDialog({
 }: RitualCompleteDialogProps) {
   const t = useTranslations("rituals.complete")
   const hasReward = rewardPoints !== null && rewardPoints > 0
+
+  // Personalized title: "Du hast es geschafft!" vs "Tim hat das Ritual abgeschlossen!"
+  const title = assignedToName && !isAssignedUser
+    ? t("titleOther", { name: assignedToName })
+    : t("title")
+
+  const description = assignedToName && !isAssignedUser
+    ? t("descriptionOther", { name: assignedToName, ritual: ritualName })
+    : t("description", { name: ritualName })
 
   return (
     <div
@@ -45,15 +58,30 @@ export function RitualCompleteDialog({
 
         <div>
           <h2 className="font-display text-2xl font-bold text-foreground">
-            {t("title")}
+            {title}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("description", { name: ritualName })}
+            {description}
           </p>
         </div>
 
-        {/* Reward points display */}
-        {hasReward && (
+        {/* Reward points display — show who earned the points */}
+        {hasReward && assignedToName && (
+          <div className="flex items-center gap-3 rounded-2xl bg-primary/10 px-6 py-4">
+            <Star className="h-8 w-8 text-primary-foreground" />
+            <div>
+              <p className="font-display text-3xl font-bold text-primary-foreground">
+                +{rewardPoints}
+              </p>
+              <p className="text-xs font-medium text-muted-foreground">
+                {t("pointsFor", { name: assignedToName })}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Fallback: points without assignment */}
+        {hasReward && !assignedToName && (
           <div className="flex items-center gap-3 rounded-2xl bg-primary/10 px-6 py-4">
             <Star className="h-8 w-8 text-primary-foreground" />
             <div>

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { RotateCcw } from "lucide-react"
+import { RotateCcw, Timer } from "lucide-react"
 
 interface RitualStepItemProps {
   stepId: string
@@ -11,8 +11,15 @@ interface RitualStepItemProps {
   order: number
   isCompleted: boolean
   isAdult: boolean
+  isActiveStep?: boolean
+  stepDurationSeconds?: number | null
   onToggle: (stepId: string) => void
   onReset?: (stepId: string) => void
+}
+
+function formatDuration(seconds: number): string {
+  const m = Math.round(seconds / 60)
+  return `${m} Min.`
 }
 
 export function RitualStepItem({
@@ -21,6 +28,8 @@ export function RitualStepItem({
   order,
   isCompleted,
   isAdult,
+  isActiveStep,
+  stepDurationSeconds,
   onToggle,
   onReset,
 }: RitualStepItemProps) {
@@ -31,10 +40,16 @@ export function RitualStepItem({
       className={`flex items-center gap-4 rounded-2xl p-4 transition-all ${
         isCompleted
           ? "bg-primary/10"
-          : "bg-surface-container-lowest"
+          : isActiveStep
+            ? "bg-secondary/5 ring-2 ring-secondary/20"
+            : "bg-surface-container-lowest"
       }`}
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+        isActiveStep && !isCompleted
+          ? "bg-secondary text-white"
+          : "bg-muted text-muted-foreground"
+      }`}>
         {order + 1}
       </div>
 
@@ -51,16 +66,25 @@ export function RitualStepItem({
         aria-label={t("aria", { order: order + 1, title })}
       />
 
-      <label
-        htmlFor={`step-${stepId}`}
-        className={`flex-1 text-sm font-medium transition-all ${
-          isCompleted
-            ? "text-muted-foreground line-through"
-            : "text-foreground"
-        }`}
-      >
-        {title}
-      </label>
+      <div className="flex-1">
+        <label
+          htmlFor={`step-${stepId}`}
+          className={`block text-sm font-medium transition-all ${
+            isCompleted
+              ? "text-muted-foreground line-through"
+              : "text-foreground"
+          }`}
+        >
+          {title}
+        </label>
+        {/* Show step duration hint for uncompleted steps */}
+        {!isCompleted && stepDurationSeconds && stepDurationSeconds > 0 && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Timer className="h-3 w-3" />
+            {formatDuration(stepDurationSeconds)}
+          </span>
+        )}
+      </div>
 
       {/* Reset button — only for adults, only when completed */}
       {isCompleted && isAdult && onReset && (

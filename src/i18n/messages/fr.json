@@ -735,7 +735,11 @@
     "timeUp": "Temps écoulé !",
     "timeUpHint": "Tu peux quand même continuer à cocher les étapes.",
     "timeUpConfirm": "OK, compris",
-
+    "childSelect": {
+      "title": "Pour quel enfant ?",
+      "description": "Choisis l'enfant qui recevra {points} points pour \"{ritual}\".",
+      "withoutPoints": "Commencer sans points"
+    },
     "card": {
       "template": "Modèle",
       "moreSteps": "étapes de plus",
@@ -759,6 +763,9 @@
       "removeStep": "Supprimer l'étape {index}",
       "addStep": "Ajouter une étape",
       "timerToggle": "Minuteur global",
+      "stepTimerPlaceholder": "Min.",
+      "stepTimerAria": "Minuteur pour l'étape {index} en minutes",
+      "stepTimerHint": "Tu peux définir un temps individuel pour chaque étape.",
       "pointsToggle": "Points de récompense",
       "nameRequired": "Le nom est obligatoire.",
       "stepsRequired": "Au moins une étape avec un nom est nécessaire."
@@ -777,14 +784,19 @@
       "paused": "En pause",
       "timeUp": "Temps écoulé !",
       "fullCompletion": "complétion totale",
+      "for": "pour",
+      "assignedTo": "Pour {name}",
       "pause": "Pause",
       "resume": "Reprendre"
     },
     "complete": {
       "ariaLabel": "Rituel terminé",
-      "title": "Rituel terminé !",
+      "title": "Bravo !",
+      "titleOther": "{name} a réussi !",
       "description": "\"{name}\" a été complété avec succès.",
+      "descriptionOther": "{name} a terminé \"{ritual}\" avec succès.",
       "pointsEarned": "Points gagnés",
+      "pointsFor": "Points pour {name}",
       "timeRemaining": "Temps restant : {time}",
       "great": "Super !",
       "restart": "Recommencer"

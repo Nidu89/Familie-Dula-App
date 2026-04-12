@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Pause, Play, X, RotateCcw } from "lucide-react"
+import { Pause, Play } from "lucide-react"
 import { RitualStepItem } from "./ritual-step-item"
 import type { UseActiveRitualReturn } from "@/hooks/use-active-ritual"
 
@@ -33,13 +33,17 @@ export function ActiveRitualView({
     resetStep,
     completedCount,
     totalSteps,
+    activeTimerStep,
   } = activeRitual
 
   const ritual = state.ritual
   if (!ritual) return null
 
-  const hasTimer =
+  const hasGlobalTimer =
     ritual.timerDurationMinutes !== null && ritual.timerDurationMinutes > 0
+  const hasPerStepTimer = !hasGlobalTimer && activeTimerStep !== null
+  const hasAnyTimer = hasGlobalTimer || hasPerStepTimer
+
   const timerStatus = timer.state.status
   const isTimerExpired = timerStatus === "finished"
   const progressPercent =
@@ -47,6 +51,11 @@ export function ActiveRitualView({
 
   const isPaused = state.status === "paused"
   const isRunning = state.status === "running" || state.status === "timer_expired"
+
+  // Assigned child display
+  const assignedInfo = state.assignedToName
+    ? t("assignedTo", { name: state.assignedToName })
+    : null
 
   return (
     <div className="space-y-6">
@@ -60,16 +69,21 @@ export function ActiveRitualView({
             {ritual.description}
           </p>
         )}
+        {assignedInfo && (
+          <p className="mt-1 text-xs font-medium text-secondary">
+            {assignedInfo}
+          </p>
+        )}
       </div>
 
-      {/* Timer display with circular progress (if applicable) */}
-      {hasTimer && (() => {
+      {/* Timer display with circular progress */}
+      {hasAnyTimer && (() => {
         const { totalSeconds, remainingSeconds } = timer.state
         const timerProgress =
           timerStatus === "idle" || totalSeconds === 0
             ? 0
             : 1 - remainingSeconds / totalSeconds
-        const size = 200
+        const size = hasPerStepTimer ? 160 : 200
         const strokeWidth = 10
         const radius = (size - strokeWidth) / 2
         const circumference = 2 * Math.PI * radius
@@ -77,6 +91,13 @@ export function ActiveRitualView({
 
         return (
           <div className="flex flex-col items-center gap-2 rounded-[2rem] bg-card p-6">
+            {/* Per-step timer label */}
+            {hasPerStepTimer && activeTimerStep && (
+              <p className="text-xs font-medium uppercase tracking-widest text-secondary">
+                {activeTimerStep.title}
+              </p>
+            )}
+
             <div className="relative" style={{ width: size, height: size }}>
               <svg
                 width={size}
@@ -166,18 +187,23 @@ export function ActiveRitualView({
       <div className="space-y-3" role="list" aria-label={t("stepsAria")}>
         {[...ritual.steps]
           .sort((a, b) => a.order - b.order)
-          .map((step) => (
-            <RitualStepItem
-              key={step.id}
-              stepId={step.id}
-              title={step.title}
-              order={step.order}
-              isCompleted={state.completedStepIds.has(step.id)}
-              isAdult={isAdult}
-              onToggle={toggleStep}
-              onReset={isAdult ? resetStep : undefined}
-            />
-          ))}
+          .map((step) => {
+            const isActiveStep = activeTimerStep?.id === step.id
+            return (
+              <RitualStepItem
+                key={step.id}
+                stepId={step.id}
+                title={step.title}
+                order={step.order}
+                isCompleted={state.completedStepIds.has(step.id)}
+                isAdult={isAdult}
+                isActiveStep={isActiveStep}
+                stepDurationSeconds={step.durationSeconds ?? null}
+                onToggle={toggleStep}
+                onReset={isAdult ? resetStep : undefined}
+              />
+            )
+          })}
       </div>
 
       {/* Reward points hint */}
@@ -186,6 +212,11 @@ export function ActiveRitualView({
           <span className="text-lg">&#11088;</span>
           <p className="text-sm font-medium text-foreground">
             {ritual.rewardPoints} {tc("points")} {t("fullCompletion")}
+            {state.assignedToName && (
+              <span className="text-muted-foreground">
+                {" "}({t("for")} {state.assignedToName})
+              </span>
+            )}
           </p>
         </div>
       )}

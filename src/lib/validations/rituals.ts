@@ -11,6 +11,13 @@ export const ritualStepSchema = z.object({
     .min(1, "Schritt-Name ist erforderlich")
     .max(100, "Schritt-Name darf maximal 100 Zeichen lang sein"),
   order: z.number().int().min(0),
+  durationSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(7200)
+    .nullable()
+    .optional(),
 })
 
 export type RitualStep = z.infer<typeof ritualStepSchema>

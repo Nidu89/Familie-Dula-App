@@ -334,6 +334,10 @@ export type ActiveRitualSession = {
   startedAt: string
   completedStepIds: string[]
   status: "running" | "paused" | "completed"
+  assignedTo: string | null
+  assignedToName: string | null
+  completedBy: string | null
+  pointsAwarded: boolean
 }
 
 export async function getActiveRitualSessionAction(): Promise<
@@ -366,12 +370,48 @@ export async function getActiveRitualSessionAction(): Promise<
       startedAt: data.started_at,
       completedStepIds: data.completed_step_ids || [],
       status: data.status as ActiveRitualSession["status"],
+      assignedTo: data.assigned_to ?? null,
+      assignedToName: data.assigned_to_name ?? null,
+      completedBy: data.completed_by ?? null,
+      pointsAwarded: data.points_awarded ?? false,
     },
   }
 }
 
+// ============================================================
+// getFamilyChildrenAction — returns children in the family
+// Used for the child selection picker when starting a ritual
+// ============================================================
+
+export async function getFamilyChildrenAction(): Promise<
+  { children: { id: string; displayName: string }[] } | { error: string }
+> {
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, display_name")
+    .eq("family_id", profile.family_id)
+    .eq("role", "child")
+    .order("display_name")
+    .limit(20)
+
+  return {
+    children: (data || []).map((c) => ({
+      id: c.id,
+      displayName: c.display_name || "Kind",
+    })),
+  }
+}
+
 export async function startRitualSessionAction(
-  ritualId: string
+  ritualId: string,
+  assignedTo?: string | null,
+  assignedToName?: string | null
 ): Promise<{ session: ActiveRitualSession } | { error: string }> {
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
@@ -392,6 +432,9 @@ export async function startRitualSessionAction(
       started_by: profile.id,
       completed_step_ids: [],
       status: "running",
+      assigned_to: assignedTo ?? null,
+      assigned_to_name: assignedToName ?? null,
+      points_awarded: false,
     })
     .select("*")
     .single()
@@ -409,6 +452,10 @@ export async function startRitualSessionAction(
       startedAt: data.started_at,
       completedStepIds: data.completed_step_ids || [],
       status: data.status as ActiveRitualSession["status"],
+      assignedTo: data.assigned_to ?? null,
+      assignedToName: data.assigned_to_name ?? null,
+      completedBy: data.completed_by ?? null,
+      pointsAwarded: data.points_awarded ?? false,
     },
   }
 }
@@ -429,6 +476,9 @@ export async function updateRitualSessionAction(data: {
   }
   if (data.status !== undefined) {
     updatePayload.status = data.status
+    if (data.status === "completed") {
+      updatePayload.completed_by = profile.id
+    }
   }
 
   const { error } = await supabase
@@ -438,6 +488,45 @@ export async function updateRitualSessionAction(data: {
 
   if (error) {
     return { error: "Session konnte nicht aktualisiert werden." }
+  }
+
+  // Auto-award points when ritual is completed (server-side, exactly once)
+  if (data.status === "completed") {
+    // Atomically claim the points_awarded flag to prevent double-awarding
+    const { data: claimed } = await supabase
+      .from("active_ritual_sessions")
+      .update({ points_awarded: true })
+      .eq("family_id", profile.family_id)
+      .eq("points_awarded", false)
+      .select("assigned_to, assigned_to_name, ritual_id")
+      .maybeSingle()
+
+    if (claimed?.assigned_to && claimed.ritual_id) {
+      const { data: ritual } = await supabase
+        .from("rituals")
+        .select("reward_points, name")
+        .eq("id", claimed.ritual_id)
+        .single()
+
+      if (ritual?.reward_points && ritual.reward_points > 0) {
+        const { error: rpcError } = await supabase.rpc(
+          "award_ritual_completion",
+          {
+            p_child_profile_id: claimed.assigned_to,
+            p_points: ritual.reward_points,
+            p_ritual_name: `Ritual abgeschlossen: ${ritual.name}`,
+          }
+        )
+
+        if (rpcError) {
+          // Reset flag so a retry is possible
+          await supabase
+            .from("active_ritual_sessions")
+            .update({ points_awarded: false })
+            .eq("family_id", profile.family_id)
+        }
+      }
+    }
   }
 
   return { success: true }

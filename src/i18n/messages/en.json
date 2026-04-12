@@ -735,7 +735,11 @@
     "timeUp": "Time's up!",
     "timeUpHint": "You can still check off the remaining steps.",
     "timeUpConfirm": "OK, got it",
-
+    "childSelect": {
+      "title": "For which child?",
+      "description": "Choose the child who should receive {points} points for \"{ritual}\".",
+      "withoutPoints": "Start without points"
+    },
     "card": {
       "template": "Template",
       "moreSteps": "more steps",
@@ -759,6 +763,9 @@
       "removeStep": "Remove step {index}",
       "addStep": "Add step",
       "timerToggle": "Total timer",
+      "stepTimerPlaceholder": "Min.",
+      "stepTimerAria": "Timer for step {index} in minutes",
+      "stepTimerHint": "You can set an individual time for each step.",
       "pointsToggle": "Reward points",
       "nameRequired": "Name is required.",
       "stepsRequired": "At least one step with a name is required."
@@ -777,14 +784,19 @@
       "paused": "Paused",
       "timeUp": "Time's up!",
       "fullCompletion": "full completion",
+      "for": "for",
+      "assignedTo": "For {name}",
       "pause": "Pause",
       "resume": "Resume"
     },
     "complete": {
       "ariaLabel": "Ritual completed",
-      "title": "Ritual completed!",
+      "title": "Well done!",
+      "titleOther": "{name} did it!",
       "description": "\"{name}\" has been completed successfully.",
+      "descriptionOther": "{name} completed \"{ritual}\" successfully.",
       "pointsEarned": "Points earned",
+      "pointsFor": "Points for {name}",
       "timeRemaining": "Time remaining: {time}",
       "great": "Awesome!",
       "restart": "Start again"

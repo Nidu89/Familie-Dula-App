@@ -13,10 +13,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, ListChecks, X } from "lucide-react"
+import { Plus, ListChecks, X, Star } from "lucide-react"
 import { useRituals } from "@/hooks/use-rituals"
 import { useActiveRitual } from "@/hooks/use-active-ritual"
-import { awardRitualCompletionAction } from "@/lib/actions/rituals"
 import { RitualsList } from "./rituals-list"
 import { ActiveRitualView } from "./active-ritual-view"
 import dynamic from "next/dynamic"
@@ -30,10 +29,16 @@ const RitualCompleteDialog = dynamic(() =>
 import type { Ritual } from "@/lib/actions/rituals"
 import type { RitualStep } from "@/lib/validations/rituals"
 
+interface FamilyChild {
+  id: string
+  displayName: string
+}
+
 interface RitualsPageClientProps {
   isAdult: boolean
   userId: string
   familyId: string
+  familyChildren?: FamilyChild[]
 }
 
 // --- Overlay state machine via reducer (no effects / no refs during render) ---
@@ -41,7 +46,6 @@ interface RitualsPageClientProps {
 type OverlayState = {
   showComplete: boolean
   showTimerAlarm: boolean
-  pointsAwarded: boolean
   /** The ritual status value we last processed. Used to detect transitions. */
   lastRitualStatus: string
   /** The timer status value we last processed. */
@@ -54,7 +58,6 @@ type OverlayAction =
   | { type: "RITUAL_COMPLETED" }
   | { type: "DISMISS_TIMER_ALARM" }
   | { type: "DISMISS_COMPLETE" }
-  | { type: "POINTS_AWARDED" }
   | { type: "SYNC"; ritualStatus: string; timerStatus: string }
 
 function overlayReducer(state: OverlayState, action: OverlayAction): OverlayState {
@@ -64,7 +67,6 @@ function overlayReducer(state: OverlayState, action: OverlayAction): OverlayStat
         ...state,
         showComplete: false,
         showTimerAlarm: false,
-        pointsAwarded: false,
         lastRitualStatus: "running",
         lastTimerStatus: "idle",
       }
@@ -76,8 +78,6 @@ function overlayReducer(state: OverlayState, action: OverlayAction): OverlayStat
       return { ...state, showTimerAlarm: false }
     case "DISMISS_COMPLETE":
       return { ...state, showComplete: false }
-    case "POINTS_AWARDED":
-      return { ...state, pointsAwarded: true }
     case "SYNC":
       return { ...state, lastRitualStatus: action.ritualStatus, lastTimerStatus: action.timerStatus }
     default:
@@ -85,7 +85,7 @@ function overlayReducer(state: OverlayState, action: OverlayAction): OverlayStat
   }
 }
 
-export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClientProps) {
+export function RitualsPageClient({ isAdult, userId, familyId, familyChildren = [] }: RitualsPageClientProps) {
   const t = useTranslations("rituals")
   const tc = useTranslations("common")
   const {
@@ -104,10 +104,12 @@ export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClie
   const [deletingRitual, setDeletingRitual] = useState<Ritual | null>(null)
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
 
+  // Child selection state for starting rituals with reward points
+  const [pendingStartRitual, setPendingStartRitual] = useState<Ritual | null>(null)
+
   const [overlay, dispatchOverlay] = useReducer(overlayReducer, {
     showComplete: false,
     showTimerAlarm: false,
-    pointsAwarded: false,
     lastRitualStatus: "idle",
     lastTimerStatus: "idle",
   })
@@ -131,7 +133,7 @@ export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClie
       return
     }
 
-    // Detect: timer just expired
+    // Detect: timer just expired (global or per-step)
     if (
       currentTimerStatus === "finished" &&
       overlay.lastTimerStatus !== "finished" &&
@@ -153,30 +155,12 @@ export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClie
     }
 
     // Detect: ritual just completed
+    // Points are now awarded server-side in updateRitualSessionAction — no client-side award needed
     if (
       currentRitualStatus === "completed" &&
       overlay.lastRitualStatus !== "completed"
     ) {
       dispatchOverlay({ type: "RITUAL_COMPLETED" })
-
-      // Award points (server call — valid in effect)
-      const ritual = activeRitual.state.ritual
-      if (
-        ritual?.rewardPoints &&
-        ritual.rewardPoints > 0 &&
-        !overlay.pointsAwarded
-      ) {
-        void (async () => {
-          const result = await awardRitualCompletionAction(
-            userId,
-            ritual.rewardPoints!,
-            ritual.name
-          )
-          if (!("error" in result)) {
-            dispatchOverlay({ type: "POINTS_AWARDED" })
-          }
-        })()
-      }
       return
     }
 
@@ -195,10 +179,31 @@ export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClie
 
   const handleStartRitual = useCallback(
     (ritual: Ritual) => {
+      // If ritual has reward points, show child selection dialog
+      if (ritual.rewardPoints && ritual.rewardPoints > 0 && familyChildren.length > 0) {
+        setPendingStartRitual(ritual)
+        return
+      }
+      // No points or no children → start directly
       activeRitual.startRitual(ritual)
     },
-    [activeRitual]
+    [activeRitual, familyChildren.length]
   )
+
+  const handleChildSelected = useCallback(
+    (childId: string, childName: string) => {
+      if (!pendingStartRitual) return
+      activeRitual.startRitual(pendingStartRitual, childId, childName)
+      setPendingStartRitual(null)
+    },
+    [activeRitual, pendingStartRitual]
+  )
+
+  const handleStartWithoutChild = useCallback(() => {
+    if (!pendingStartRitual) return
+    activeRitual.startRitual(pendingStartRitual)
+    setPendingStartRitual(null)
+  }, [activeRitual, pendingStartRitual])
 
   const handleEditRitual = useCallback((ritual: Ritual) => {
     setEditingRitual(ritual)
@@ -353,6 +358,56 @@ export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClie
         onSubmit={handleFormSubmit}
       />
 
+      {/* Child selection dialog for rituals with reward points */}
+      <AlertDialog
+        open={!!pendingStartRitual}
+        onOpenChange={(open) => {
+          if (!open) setPendingStartRitual(null)
+        }}
+      >
+        <AlertDialogContent className="rounded-[2rem]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display">
+              {t("childSelect.title")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("childSelect.description", {
+                ritual: pendingStartRitual?.name ?? "",
+                points: pendingStartRitual?.rewardPoints ?? 0,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 py-2">
+            {familyChildren.map((child) => (
+              <button
+                key={child.id}
+                type="button"
+                onClick={() => handleChildSelected(child.id, child.displayName)}
+                className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-primary/10"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20">
+                  <Star className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="font-medium text-foreground">{child.displayName}</span>
+              </button>
+            ))}
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">
+              {tc("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleStartWithoutChild}
+              className="rounded-full bg-transparent text-foreground hover:bg-muted"
+            >
+              {t("childSelect.withoutPoints")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Delete confirmation */}
       <AlertDialog
         open={!!deletingRitual}
@@ -446,6 +501,8 @@ export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClie
         <RitualCompleteDialog
           ritualName={activeRitual.state.ritual.name}
           rewardPoints={activeRitual.state.ritual.rewardPoints}
+          assignedToName={activeRitual.state.assignedToName}
+          isAssignedUser={activeRitual.state.assignedTo === userId}
           timeRemaining={
             activeRitual.timer.state.status !== "idle" &&
             activeRitual.timer.state.status !== "finished"

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, ArrowUp, ArrowDown, Trash2, Loader2 } from "lucide-react"
+import { Plus, ArrowUp, ArrowDown, Trash2, Loader2, Timer } from "lucide-react"
 import type { Ritual } from "@/lib/actions/rituals"
 import type { RitualStep } from "@/lib/validations/rituals"
 
@@ -71,6 +71,13 @@ export function RitualFormDialog({
 
 // --- Inner form component: fully controlled by initial props, no effects ---
 
+interface StepFormData {
+  id: string
+  title: string
+  order: number
+  durationMinutes: number | ""
+}
+
 interface RitualFormInnerProps {
   ritual?: Ritual | null
   onSubmit: (data: {
@@ -90,11 +97,18 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
 
   const [name, setName] = useState(ritual?.name ?? "")
   const [description, setDescription] = useState(ritual?.description ?? "")
-  const [steps, setSteps] = useState<RitualStep[]>(() => {
+  const [steps, setSteps] = useState<StepFormData[]>(() => {
     if (ritual && ritual.steps.length > 0) {
-      return [...ritual.steps].sort((a, b) => a.order - b.order)
+      return [...ritual.steps]
+        .sort((a, b) => a.order - b.order)
+        .map((s) => ({
+          id: s.id,
+          title: s.title,
+          order: s.order,
+          durationMinutes: s.durationSeconds ? Math.round(s.durationSeconds / 60) : "",
+        }))
     }
-    return [{ id: generateStepId(), title: "", order: 0 }]
+    return [{ id: generateStepId(), title: "", order: 0, durationMinutes: "" }]
   })
   const [hasTimer, setHasTimer] = useState(
     ritual?.timerDurationMinutes != null && ritual.timerDurationMinutes > 0
@@ -115,7 +129,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
     if (steps.length >= 20) return
     setSteps((prev) => [
       ...prev,
-      { id: generateStepId(), title: "", order: prev.length },
+      { id: generateStepId(), title: "", order: prev.length, durationMinutes: "" },
     ])
   }, [steps.length])
 
@@ -133,6 +147,18 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
   const updateStepTitle = useCallback((index: number, title: string) => {
     setSteps((prev) =>
       prev.map((s, i) => (i === index ? { ...s, title } : s))
+    )
+  }, [])
+
+  const updateStepDuration = useCallback((index: number, value: string) => {
+    setSteps((prev) =>
+      prev.map((s, i) => {
+        if (i !== index) return s
+        if (value === "") return { ...s, durationMinutes: "" }
+        const v = parseInt(value, 10)
+        if (!isNaN(v) && v >= 0 && v <= 120) return { ...s, durationMinutes: v }
+        return s
+      })
     )
   }, [])
 
@@ -163,10 +189,15 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
       return
     }
 
-    const normalizedSteps = validSteps.map((s, i) => ({
-      ...s,
+    const normalizedSteps: RitualStep[] = validSteps.map((s, i) => ({
+      id: s.id,
       title: s.title.trim(),
       order: i,
+      // Only include per-step duration when global timer is OFF
+      durationSeconds:
+        !hasTimer && s.durationMinutes !== "" && s.durationMinutes > 0
+          ? s.durationMinutes * 60
+          : null,
     }))
 
     setSubmitting(true)
@@ -229,51 +260,74 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
         </Label>
         <div className="space-y-2">
           {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
-                {index + 1}
+            <div key={step.id} className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                  {index + 1}
+                </div>
+                <Input
+                  value={step.title}
+                  onChange={(e) => updateStepTitle(index, e.target.value)}
+                  placeholder={t("stepPlaceholder", { index: index + 1 })}
+                  maxLength={100}
+                  className="flex-1 rounded-xl"
+                  aria-label={t("stepAria", { index: index + 1 })}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => moveStep(index, "up")}
+                  disabled={index === 0}
+                  className="h-8 w-8 shrink-0 rounded-full"
+                  aria-label={t("moveUp")}
+                >
+                  <ArrowUp className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => moveStep(index, "down")}
+                  disabled={index === steps.length - 1}
+                  className="h-8 w-8 shrink-0 rounded-full"
+                  aria-label={t("moveDown")}
+                >
+                  <ArrowDown className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeStep(index)}
+                  disabled={steps.length <= 1}
+                  className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
+                  aria-label={t("removeStep", { index: index + 1 })}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
-              <Input
-                value={step.title}
-                onChange={(e) => updateStepTitle(index, e.target.value)}
-                placeholder={t("stepPlaceholder", { index: index + 1 })}
-                maxLength={100}
-                className="flex-1 rounded-xl"
-                aria-label={t("stepAria", { index: index + 1 })}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => moveStep(index, "up")}
-                disabled={index === 0}
-                className="h-8 w-8 shrink-0 rounded-full"
-                aria-label={t("moveUp")}
-              >
-                <ArrowUp className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => moveStep(index, "down")}
-                disabled={index === steps.length - 1}
-                className="h-8 w-8 shrink-0 rounded-full"
-                aria-label={t("moveDown")}
-              >
-                <ArrowDown className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeStep(index)}
-                disabled={steps.length <= 1}
-                className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
-                aria-label={t("removeStep", { index: index + 1 })}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+
+              {/* Per-step timer input (only when global timer is OFF) */}
+              {!hasTimer && (
+                <div className="ml-9 flex items-center gap-2">
+                  <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    type="number"
+                    min={0}
+                    max={120}
+                    value={step.durationMinutes}
+                    onChange={(e) => updateStepDuration(index, e.target.value)}
+                    onBlur={() => {
+                      if (step.durationMinutes === "") return // keep empty = no timer
+                    }}
+                    placeholder={t("stepTimerPlaceholder")}
+                    className="h-7 w-20 rounded-lg text-center text-xs"
+                    aria-label={t("stepTimerAria", { index: index + 1 })}
+                  />
+                  <span className="text-xs text-muted-foreground">{tc("minutes")}</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -328,6 +382,11 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
             />
             <span className="text-sm text-muted-foreground">{tc("minutes")}</span>
           </div>
+        )}
+        {!hasTimer && (
+          <p className="text-xs text-muted-foreground">
+            {t("stepTimerHint")}
+          </p>
         )}
       </div>
 
