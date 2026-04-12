@@ -19,7 +19,6 @@ export function TimerAlarmDialog() {
   useEffect(() => {
     if (!isFinished) return
 
-    setMuted(false)
     playAlarm().then((ok) => setAudioBlocked(!ok))
 
     return () => {
