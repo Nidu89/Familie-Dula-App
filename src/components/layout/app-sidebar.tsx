@@ -30,12 +30,12 @@ const NAV_LINKS = [
   { href: "/dashboard", labelKey: "dashboard" as const, icon: LayoutDashboard },
   { href: "/calendar", labelKey: "calendar" as const, icon: Calendar },
   { href: "/tasks", labelKey: "tasks" as const, icon: CheckSquare },
-  { href: "/rewards", labelKey: "rewards" as const, icon: Trophy },
-  { href: "/timer", labelKey: "timer" as const, icon: Timer },
   { href: "/rituals", labelKey: "rituals" as const, icon: ListChecks },
+  { href: "/timer", labelKey: "timer" as const, icon: Timer },
+  { href: "/rewards", labelKey: "rewards" as const, icon: Trophy },
   { href: "/shopping", labelKey: "shopping" as const, icon: ShoppingCart },
-  { href: "/chat", labelKey: "chat" as const, icon: MessageSquare },
   { href: "/recipes", labelKey: "recipes" as const, icon: UtensilsCrossed },
+  { href: "/chat", labelKey: "chat" as const, icon: MessageSquare },
   { href: "/family/settings", labelKey: "family" as const, icon: Users },
 ]
 
