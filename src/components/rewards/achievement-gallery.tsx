@@ -49,7 +49,7 @@ export function AchievementGallery({ achievements }: AchievementGalleryProps) {
         </span>
       </div>
 
-      <div className="overflow-x-auto pb-2 hide-scrollbar">
+      <div className="overflow-x-auto overflow-y-hidden pb-2 hide-scrollbar max-w-full">
         <div className="flex gap-6 px-1 py-2">
           {sorted.map((achievement) => (
             <AchievementBadge key={achievement.id} achievement={achievement} />

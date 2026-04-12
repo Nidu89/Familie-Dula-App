@@ -140,7 +140,7 @@ export default function ForgotPasswordPage() {
               />
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-4">
+            <CardFooter className="flex flex-col gap-2 md:gap-4">
               <Button
                 type="submit"
                 className="w-full text-base font-semibold"

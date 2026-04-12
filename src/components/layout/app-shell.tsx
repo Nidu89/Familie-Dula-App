@@ -50,7 +50,7 @@ export function AppShell({ session, children }: AppShellProps) {
               />
             </>
           )}
-          <div className={session.familyName ? "md:ml-72 pt-20 pb-24 md:pb-8" : ""}>
+          <div className={session.familyName ? "md:ml-72 pt-20 pb-24 md:pb-8 overflow-x-hidden" : ""}>
             {children}
           </div>
           {session.familyName && (

@@ -38,8 +38,8 @@ export function ShoppingListCard({
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/10">
             <ShoppingCart className="h-5 w-5 text-secondary" />
           </div>
-          <div>
-            <h3 className="font-display font-bold text-lg text-foreground leading-tight">
+          <div className="min-w-0">
+            <h3 className="font-display font-bold text-lg text-foreground leading-tight truncate">
               {list.name}
             </h3>
             {list.createdByName && (

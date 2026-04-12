@@ -132,7 +132,7 @@ function OnboardingContent() {
       >
         <div className="flex w-full flex-col gap-4 md:flex-row">
           <Card
-            className="flex-1 cursor-pointer shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"
+            className="flex-1 cursor-pointer shadow-lg transition-all md:hover:scale-[1.02] hover:shadow-xl"
             onClick={() => setStep("create")}
             role="button"
             tabIndex={0}
@@ -158,7 +158,7 @@ function OnboardingContent() {
           </Card>
 
           <Card
-            className="flex-1 cursor-pointer shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"
+            className="flex-1 cursor-pointer shadow-lg transition-all md:hover:scale-[1.02] hover:shadow-xl"
             onClick={() => setStep("join")}
             role="button"
             tabIndex={0}

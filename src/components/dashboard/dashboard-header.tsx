@@ -30,7 +30,7 @@ export function DashboardHeader({
         <span className="font-display text-xs font-bold uppercase tracking-widest text-primary-foreground">
           {t(greetingKey)} &middot; {t("familyPrefix", { familyName })}
         </span>
-        <h1 className="mt-2 font-display text-4xl font-black text-foreground md:text-5xl">
+        <h1 className="mt-2 font-display text-2xl font-black text-foreground sm:text-4xl md:text-5xl">
           {t("hello", { displayName })}
         </h1>
       </div>

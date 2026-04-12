@@ -55,7 +55,7 @@ export function TasksHeader({
 
       <div className="flex flex-wrap gap-2">
         <Select value={selectedMember} onValueChange={onMemberChange}>
-          <SelectTrigger className="w-[180px]" aria-label={t("header.filterByPerson")}>
+          <SelectTrigger className="w-full sm:w-[180px]" aria-label={t("header.filterByPerson")}>
             <SelectValue placeholder={t("header.allPersons")} />
           </SelectTrigger>
           <SelectContent>
@@ -70,7 +70,7 @@ export function TasksHeader({
         </Select>
 
         <Select value={selectedStatus} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[160px]" aria-label={t("header.filterByStatus")}>
+          <SelectTrigger className="w-full sm:w-[160px]" aria-label={t("header.filterByStatus")}>
             <SelectValue placeholder={t("header.allStatuses")} />
           </SelectTrigger>
           <SelectContent>
@@ -83,7 +83,7 @@ export function TasksHeader({
 
         <Select value={selectedDueGroup} onValueChange={onDueGroupChange}>
           <SelectTrigger
-            className="w-[180px]"
+            className="w-full sm:w-[180px]"
             aria-label={t("header.filterByDue")}
           >
             <SelectValue placeholder={t("header.allDueDates")} />

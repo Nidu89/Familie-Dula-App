@@ -107,7 +107,7 @@ export function WeatherWidget() {
         <>
           <div className="mt-3 flex items-center justify-between">
             <div>
-              <p className="font-display text-5xl font-extrabold">
+              <p className="font-display text-3xl sm:text-5xl font-extrabold">
                 {weather.temperature}°
               </p>
               <p className="mt-1 font-display text-lg font-bold">

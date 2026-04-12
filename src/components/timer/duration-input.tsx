@@ -40,7 +40,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
   return (
     <div className="flex flex-col items-center gap-8">
       {/* Custom duration picker */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="flex flex-col items-center">
           <label
             htmlFor="timer-minutes"
@@ -70,7 +70,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
                   setError(null)
                 }
               }}
-              className="w-16 rounded-2xl bg-card text-center font-display text-3xl font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary py-3"
+              className="w-14 sm:w-16 rounded-2xl bg-card text-center font-display text-2xl sm:text-3xl font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary py-3"
               aria-label={t("minutesLabel")}
             />
             <button
@@ -128,7 +128,7 @@ export function DurationInput({ onStart }: DurationInputProps) {
                   setError(null)
                 }
               }}
-              className="w-16 rounded-2xl bg-card text-center font-display text-3xl font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary py-3"
+              className="w-14 sm:w-16 rounded-2xl bg-card text-center font-display text-2xl sm:text-3xl font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary py-3"
               aria-label={t("secondsLabel")}
             />
             <button

@@ -200,7 +200,7 @@ export function TasksList({
 
   if (isLoading && adjustedTasks.length === 0) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
         {[1, 2, 3].map((i) => (
           <div key={i} className="lg:col-span-4 space-y-6">
             <Skeleton className="h-8 w-40 rounded-full" />
@@ -230,7 +230,7 @@ export function TasksList({
       )}
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
         {/* ─── Haushalt Column ─────────────────────────── */}
         <section className="lg:col-span-4 flex flex-col gap-6">
           <div className="flex items-center justify-between px-2">
@@ -395,7 +395,7 @@ export function TasksList({
 
       {/* ─── Bottom Progress Bar ─────────────────────── */}
       {totalTasks > 0 && (
-        <div className="mt-8 mb-28 md:mb-8">
+        <div className="mt-8 mb-16 md:mb-8">
             <div className="bg-card p-5 md:p-6 rounded-lg flex flex-col md:flex-row items-center gap-4 md:gap-6">
               {/* icon + text */}
               <div className="flex items-center gap-4 shrink-0">

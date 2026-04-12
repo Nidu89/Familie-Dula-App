@@ -189,7 +189,7 @@ export default function RegisterPage() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          className="absolute right-2 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                           onClick={() => setShowPassword(!showPassword)}
                           aria-label={
                             showPassword
@@ -230,7 +230,7 @@ export default function RegisterPage() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          className="absolute right-2 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
@@ -255,7 +255,7 @@ export default function RegisterPage() {
               />
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-4">
+            <CardFooter className="flex flex-col gap-2 md:gap-4">
               <Button
                 type="submit"
                 className="w-full text-base font-semibold"

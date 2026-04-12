@@ -71,7 +71,7 @@ export function MessageBubble({
               <img
                 src={message.imageUrl!}
                 alt={t("chatImage")}
-                className="max-w-[300px] max-h-[300px] object-cover rounded-2xl"
+                className="max-w-full sm:max-w-[300px] max-h-[300px] object-cover rounded-2xl"
                 loading="lazy"
               />
             </button>

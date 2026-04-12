@@ -126,7 +126,7 @@ export function TemplatesList() {
           </p>
         </div>
       ) : (
-        <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+        <div className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2 hide-scrollbar max-w-full">
           {templates.map((template) => (
             <div
               key={template.id}

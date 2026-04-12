@@ -427,13 +427,13 @@ export function RecipeFormDialog({
       <div className="space-y-3">
         <Label>{t("recipeIngredients")}</Label>
         {ingredients.map((ing, index) => (
-          <div key={index} className="flex gap-2 items-start">
+          <div key={index} className="flex flex-wrap sm:flex-nowrap gap-2 items-start">
             <Input
               value={ing.name}
               onChange={(e) => updateIngredient(index, "name", e.target.value)}
               placeholder={t("ingredientNamePlaceholder")}
               maxLength={200}
-              className="rounded-lg flex-1"
+              className="rounded-lg flex-1 min-w-0"
             />
             <Input
               value={ing.quantity}
@@ -442,14 +442,14 @@ export function RecipeFormDialog({
               }
               placeholder={t("ingredientQuantityPlaceholder")}
               maxLength={50}
-              className="rounded-lg w-20"
+              className="rounded-lg w-16 sm:w-20"
             />
             <Input
               value={ing.unit}
               onChange={(e) => updateIngredient(index, "unit", e.target.value)}
               placeholder={t("ingredientUnitPlaceholder")}
               maxLength={50}
-              className="rounded-lg w-20"
+              className="rounded-lg w-16 sm:w-20"
             />
             {ingredients.length > 1 && (
               <button

@@ -163,7 +163,7 @@ export function NotificationBell({ userId, initialUnreadCount }: NotificationBel
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-80 sm:w-96 p-0 rounded-2xl overflow-hidden"
+        className="w-[calc(100vw-2rem)] sm:w-96 p-0 rounded-2xl overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant/15">

@@ -83,9 +83,9 @@ export function CalendarHeader({
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* View tabs (pill style) */}
-          <div className="hidden items-center gap-1 rounded-full bg-muted p-1 sm:flex">
+          <div className="hidden items-center gap-1 rounded-full bg-muted p-1 lg:flex">
             {VIEW_TABS.map((tab) => (
               <button
                 key={tab.value}
@@ -135,8 +135,8 @@ export function CalendarHeader({
         </div>
       </div>
 
-      {/* Mobile view selector */}
-      <div className="flex items-center gap-1 rounded-full bg-muted p-1 sm:hidden">
+      {/* Mobile/Tablet view selector */}
+      <div className="flex items-center gap-1 rounded-full bg-muted p-1 lg:hidden">
         {VIEW_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -164,7 +164,7 @@ export function CalendarHeader({
         >
           <Select value={selectedMember} onValueChange={onMemberChange}>
             <SelectTrigger
-              className="w-[180px] rounded-full"
+              className="w-full sm:w-[180px] rounded-full"
               aria-label={t("filterByPerson")}
             >
               <SelectValue placeholder={t("allPersons")} />
@@ -181,7 +181,7 @@ export function CalendarHeader({
 
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
             <SelectTrigger
-              className="w-[180px] rounded-full"
+              className="w-full sm:w-[180px] rounded-full"
               aria-label={t("filterByCategory")}
             >
               <SelectValue placeholder={t("allCategories")} />

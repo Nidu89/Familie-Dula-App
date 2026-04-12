@@ -6,7 +6,7 @@ export function FamilySettingsHero() {
   const t = useTranslations("family")
 
   return (
-    <section className="mb-16 relative">
+    <section className="mb-16 relative overflow-hidden">
       <div
         className="absolute -top-12 -right-8 w-48 h-48 bg-primary/20 -z-10"
         style={{

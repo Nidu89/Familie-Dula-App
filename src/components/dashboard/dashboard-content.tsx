@@ -41,9 +41,9 @@ export function DashboardContent({
       </header>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
         {/* Left column -- 8 cols */}
-        <div className="md:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-6">
           <CalendarWidget />
 
           {isChild && (
@@ -73,7 +73,7 @@ export function DashboardContent({
         </div>
 
         {/* Right column -- 4 cols */}
-        <div className="md:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-6">
           <TimerWidget
             familyId={family.id}
             isAdult={isAdmin || role === "adult"}
