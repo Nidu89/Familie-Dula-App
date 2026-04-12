@@ -320,3 +320,146 @@ export async function awardRitualCompletionAction(
   const result = data as { new_balance: number }
   return { newBalance: result.new_balance }
 }
+
+// ============================================================
+// Active Ritual Session Actions — persist running ritual state
+// so all family members (including children) can see it.
+// ============================================================
+
+export type ActiveRitualSession = {
+  id: string
+  familyId: string
+  ritualId: string
+  startedBy: string
+  startedAt: string
+  completedStepIds: string[]
+  status: "running" | "paused" | "completed"
+}
+
+export async function getActiveRitualSessionAction(): Promise<
+  { session: ActiveRitualSession | null } | { error: string }
+> {
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("active_ritual_sessions")
+    .select("*")
+    .eq("family_id", profile.family_id)
+    .maybeSingle()
+
+  if (error) {
+    return { error: "Aktive Ritual-Session konnte nicht geladen werden." }
+  }
+
+  if (!data) return { session: null }
+
+  return {
+    session: {
+      id: data.id,
+      familyId: data.family_id,
+      ritualId: data.ritual_id,
+      startedBy: data.started_by,
+      startedAt: data.started_at,
+      completedStepIds: data.completed_step_ids || [],
+      status: data.status as ActiveRitualSession["status"],
+    },
+  }
+}
+
+export async function startRitualSessionAction(
+  ritualId: string
+): Promise<{ session: ActiveRitualSession } | { error: string }> {
+  const { error: authError, profile } = await verifyAdultOrAdmin()
+  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+
+  const supabase = await createClient()
+
+  // Delete any existing session first (upsert pattern)
+  await supabase
+    .from("active_ritual_sessions")
+    .delete()
+    .eq("family_id", profile.family_id)
+
+  const { data, error } = await supabase
+    .from("active_ritual_sessions")
+    .insert({
+      family_id: profile.family_id,
+      ritual_id: ritualId,
+      started_by: profile.id,
+      completed_step_ids: [],
+      status: "running",
+    })
+    .select("*")
+    .single()
+
+  if (error || !data) {
+    return { error: "Ritual-Session konnte nicht gestartet werden." }
+  }
+
+  return {
+    session: {
+      id: data.id,
+      familyId: data.family_id,
+      ritualId: data.ritual_id,
+      startedBy: data.started_by,
+      startedAt: data.started_at,
+      completedStepIds: data.completed_step_ids || [],
+      status: data.status as ActiveRitualSession["status"],
+    },
+  }
+}
+
+export async function updateRitualSessionAction(data: {
+  completedStepIds?: string[]
+  status?: "running" | "paused" | "completed"
+}): Promise<{ success: true } | { error: string }> {
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  const updatePayload: Record<string, unknown> = {}
+  if (data.completedStepIds !== undefined) {
+    updatePayload.completed_step_ids = data.completedStepIds
+  }
+  if (data.status !== undefined) {
+    updatePayload.status = data.status
+  }
+
+  const { error } = await supabase
+    .from("active_ritual_sessions")
+    .update(updatePayload)
+    .eq("family_id", profile.family_id)
+
+  if (error) {
+    return { error: "Session konnte nicht aktualisiert werden." }
+  }
+
+  return { success: true }
+}
+
+export async function endRitualSessionAction(): Promise<
+  { success: true } | { error: string }
+> {
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from("active_ritual_sessions")
+    .delete()
+    .eq("family_id", profile.family_id)
+
+  if (error) {
+    return { error: "Session konnte nicht beendet werden." }
+  }
+
+  return { success: true }
+}

@@ -71,6 +71,7 @@ export type Task = {
   dueDate: string | null
   status: "open" | "in_progress" | "done"
   priority: "low" | "medium" | "high"
+  category: "household" | "school" | "shopping" | "leisure" | "health" | "other" | null
   points: number | null
   pointsAwarded: boolean
   recurrenceRule: string | null
@@ -117,6 +118,7 @@ export async function getTasksAction(
       due_date,
       status,
       priority,
+      category,
       points,
       points_awarded,
       recurrence_rule,
@@ -183,6 +185,7 @@ export async function getTasksAction(
     dueDate: t.due_date,
     status: t.status as "open" | "in_progress" | "done",
     priority: t.priority as "low" | "medium" | "high",
+    category: (t.category as Task["category"]) || null,
     points: t.points,
     pointsAwarded: t.points_awarded,
     recurrenceRule: t.recurrence_rule,
@@ -220,6 +223,7 @@ export async function createTaskAction(data: {
   dueDate?: string
   status?: string
   priority?: string
+  category?: string
   assignedTo?: string
   points?: number | null
   recurrenceRule?: string
@@ -247,6 +251,7 @@ export async function createTaskAction(data: {
       due_date: parsed.data.dueDate || null,
       status: parsed.data.status,
       priority: parsed.data.priority,
+      category: parsed.data.category || null,
       points: parsed.data.points ?? null,
       recurrence_rule: parsed.data.recurrenceRule || null,
     })
@@ -290,6 +295,7 @@ export async function updateTaskAction(
     dueDate?: string
     status?: string
     priority?: string
+    category?: string
     assignedTo?: string
     points?: number | null
     recurrenceRule?: string
@@ -326,6 +332,7 @@ export async function updateTaskAction(
     due_date: parsed.data.dueDate || null,
     status: parsed.data.status,
     priority: parsed.data.priority,
+    category: parsed.data.category || null,
     assigned_to: parsed.data.assignedTo || null,
     points: parsed.data.points ?? null,
     recurrence_rule: parsed.data.recurrenceRule || null,

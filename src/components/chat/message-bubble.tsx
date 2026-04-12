@@ -39,9 +39,10 @@ export function MessageBubble({
   const [editContent, setEditContent] = useState(message.content)
   const [isSavingEdit, setIsSavingEdit] = useState(false)
 
-  const time = new Date(message.createdAt).toLocaleTimeString(undefined, {
+  const time = new Date(message.createdAt).toLocaleTimeString("de-DE", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   })
 
   const hasImage = !!message.imageUrl

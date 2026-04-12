@@ -33,6 +33,7 @@ import type { RitualStep } from "@/lib/validations/rituals"
 interface RitualsPageClientProps {
   isAdult: boolean
   userId: string
+  familyId: string
 }
 
 // --- Overlay state machine via reducer (no effects / no refs during render) ---
@@ -84,7 +85,7 @@ function overlayReducer(state: OverlayState, action: OverlayAction): OverlayStat
   }
 }
 
-export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
+export function RitualsPageClient({ isAdult, userId, familyId }: RitualsPageClientProps) {
   const t = useTranslations("rituals")
   const tc = useTranslations("common")
   const {
@@ -96,7 +97,7 @@ export function RitualsPageClient({ isAdult, userId }: RitualsPageClientProps) {
     deleteRitual,
   } = useRituals()
 
-  const activeRitual = useActiveRitual()
+  const activeRitual = useActiveRitual({ familyId, rituals })
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingRitual, setEditingRitual] = useState<Ritual | null>(null)

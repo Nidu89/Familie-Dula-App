@@ -6,6 +6,9 @@ export type TaskStatus = z.infer<typeof taskStatusEnum>
 export const taskPriorityEnum = z.enum(["low", "medium", "high"])
 export type TaskPriority = z.infer<typeof taskPriorityEnum>
 
+export const taskCategoryEnum = z.enum(["household", "school", "shopping", "leisure", "health", "other"])
+export type TaskCategory = z.infer<typeof taskCategoryEnum>
+
 export const seriesModeEnum = z.enum(["single", "following", "all"])
 export type SeriesMode = z.infer<typeof seriesModeEnum>
 
@@ -33,6 +36,7 @@ export const createTaskSchema = z.object({
   dueDate: z.string().optional().or(z.literal("")),
   status: taskStatusEnum.default("open"),
   priority: taskPriorityEnum.default("medium"),
+  category: taskCategoryEnum.optional().or(z.literal("")),
   assignedTo: z.string().uuid("Ungueltige Mitglieds-ID").optional().or(z.literal("")),
   points: z
     .number()

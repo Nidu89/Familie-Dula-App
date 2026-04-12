@@ -11,7 +11,7 @@ export default async function RitualsPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <RitualsPageClient isAdult={isAdult} userId={session.userId} />
+      <RitualsPageClient isAdult={isAdult} userId={session.userId} familyId={session.familyId} />
     </main>
   )
 }

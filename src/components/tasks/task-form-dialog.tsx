@@ -56,12 +56,23 @@ interface FamilyMember {
   displayName: string
 }
 
+const CATEGORY_VALUES = [
+  { value: "none", key: "categoryNone" },
+  { value: "household", key: "categoryHousehold" },
+  { value: "school", key: "categorySchool" },
+  { value: "shopping", key: "categoryShopping" },
+  { value: "leisure", key: "categoryLeisure" },
+  { value: "health", key: "categoryHealth" },
+  { value: "other", key: "categoryOther" },
+] as const
+
 const taskFormSchema = z.object({
   title: z.string().min(1, "Titel ist erforderlich").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
   dueDate: z.string().optional().or(z.literal("")),
   status: z.enum(["open", "in_progress", "done"]),
   priority: z.enum(["low", "medium", "high"]),
+  category: z.string().optional().or(z.literal("")),
   assignedTo: z.string().optional().or(z.literal("")),
   points: z.number().int().min(0).max(10000).optional().nullable(),
   recurrenceRule: z.string().optional().or(z.literal("")),
@@ -107,6 +118,7 @@ export function TaskFormDialog({
       dueDate: "",
       status: "open",
       priority: "medium",
+      category: "none",
       assignedTo: "",
       points: null,
       recurrenceRule: "none",
@@ -128,6 +140,7 @@ export function TaskFormDialog({
         dueDate: task.dueDate || "",
         status: task.status,
         priority: task.priority,
+        category: task.category || "none",
         assignedTo: task.assignedTo || "",
         points: task.points,
         recurrenceRule: task.recurrenceRule || "none",
@@ -143,6 +156,7 @@ export function TaskFormDialog({
         dueDate: "",
         status: "open",
         priority: "medium",
+        category: "none",
         assignedTo: "",
         points: null,
         recurrenceRule: "none",
@@ -161,6 +175,7 @@ export function TaskFormDialog({
         dueDate: values.dueDate || undefined,
         status: values.status,
         priority: values.priority,
+        category: values.category && values.category !== "none" ? values.category : undefined,
         assignedTo: values.assignedTo || undefined,
         points: values.points ?? undefined,
         recurrenceRule:
@@ -331,6 +346,34 @@ export function TaskFormDialog({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.category")}</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("form.categoryNone")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {CATEGORY_VALUES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {t(`form.${c.key}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-2 gap-3">
               <FormField
