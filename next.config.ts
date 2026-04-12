@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   experimental: {
+    serverActions: {
+      bodySizeLimit: "11mb",
+    },
     optimizePackageImports: ["lucide-react", "date-fns"],
   },
   async headers() {

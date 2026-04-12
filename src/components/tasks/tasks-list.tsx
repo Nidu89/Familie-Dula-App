@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
-import { Home, User, Star, ListChecks, Plus, Trophy, CheckCircle2, CircleDashed, Pin } from "lucide-react"
+import { Users, User, Star, ListChecks, Plus, Trophy, CheckCircle2, CircleDashed, Pin } from "lucide-react"
 import { RRule } from "rrule"
 import { useTranslations } from "next-intl"
 
@@ -235,7 +235,7 @@ export function TasksList({
         <section className="lg:col-span-4 flex flex-col gap-6">
           <div className="flex items-center justify-between px-2">
             <h3 className="font-display font-bold text-xl flex items-center gap-2">
-              <Home className="h-5 w-5 text-primary-foreground" />
+              <Users className="h-5 w-5 text-primary-foreground" />
               {t("list.household")}
             </h3>
             {activeHaushalt.length > 0 && (

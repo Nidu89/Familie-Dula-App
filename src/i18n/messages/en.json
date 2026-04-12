@@ -404,9 +404,9 @@
     },
 
     "list": {
-      "household": "Household",
+      "household": "Family Tasks",
       "active": "Active",
-      "noHouseholdTasks": "No household tasks",
+      "noHouseholdTasks": "No family tasks",
       "ownTodos": "My To-dos",
       "noOwnTasks": "No personal tasks",
       "weeklyChallenge": "Weekly Challenge",

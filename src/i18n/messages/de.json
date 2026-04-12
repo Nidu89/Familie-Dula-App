@@ -394,9 +394,9 @@
       "thisWeek": "Diese Woche"
     },
     "list": {
-      "household": "Haushalt",
+      "household": "Familien-Aufgaben",
       "active": "Aktiv",
-      "noHouseholdTasks": "Keine Haushalts-Aufgaben",
+      "noHouseholdTasks": "Keine Familien-Aufgaben",
       "ownTodos": "Eigene To-dos",
       "noOwnTasks": "Keine eigenen Aufgaben",
       "weeklyChallenge": "Wochen-Challenge",

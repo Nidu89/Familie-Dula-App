@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, CheckCheck, Timer, BadgeCheck, MoreVertical, Pin, PinOff, Pencil } from "lucide-react"
+import { Check, CheckCheck, Timer, BadgeCheck, MoreVertical, Pin, PinOff, Pencil, Tag } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 import {
@@ -296,6 +296,16 @@ export function TaskCard({
           )}
         </div>
       </div>
+
+      {/* category badge */}
+      {task.category && (
+        <div className="flex items-center gap-1.5 mb-2">
+          <Tag className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {t(`form.category${task.category.charAt(0).toUpperCase()}${task.category.slice(1)}`)}
+          </span>
+        </div>
+      )}
 
       {/* title */}
       <h4 className="font-display font-bold text-lg mb-2">{task.title}</h4>

@@ -22,7 +22,6 @@ const localizer = dateFnsLocalizer({
   locales,
 })
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface BigCalendarWrapperProps {
   events: any[]
   view: View
@@ -37,7 +36,6 @@ interface BigCalendarWrapperProps {
   messages: any
   style?: React.CSSProperties
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function BigCalendarWrapper({
   events,

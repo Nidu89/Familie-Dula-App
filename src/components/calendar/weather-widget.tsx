@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import {
   Sun,
   Cloud,
@@ -179,6 +179,22 @@ async function fetchFullWeather(lat: number, lon: number): Promise<Omit<WeatherS
   }
 }
 
+// ── Static sub-component (declared outside render) ──────────
+
+function WeatherIcon({ code, className, strokeWidth }: { code: number; className?: string; strokeWidth?: number }) {
+  const props = { className, strokeWidth }
+  if (code === 0) return <Sun {...props} />
+  if (code <= 3) return <Cloud {...props} />
+  if (code <= 48) return <CloudFog {...props} />
+  if (code <= 55) return <CloudDrizzle {...props} />
+  if (code <= 67) return <CloudRain {...props} />
+  if (code <= 77) return <CloudSnow {...props} />
+  if (code <= 82) return <CloudRain {...props} />
+  if (code <= 86) return <CloudSnow {...props} />
+  if (code <= 99) return <CloudLightning {...props} />
+  return <Cloud {...props} />
+}
+
 // ── Component ────────────────────────────────────────────────
 
 export function WeatherWidget() {
@@ -187,46 +203,41 @@ export function WeatherWidget() {
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(false)
 
-  const loadWeather = useCallback(async (lat: number, lon: number, locationName: string | null) => {
-    const data = await fetchFullWeather(lat, lon)
-    if (data) {
-      setWeather({ ...data, locationName })
-    }
-    setLoading(false)
-  }, [])
-
   useEffect(() => {
     // 1. Check localStorage cache
     const cached = getCachedLocation()
 
-    if (cached) {
-      // Use cached location — no browser prompt
-      loadWeather(cached.lat, cached.lon, cached.name)
-    } else {
-      // Load fallback immediately
-      loadWeather(FALLBACK_LAT, FALLBACK_LON, null)
-    }
+    // Load initial weather (setState happens in .then callback, not synchronously in effect)
+    const lat = cached?.lat ?? FALLBACK_LAT
+    const lon = cached?.lon ?? FALLBACK_LON
+    const name = cached?.name ?? null
+
+    fetchFullWeather(lat, lon).then((data) => {
+      if (data) setWeather({ ...data, locationName: name })
+      setLoading(false)
+    })
 
     // 2. Try geolocation (only if no cache — avoids repeated prompts)
     if (!cached && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords
-          const name = await reverseGeocode(latitude, longitude)
-          saveCachedLocation(latitude, longitude, name)
-          loadWeather(latitude, longitude, name)
+          const geoName = await reverseGeocode(latitude, longitude)
+          saveCachedLocation(latitude, longitude, geoName)
+          const data = await fetchFullWeather(latitude, longitude)
+          if (data) setWeather({ ...data, locationName: geoName })
         },
         () => {
           // Denied or error — cache fallback so we don't ask again
-          reverseGeocode(FALLBACK_LAT, FALLBACK_LON).then((name) => {
-            saveCachedLocation(FALLBACK_LAT, FALLBACK_LON, name)
-            setWeather((prev) => prev ? { ...prev, locationName: name } : prev)
+          reverseGeocode(FALLBACK_LAT, FALLBACK_LON).then((fallbackName) => {
+            saveCachedLocation(FALLBACK_LAT, FALLBACK_LON, fallbackName)
+            setWeather((prev) => prev ? { ...prev, locationName: fallbackName } : prev)
           })
         },
         { timeout: 5000 }
       )
     }
-  }, [loadWeather])
+  }, [])
 
   if (loading || !weather) {
     return (
@@ -244,7 +255,6 @@ export function WeatherWidget() {
   }
 
   const { current, hourly, daily } = weather
-  const CurrentIcon = getWeatherIcon(current.weatherCode)
   const todayForecast = daily[0]
 
   function formatHour(timeStr: string) {
@@ -294,7 +304,7 @@ export function WeatherWidget() {
               </p>
             )}
           </div>
-          <CurrentIcon className="h-14 w-14 text-white/80" strokeWidth={1.5} />
+          <WeatherIcon code={current.weatherCode} className="h-14 w-14 text-white/80" strokeWidth={1.5} />
         </div>
 
         <p className="mt-3 text-sm text-white/70">
@@ -321,16 +331,13 @@ export function WeatherWidget() {
               {t("hourlyTitle")}
             </p>
             <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar">
-              {hourly.slice(0, 12).map((h) => {
-                const HourIcon = getWeatherIcon(h.weatherCode)
-                return (
+              {hourly.slice(0, 12).map((h) => (
                   <div key={h.time} className="flex shrink-0 flex-col items-center gap-1.5">
                     <p className="text-[10px] text-white/50">{formatHour(h.time)}</p>
-                    <HourIcon className="h-4 w-4 text-white/70" strokeWidth={1.5} />
+                    <WeatherIcon code={h.weatherCode} className="h-4 w-4 text-white/70" strokeWidth={1.5} />
                     <p className="text-xs font-bold">{h.temperature}°</p>
                   </div>
-                )
-              })}
+              ))}
             </div>
           </div>
 
@@ -340,14 +347,12 @@ export function WeatherWidget() {
               {t("weekTitle")}
             </p>
             <div className="space-y-2">
-              {daily.map((d) => {
-                const DayIcon = getWeatherIcon(d.weatherCode)
-                return (
+              {daily.map((d) => (
                   <div key={d.date} className="flex items-center gap-3">
                     <p className="w-10 text-xs font-medium text-white/70 shrink-0">
                       {formatDay(d.date)}
                     </p>
-                    <DayIcon className="h-4 w-4 text-white/60 shrink-0" strokeWidth={1.5} />
+                    <WeatherIcon code={d.weatherCode} className="h-4 w-4 text-white/60 shrink-0" strokeWidth={1.5} />
                     {d.precipProbability > 0 && (
                       <span className="flex items-center gap-0.5 text-[10px] text-blue-300 shrink-0 w-10">
                         <Droplets className="h-3 w-3" />
@@ -369,8 +374,7 @@ export function WeatherWidget() {
                       <span className="text-xs font-bold">{d.maxTemp}°</span>
                     </div>
                   </div>
-                )
-              })}
+              ))}
             </div>
           </div>
         </div>

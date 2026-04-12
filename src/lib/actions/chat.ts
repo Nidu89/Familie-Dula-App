@@ -802,6 +802,7 @@ export async function uploadChatImageAction(
     })
 
   if (uploadError) {
+    console.error("Chat image upload failed:", uploadError.message)
     return { error: "Bild konnte nicht hochgeladen werden." }
   }
 
