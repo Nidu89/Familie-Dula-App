@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useTranslations } from "next-intl"
-import { Users, Loader2 } from "lucide-react"
+import { Users, Loader2, MessageCircle } from "lucide-react"
 
 import { MessageBubble } from "@/components/chat/message-bubble"
 import { MessageInput } from "@/components/chat/message-input"
@@ -29,6 +29,7 @@ interface ChatThreadProps {
   currentUserRole: string
   onChannelRead: (channelId: string) => void
   onNewMessage: (channelId: string, preview: string, senderName: string) => void
+  onOpenMobileSidebar?: () => void
 }
 
 export function ChatThread({
@@ -38,6 +39,7 @@ export function ChatThread({
   currentUserRole,
   onChannelRead,
   onNewMessage,
+  onOpenMobileSidebar,
 }: ChatThreadProps) {
   const t = useTranslations("chat")
   const tc = useTranslations("common")
@@ -361,7 +363,18 @@ export function ChatThread({
   return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* Thread header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-outline-variant/15 shrink-0">
+      <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-outline-variant/15 shrink-0">
+        {/* Mobile sidebar toggle */}
+        {onOpenMobileSidebar && (
+          <button
+            type="button"
+            onClick={onOpenMobileSidebar}
+            className="md:hidden flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
+            aria-label="Chats"
+          >
+            <MessageCircle className="h-5 w-5 text-muted-foreground" />
+          </button>
+        )}
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 shrink-0">
           {channel.type === "family" ? (
             <Users className="h-5 w-5 text-secondary" />

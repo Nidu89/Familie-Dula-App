@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { EmojiPicker } from "@/components/ui/emoji-picker"
 import { useToast } from "@/hooks/use-toast"
 import {
   createRewardAction,
@@ -124,7 +125,7 @@ export function RewardFormDialog({
         }
         toast({
           title: t("created"),
-          description: `"${values.title}" ist jetzt im Shop verfuegbar.`,
+          description: `"${values.title}" ist jetzt im Shop verfügbar.`,
         })
       }
 
@@ -164,12 +165,18 @@ export function RewardFormDialog({
                 <FormItem>
                   <FormLabel>{t("emojiLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={t("emojiPlaceholder")}
-                      maxLength={4}
-                      className="text-center text-2xl"
-                      {...field}
-                    />
+                    <div className="flex items-center gap-3">
+                      <EmojiPicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                      <Input
+                        placeholder={t("emojiPlaceholder")}
+                        maxLength={4}
+                        className="text-center text-2xl flex-1"
+                        {...field}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

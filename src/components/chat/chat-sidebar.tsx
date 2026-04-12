@@ -32,6 +32,8 @@ interface ChatSidebarProps {
   onSelectChannel: (channelId: string) => void
   onChannelCreated: (channel: ChatChannel) => void
   onChannelDeleted: (channelId: string) => void
+  mobileOpen: boolean
+  onMobileOpenChange: (open: boolean) => void
 }
 
 export function ChatSidebar({
@@ -43,13 +45,14 @@ export function ChatSidebar({
   onSelectChannel,
   onChannelCreated,
   onChannelDeleted,
+  mobileOpen,
+  onMobileOpenChange,
 }: ChatSidebarProps) {
   const t = useTranslations("chat")
   const tc = useTranslations("common")
   const { toast } = useToast()
   const [dmSheetOpen, setDmSheetOpen] = useState(false)
   const [creatingDm, setCreatingDm] = useState<string | null>(null)
-  const [mobileOpen, setMobileOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<ChatChannel | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -90,7 +93,7 @@ export function ChatSidebar({
       }
       onChannelCreated(newChannel)
       setDmSheetOpen(false)
-      setMobileOpen(false)
+      onMobileOpenChange(false)
     } catch {
       toast({ title: tc("error"), description: tc("unexpectedError"), variant: "destructive" })
     } finally {
@@ -119,7 +122,7 @@ export function ChatSidebar({
 
   function handleSelect(channelId: string) {
     onSelectChannel(channelId)
-    setMobileOpen(false)
+    onMobileOpenChange(false)
   }
 
   const channelList = (
@@ -326,18 +329,10 @@ export function ChatSidebar({
         {channelList}
       </div>
 
-      {/* Mobile: toggle button (shown when thread is active) */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-24 left-4 z-30 p-2.5 rounded-full bg-card shadow-md"
-        aria-label={t("directMessages")}
-      >
-        <MessageCircle className="h-5 w-5 text-foreground" />
-      </button>
+      {/* Mobile: toggle button — rendered inline by ChatThread header */}
 
       {/* Mobile sidebar sheet */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+      <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
         <SheetContent side="left" className="w-80 p-0">
           <SheetHeader className="px-6 pt-6 pb-2">
             <SheetTitle className="font-display text-xl font-bold text-secondary">

@@ -24,7 +24,7 @@ export function AssistantButton() {
       <button
         type="button"
         onClick={handleOpen}
-        className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 md:bottom-8 md:right-8 md:h-16 md:w-16"
+        className="fixed bottom-[6.5rem] right-4 z-[60] flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 md:bottom-8 md:right-8 md:h-16 md:w-16"
         aria-label={t("floatingButtonLabel")}
       >
         <Bot className="h-6 w-6 md:h-7 md:w-7" />

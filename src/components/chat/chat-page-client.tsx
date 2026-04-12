@@ -28,6 +28,7 @@ export function ChatPageClient({
   const [activeChannelId, setActiveChannelId] = useState<string | null>(
     initialChannels.find((c) => c.type === "family")?.id || initialChannels[0]?.id || null
   )
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   const activeChannel = channels.find((c) => c.id === activeChannelId) || null
 
@@ -106,6 +107,8 @@ export function ChatPageClient({
           onSelectChannel={setActiveChannelId}
           onChannelCreated={handleChannelCreated}
           onChannelDeleted={handleChannelDeleted}
+          mobileOpen={mobileSidebarOpen}
+          onMobileOpenChange={setMobileSidebarOpen}
         />
 
         {/* Thread or empty state */}
@@ -118,6 +121,7 @@ export function ChatPageClient({
             currentUserRole={currentUserRole}
             onChannelRead={handleChannelRead}
             onNewMessage={handleNewMessage}
+            onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">

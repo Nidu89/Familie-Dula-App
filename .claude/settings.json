@@ -23,7 +23,16 @@
       "Bash(npx playwright:*)",
       "mcp__supabase__get_project_url",
       "Bash(python3 -m json.tool)",
-      "Read(//Users/niklasdula/Desktop/**)"
+      "Read(//Users/niklasdula/Desktop/**)",
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(grep -B 5 -A 30 \"CREATE TABLE.*profiles\" \"/Users/niklasdula/Desktop/Nidus Claude Projects/Familie-Dula-App/supabase/migrations\"/*.sql)",
+      "Bash(npx tsc:*)",
+      "Bash(done)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''exports'''',{}\\), indent=2\\)\\)\")",
+      "Bash(find '/Users/niklasdula/Desktop/Nidus Claude Projects/Familie-Dula-App' -maxdepth 1 -type f -name .* -o -name *.json -o -name *.js -o -name *.ts)",
+      "Bash(grep -E \"\\\\.\\(env|json|js|ts\\)$|^\\\\.\")",
+      "Bash(find '/Users/niklasdula/Desktop/Nidus Claude Projects/Familie-Dula-App' -maxdepth 1 -name .env* -o -name *.local)",
+      "Bash(grep -E \"\\\\.ts$\")"
     ]
   }
 }

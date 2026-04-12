@@ -56,21 +56,7 @@ export function DashboardContent({
             <RewardsWidget isAdmin={isAdmin} currentUserId={user.id} />
           </div>
 
-          {/* Family Highlight placeholder */}
-          <section className="relative h-72 rounded-[2rem] overflow-hidden bg-muted flex items-end">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-            <div className="relative p-8">
-              <span className="mb-3 inline-block rounded-full bg-[#ffd5c2] px-4 py-1 text-[10px] font-black uppercase tracking-widest text-foreground">
-                {t("weeklyHighlight")}
-              </span>
-              <h3 className="font-display text-2xl font-bold text-white">
-                {t("familyMoments")}
-              </h3>
-              <p className="mt-1 text-sm text-white/70">
-                {t("familyMomentsDescription")}
-              </p>
-            </div>
-          </section>
+{/* Familienmomente — planned feature, placeholder removed */}
         </div>
 
         {/* Right column -- 4 cols */}

@@ -62,29 +62,90 @@ export function ActiveRitualView({
         )}
       </div>
 
-      {/* Timer display (if applicable) */}
-      {hasTimer && (
-        <div className="flex flex-col items-center gap-2 rounded-[2rem] bg-card p-6">
-          <p
-            className={`font-display text-4xl font-bold tabular-nums tracking-tight ${
-              isTimerExpired
-                ? "text-destructive animate-pulse"
-                : "text-foreground"
-            }`}
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {isTimerExpired
-              ? "00:00"
-              : formatTime(timer.state.remainingSeconds)}
-          </p>
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            {timerStatus === "running" && t("running")}
-            {timerStatus === "paused" && t("paused")}
-            {isTimerExpired && t("timeUp")}
-          </p>
-        </div>
-      )}
+      {/* Timer display with circular progress (if applicable) */}
+      {hasTimer && (() => {
+        const { totalSeconds, remainingSeconds } = timer.state
+        const timerProgress =
+          timerStatus === "idle" || totalSeconds === 0
+            ? 0
+            : 1 - remainingSeconds / totalSeconds
+        const size = 200
+        const strokeWidth = 10
+        const radius = (size - strokeWidth) / 2
+        const circumference = 2 * Math.PI * radius
+        const dashOffset = circumference * (1 - timerProgress)
+
+        return (
+          <div className="flex flex-col items-center gap-2 rounded-[2rem] bg-card p-6">
+            <div className="relative" style={{ width: size, height: size }}>
+              <svg
+                width={size}
+                height={size}
+                viewBox={`0 0 ${size} ${size}`}
+                className="rotate-[-90deg]"
+                aria-hidden="true"
+              >
+                <circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  fill="none"
+                  stroke="hsl(var(--muted))"
+                  strokeWidth={strokeWidth}
+                />
+                <circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  fill="none"
+                  stroke={
+                    isTimerExpired
+                      ? "hsl(var(--destructive))"
+                      : "url(#ritualTimerGradient)"
+                  }
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={dashOffset}
+                  className="transition-[stroke-dashoffset] duration-300 ease-linear"
+                />
+                <defs>
+                  <linearGradient
+                    id="ritualTimerGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#6c5a00" />
+                    <stop offset="100%" stopColor="#ffd709" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <p
+                  className={`font-display text-3xl font-bold tabular-nums tracking-tight ${
+                    isTimerExpired
+                      ? "text-destructive animate-pulse"
+                      : "text-foreground"
+                  }`}
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {isTimerExpired
+                    ? "00:00"
+                    : formatTime(remainingSeconds)}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              {timerStatus === "running" && t("running")}
+              {timerStatus === "paused" && t("paused")}
+              {isTimerExpired && t("timeUp")}
+            </p>
+          </div>
+        )
+      })()}
 
       {/* Progress bar */}
       <div className="space-y-2">
