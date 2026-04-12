@@ -104,12 +104,18 @@ export function TimerProvider({ children, familyId, role }: TimerProviderProps) 
     timer.start(duration)
   }, [primeAlarm, timer])
 
+  // Wrap timer.reset to also stop the alarm sound
+  const resetWithAlarm = useCallback(() => {
+    stopAlarm()
+    timer.reset()
+  }, [stopAlarm, timer])
+
   const wrappedTimer: UseTimerReturn = {
     state: timer.state,
     start: startWithAlarm,
     pause: timer.pause,
     resume: timer.resume,
-    reset: timer.reset,
+    reset: resetWithAlarm,
   }
 
   return (

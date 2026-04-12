@@ -12,6 +12,7 @@ export function TimerAlarmDialog() {
   const isFinished = timer.state.status === "finished"
   const [audioBlocked, setAudioBlocked] = useState(false)
 
+  // Play alarm when timer finishes
   useEffect(() => {
     if (!isFinished) return
 
@@ -21,6 +22,20 @@ export function TimerAlarmDialog() {
       stopAlarm()
     }
   }, [isFinished, playAlarm, stopAlarm])
+
+  // Re-attempt alarm when tab becomes visible again (browser may have suspended audio)
+  useEffect(() => {
+    if (!isFinished) return
+
+    function handleVisibility() {
+      if (document.visibilityState === "visible") {
+        playAlarm().then((ok) => setAudioBlocked(!ok))
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibility)
+    return () => document.removeEventListener("visibilitychange", handleVisibility)
+  }, [isFinished, playAlarm])
 
   if (!isFinished) return null
 
