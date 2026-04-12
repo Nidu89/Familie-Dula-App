@@ -44,6 +44,7 @@ export function AppSidebar({ familyName }: AppSidebarProps) {
   const pathname = usePathname()
 
   async function handleLogout() {
+    if (!window.confirm(t("logoutConfirm"))) return
     await logoutAction()
   }
 

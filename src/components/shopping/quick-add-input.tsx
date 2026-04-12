@@ -62,6 +62,7 @@ export function QuickAddInput({ listId, onItemAdded, onAddReverted, onIdResolved
     onItemAdded(tempItem)
     setProductName("")
     setQuantity("")
+    setCategory("")
     inputRef.current?.focus()
 
     try {
@@ -113,7 +114,7 @@ export function QuickAddInput({ listId, onItemAdded, onAddReverted, onIdResolved
           <button
             type="button"
             onClick={() => setShowOptions(!showOptions)}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors ${
+            className={`absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full transition-colors ${
               showOptions ? "text-secondary" : "text-muted-foreground"
             }`}
             aria-label={t("moreOptions")}

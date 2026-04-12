@@ -102,7 +102,7 @@ export function ShoppingItemRow({
       <Checkbox
         checked={item.isDone}
         onCheckedChange={(checked) => handleToggle(checked === true)}
-        className="h-6 w-6 rounded-lg border-2 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+        className="h-6 w-6 rounded-lg border-2 border-outline-variant/15 data-[state=checked]:bg-chart-3 data-[state=checked]:border-chart-3"
         aria-label={t("toggleItem", { name: item.productName })}
       />
 
@@ -136,7 +136,7 @@ export function ShoppingItemRow({
         type="button"
         onClick={handleDelete}
         disabled={isDeleting}
-        className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
+        className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 shrink-0"
         aria-label={t("deleteItem")}
       >
         <Trash2 className="h-4 w-4" />

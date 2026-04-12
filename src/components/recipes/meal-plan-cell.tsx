@@ -82,7 +82,7 @@ export function MealPlanCell({
           <button
             type="button"
             onClick={handleRemove}
-            className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-surface-container-high text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-white transition-all shadow-sm z-10"
+            className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-surface-container-high text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-destructive hover:text-white transition-all shadow-sm z-10"
             aria-label={t("removeMealEntry")}
           >
             <X className="h-3 w-3" />

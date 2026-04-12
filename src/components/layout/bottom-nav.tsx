@@ -84,7 +84,7 @@ export function BottomNav() {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex flex-col items-center gap-1 text-[10px] transition-colors ${
+              className={`flex flex-col items-center gap-1 min-h-[3rem] justify-center text-xs transition-colors ${
                 active
                   ? "text-primary-foreground font-bold"
                   : "text-foreground opacity-60"
@@ -116,7 +116,7 @@ export function BottomNav() {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex flex-col items-center gap-1 text-[10px] transition-colors ${
+              className={`flex flex-col items-center gap-1 min-h-[3rem] justify-center text-xs transition-colors ${
                 active
                   ? "text-primary-foreground font-bold"
                   : "text-foreground opacity-60"
@@ -132,7 +132,7 @@ export function BottomNav() {
         <button
           type="button"
           onClick={() => setMoreOpen(true)}
-          className={`flex flex-col items-center gap-1 text-[10px] transition-colors ${
+          className={`flex flex-col items-center gap-1 min-h-[3rem] justify-center text-xs transition-colors ${
             isMoreActive
               ? "text-primary-foreground font-bold"
               : "text-foreground opacity-60"

@@ -540,14 +540,14 @@ export function EventFormDialog({
               name="reminderMinutes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Erinnerung</FormLabel>
+                  <FormLabel>{t("eventForm.reminderLabel")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Keine Erinnerung" />
+                        <SelectValue placeholder={t("eventForm.reminderNone")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

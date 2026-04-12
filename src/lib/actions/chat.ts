@@ -895,6 +895,19 @@ export async function getSignedImageUrlAction(data: {
   } = await supabase.auth.getUser()
   if (!user) return { error: "Nicht angemeldet." }
 
+  // Verify user belongs to a family and the path belongs to their family
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("family_id")
+    .eq("id", user.id)
+    .single()
+  if (!profile?.family_id) return { error: "Keine Familie zugeordnet." }
+
+  // Path must start with the user's family_id to prevent cross-family image access
+  if (!parsed.data.path.startsWith(`${profile.family_id}/`)) {
+    return { error: "Zugriff verweigert." }
+  }
+
   const { data: signedUrlData, error: signError } = await supabase.storage
     .from("chat-images")
     .createSignedUrl(parsed.data.path, 3600) // 1 hour

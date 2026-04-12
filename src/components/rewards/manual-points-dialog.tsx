@@ -92,7 +92,7 @@ export function ManualPointsDialog({
 
       toast({
         title: t("success"),
-        description: `${result.amountApplied > 0 ? "+" : ""}${result.amountApplied} Punkte. Neuer Stand: ${result.newBalance}`,
+        description: t("successDescription", { amount: `${result.amountApplied > 0 ? "+" : ""}${result.amountApplied}`, balance: result.newBalance }),
       })
 
       form.reset()

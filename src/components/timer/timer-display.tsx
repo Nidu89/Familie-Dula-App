@@ -102,7 +102,7 @@ export function TimerDisplay() {
               aria-atomic="true"
             >
               {status === "idle"
-                ? "--:--"
+                ? "00:00"
                 : formatTime(remainingSeconds)}
             </p>
           )}

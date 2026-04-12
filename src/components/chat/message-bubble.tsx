@@ -187,12 +187,12 @@ export function MessageBubble({
 
             {/* Context menu for own messages */}
             {canShowMenu && (
-              <div className={`absolute top-1 ${isOwn ? "-left-8" : "-right-8"} opacity-0 group-hover:opacity-100 transition-opacity`}>
+              <div className={`absolute top-1 ${isOwn ? "-left-8" : "-right-8"} opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity`}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-muted transition-colors"
+                      className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-muted transition-colors"
                     >
                       <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>

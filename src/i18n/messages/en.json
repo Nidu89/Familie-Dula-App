@@ -343,6 +343,7 @@
       "recurrenceWeekly": "Weekly",
       "recurrenceMonthly": "Monthly",
       "recurrenceYearly": "Yearly",
+      "reminderLabel": "Reminder",
       "reminderNone": "No reminder",
       "reminder15": "15 minutes before",
       "reminder30": "30 minutes before",
@@ -523,6 +524,7 @@
       "submitLoading": "Processing...",
       "submit": "Submit",
       "success": "Points updated",
+      "successDescription": "{amount} points. New balance: {balance}",
       "error": "Points could not be updated.",
       "integerError": "Amount must be a whole number",
       "zeroError": "Amount cannot be 0"
@@ -630,6 +632,7 @@
       "redeem": "Redeem",
       "pointsNeeded": "{points} more pts needed",
       "redeemed": "Reward redeemed!",
+      "redeemedDescription": "{title} for {spent} {ptsLabel}. New balance: {balance} {ptsLabel}.",
       "redeemError": "Reward could not be redeemed."
     },
     "rewardForm": {
@@ -675,7 +678,8 @@
       "description": "The timer has expired.",
       "audioBlocked": "Sound blocked — please allow autoplay in your browser.",
       "confirm": "OK, got it",
-      "childMessage": "A parent needs to confirm the timer."
+      "childMessage": "A parent needs to confirm the timer.",
+      "muteSound": "Mute"
     },
     "duration": {
       "minutesLabel": "Minutes",
@@ -697,7 +701,10 @@
       "deleteTitle": "Delete template?",
       "deleteDescription": "This template will be permanently deleted.",
       "replaceTitle": "Replace running timer?",
-      "replaceDescription": "The active timer will be cancelled and replaced with \"{name}\". Continue?"
+      "replaceDescription": "The active timer will be cancelled and replaced with \"{name}\". Continue?",
+      "startAria": "Start {name} ({duration})",
+      "editAria": "Edit {name}",
+      "deleteAria": "Delete {name}"
     },
     "templateForm": {
       "editTitle": "Edit Template",
@@ -1009,7 +1016,8 @@
       "navigation": "Page navigation",
       "tagline": "Digital Sandbox",
       "help": "Help",
-      "logout": "Sign out"
+      "logout": "Sign out",
+      "logoutConfirm": "Really sign out?"
     },
     "topBar": {
       "aria": "Top bar",

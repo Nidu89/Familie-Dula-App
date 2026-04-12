@@ -363,7 +363,7 @@ export function MealPlanTab({ recipes, shoppingLists: initialLists }: MealPlanTa
                 {mealLabels[mealType]}
               </h3>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-[120px_repeat(7,1fr)] gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-[120px_repeat(7,1fr)] gap-3">
                 {/* Desktop meal label */}
                 <div className="hidden lg:flex items-center">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">

@@ -42,7 +42,7 @@ export function DashboardContent({
       </header>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
         {/* Left column -- 8 cols */}
         <div className="lg:col-span-8 space-y-6">
           <CalendarWidget />

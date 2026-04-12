@@ -422,9 +422,8 @@ export async function upsertMealPlanEntryAction(data: {
     return { error: "Zu viele Anfragen. Bitte kurz warten." }
   }
 
-  const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  const { error: authError, profile } = await verifyAdultOrAdmin()
+  if (authError || !profile) return { error: authError || "Nicht angemeldet." }
 
   const supabase = await createClient()
 

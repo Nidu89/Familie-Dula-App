@@ -43,7 +43,7 @@ export function RewardCard({
       }
       toast({
         title: t("redeemed"),
-        description: `${result.rewardTitle} fuer ${result.pointsSpent} ${tc("points")}. Neuer Stand: ${result.newBalance} ${tc("pts")}.`,
+        description: t("redeemedDescription", { title: result.rewardTitle, spent: result.pointsSpent, balance: result.newBalance, ptsLabel: tc("pts") }),
       })
       onRedeem()
     } catch {
@@ -68,7 +68,7 @@ export function RewardCard({
   const isDeactivated = !reward.isActive
 
   return (
-    <div className={`group relative flex flex-col rounded-xl bg-card p-5 shadow-[0_0_3rem_rgba(42,47,50,0.06)] transition-transform hover:-translate-y-2 ${isDeactivated ? "opacity-50" : ""}`}>
+    <div className={`group relative flex flex-col rounded-[2rem] bg-card p-5 shadow-[0_0_3rem_rgba(42,47,50,0.06)] transition-transform hover:-translate-y-2 ${isDeactivated ? "opacity-50" : ""}`}>
       {/* Deactivated badge for parents */}
       {isDeactivated && isAdultOrAdmin && (
         <span className="absolute left-3 top-3 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
@@ -80,7 +80,7 @@ export function RewardCard({
         <button
           type="button"
           onClick={() => onEdit(reward)}
-          className="absolute right-3 top-3 rounded-full p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+          className="absolute right-3 top-3 rounded-full p-2.5 text-muted-foreground opacity-100 md:opacity-0 transition-opacity hover:bg-muted md:group-hover:opacity-100"
           aria-label={t("editAria", { title: reward.title })}
         >
           <Pencil className="h-3.5 w-3.5" />

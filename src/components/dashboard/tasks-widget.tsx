@@ -74,7 +74,7 @@ export function TasksWidget() {
               <div
                 key={task.id}
                 className={`flex items-center gap-4 rounded-xl p-4 ${
-                  overdue ? "border-l-4 border-destructive bg-muted" : "bg-muted"
+                  overdue ? "bg-destructive/10" : "bg-muted"
                 }`}
               >
                 {overdue ? (

@@ -58,7 +58,7 @@ export function ShoppingListCard({
               e.stopPropagation()
               onDelete(list.id)
             }}
-            className="relative z-20 p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
+            className="relative z-20 p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
             aria-label={t("deleteList")}
           >
             <Trash2 className="h-4 w-4" />

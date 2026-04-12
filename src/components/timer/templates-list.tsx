@@ -137,7 +137,7 @@ export function TemplatesList() {
                 onClick={() => handleTemplateClick(template)}
                 disabled={!isAdult}
                 className="w-full text-left"
-                aria-label={`${template.name} starten (${formatDuration(template.durationSeconds)})`}
+                aria-label={t("startAria", { name: template.name, duration: formatDuration(template.durationSeconds) })}
               >
                 <p className="font-display text-sm font-bold text-foreground truncate max-w-[7rem]">
                   {template.name}
@@ -153,16 +153,16 @@ export function TemplatesList() {
                   <button
                     type="button"
                     onClick={() => handleEdit(template)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label={`${template.name} bearbeiten`}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={t("editAria", { name: template.name })}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDeleteId(template.id)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-destructive transition-colors"
-                    aria-label={`${template.name} loeschen`}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-destructive transition-colors"
+                    aria-label={t("deleteAria", { name: template.name })}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

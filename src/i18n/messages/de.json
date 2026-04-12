@@ -337,6 +337,7 @@
       "recurrenceWeekly": "Wöchentlich",
       "recurrenceMonthly": "Monatlich",
       "recurrenceYearly": "Jährlich",
+      "reminderLabel": "Erinnerung",
       "reminderNone": "Keine Erinnerung",
       "reminder15": "15 Minuten vorher",
       "reminder30": "30 Minuten vorher",
@@ -509,6 +510,7 @@
       "submitLoading": "Buchen...",
       "submit": "Buchen",
       "success": "Punkte gebucht",
+      "successDescription": "{amount} Punkte. Neuer Stand: {balance}",
       "error": "Punkte konnten nicht gebucht werden.",
       "integerError": "Betrag muss eine ganze Zahl sein",
       "zeroError": "Betrag darf nicht 0 sein"
@@ -616,6 +618,7 @@
       "redeem": "Einlösen",
       "pointsNeeded": "Noch {points} Pkt.",
       "redeemed": "Belohnung eingelöst!",
+      "redeemedDescription": "{title} für {spent} {ptsLabel}. Neuer Stand: {balance} {ptsLabel}.",
       "redeemError": "Belohnung konnte nicht eingelöst werden."
     },
     "rewardForm": {
@@ -659,7 +662,8 @@
       "description": "Der Timer ist abgelaufen.",
       "audioBlocked": "Ton blockiert — bitte Autoplay im Browser erlauben.",
       "confirm": "OK, verstanden",
-      "childMessage": "Ein Elternteil muss den Timer bestätigen."
+      "childMessage": "Ein Elternteil muss den Timer bestätigen.",
+      "muteSound": "Ton aus"
     },
     "duration": {
       "minutesLabel": "Minuten",
@@ -681,7 +685,10 @@
       "deleteTitle": "Vorlage löschen?",
       "deleteDescription": "Diese Vorlage wird unwiderruflich gelöscht.",
       "replaceTitle": "Laufender Timer ersetzen?",
-      "replaceDescription": "Der aktive Timer wird abgebrochen und durch \"{name}\" ersetzt. Fortfahren?"
+      "replaceDescription": "Der aktive Timer wird abgebrochen und durch \"{name}\" ersetzt. Fortfahren?",
+      "startAria": "{name} starten ({duration})",
+      "editAria": "{name} bearbeiten",
+      "deleteAria": "{name} löschen"
     },
     "templateForm": {
       "editTitle": "Vorlage bearbeiten",
@@ -986,7 +993,8 @@
       "navigation": "Seitennavigation",
       "tagline": "Digital Sandbox",
       "help": "Hilfe",
-      "logout": "Abmelden"
+      "logout": "Abmelden",
+      "logoutConfirm": "Wirklich abmelden?"
     },
     "topBar": {
       "aria": "Kopfleiste",

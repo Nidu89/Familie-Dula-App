@@ -4,18 +4,22 @@ import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { useTimerContext } from "@/context/timer-context"
-import { Bell } from "lucide-react"
+import { Bell, VolumeX } from "lucide-react"
+
+const AUTO_STOP_MS = 60_000
 
 export function TimerAlarmDialog() {
   const t = useTranslations("timer.alarm")
   const { timer, isAdult, playAlarm, stopAlarm } = useTimerContext()
   const isFinished = timer.state.status === "finished"
   const [audioBlocked, setAudioBlocked] = useState(false)
+  const [muted, setMuted] = useState(false)
 
   // Play alarm when timer finishes
   useEffect(() => {
     if (!isFinished) return
 
+    setMuted(false)
     playAlarm().then((ok) => setAudioBlocked(!ok))
 
     return () => {
@@ -23,9 +27,21 @@ export function TimerAlarmDialog() {
     }
   }, [isFinished, playAlarm, stopAlarm])
 
+  // Auto-stop alarm after 60 seconds
+  useEffect(() => {
+    if (!isFinished || muted) return
+
+    const timeout = setTimeout(() => {
+      stopAlarm()
+      setMuted(true)
+    }, AUTO_STOP_MS)
+
+    return () => clearTimeout(timeout)
+  }, [isFinished, muted, stopAlarm])
+
   // Re-attempt alarm when tab becomes visible again (browser may have suspended audio)
   useEffect(() => {
-    if (!isFinished) return
+    if (!isFinished || muted) return
 
     function handleVisibility() {
       if (document.visibilityState === "visible") {
@@ -35,9 +51,14 @@ export function TimerAlarmDialog() {
 
     document.addEventListener("visibilitychange", handleVisibility)
     return () => document.removeEventListener("visibilitychange", handleVisibility)
-  }, [isFinished, playAlarm])
+  }, [isFinished, muted, playAlarm])
 
   if (!isFinished) return null
+
+  function handleMute() {
+    stopAlarm()
+    setMuted(true)
+  }
 
   return (
     <div
@@ -48,7 +69,7 @@ export function TimerAlarmDialog() {
     >
       <div className="mx-4 flex max-w-sm flex-col items-center gap-6 rounded-[3rem] bg-card p-10 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-300">
         {/* Pulsing bell icon */}
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-destructive/10 animate-pulse">
+        <div className={`flex h-24 w-24 items-center justify-center rounded-full bg-destructive/10 ${muted ? "" : "animate-pulse"}`}>
           <Bell className="h-12 w-12 text-destructive" />
         </div>
 
@@ -74,9 +95,21 @@ export function TimerAlarmDialog() {
             {t("confirm")}
           </Button>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            {t("childMessage")}
-          </p>
+          <div className="flex flex-col items-center gap-3 w-full">
+            <p className="text-xs text-muted-foreground">
+              {t("childMessage")}
+            </p>
+            {!muted && (
+              <Button
+                variant="outline"
+                onClick={handleMute}
+                className="h-14 w-full rounded-full text-base font-bold"
+              >
+                <VolumeX className="h-5 w-5 mr-2" />
+                {t("muteSound")}
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </div>

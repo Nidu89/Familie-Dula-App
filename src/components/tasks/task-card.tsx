@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, CheckCheck, Timer, BadgeCheck, MoreVertical, Pin, PinOff, Pencil, Tag } from "lucide-react"
+import { Check, CheckCheck, Timer, BadgeCheck, MoreVertical, Pin, PinOff, Pencil, Tag, Loader2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 import {
@@ -197,7 +197,7 @@ export function TaskCard({
   if (isDone) {
     return (
       <div
-        className={`bg-card p-6 rounded-lg shadow-sm opacity-60 ${canEdit ? "cursor-pointer" : ""}`}
+        className={`bg-card p-6 rounded-[2rem] shadow-sm opacity-60 ${canEdit ? "cursor-pointer" : ""}`}
         onClick={() => canEdit && onEdit(task)}
       >
         <div className="flex justify-between items-start mb-4">
@@ -224,8 +224,8 @@ export function TaskCard({
 
   return (
     <div
-      className={`bg-card p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden ${
-        isEigene ? "border-l-[6px] border-l-chart-3" : ""
+      className={`bg-card p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden ${
+        isEigene ? "bg-gradient-to-r from-chart-3/10 to-transparent" : ""
       } ${canEdit ? "cursor-pointer" : ""}`}
       onClick={() => canEdit && onEdit(task)}
     >
@@ -259,7 +259,7 @@ export function TaskCard({
               <DropdownMenuTrigger asChild>
                 <button
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                  className="p-2.5 rounded-full hover:bg-muted transition-colors"
                   aria-label={tc("actions")}
                 >
                   <MoreVertical className="h-4 w-4 text-muted-foreground" />
@@ -343,10 +343,12 @@ export function TaskCard({
           className={`w-full mt-6 font-bold py-3 px-6 rounded-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 active:scale-95 ${
             isEigene
               ? "bg-gradient-to-br from-[#6c5a00] to-[#ffd709] text-white shadow-md"
-              : "border-2 border-primary text-primary-foreground hover:bg-primary/10"
+              : "bg-primary/10 text-primary-foreground hover:bg-primary/15"
           }`}
         >
-          {isEigene ? (
+          {isCompleting ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : isEigene ? (
             <CheckCheck className="h-5 w-5" />
           ) : (
             <Check className="h-5 w-5" />

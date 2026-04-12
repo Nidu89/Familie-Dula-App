@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 
 import { getAppSession } from "@/lib/session"
 import {
@@ -14,6 +15,7 @@ import { AchievementGallery } from "@/components/rewards/achievement-gallery"
 import { CommunityGoal } from "@/components/rewards/community-goal"
 
 export default async function RewardsPage() {
+  const t = await getTranslations("rewards")
   const session = await getAppSession()
   if (!session) redirect("/login")
 
@@ -45,10 +47,10 @@ export default async function RewardsPage() {
     <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-8">
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-          Belohnungen & Erfolge
+          {t("pageTitle")}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Punkte sammeln, Belohnungen einloesen und gemeinsam Ziele erreichen.
+          {t("pageSubtitle")}
         </p>
       </div>
 

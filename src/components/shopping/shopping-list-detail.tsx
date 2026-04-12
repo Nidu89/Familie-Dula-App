@@ -67,7 +67,7 @@ export function ShoppingListDetail({
     try {
       const result = await getShoppingListDetailAction(listId)
       if ("error" in result) {
-        if (result.error === "Einkaufsliste nicht gefunden.") {
+        if (result.error.includes("nicht gefunden") || result.error.includes("not found")) {
           toast({ title: t("listDeletedToast") })
           router.push("/shopping")
           return
