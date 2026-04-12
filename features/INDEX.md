@@ -27,9 +27,7 @@
 | PROJ-13 | Familien-Timer | Deployed | [PROJ-13-familien-timer.md](PROJ-13-familien-timer.md) | 2026-03-30 |
 | PROJ-14 | Familien-Rituale | Deployed | [PROJ-14-familien-rituale.md](PROJ-14-familien-rituale.md) | 2026-04-05 |
 | PROJ-15 | Mehrsprachigkeit (i18n) | Deployed | [PROJ-15-mehrsprachigkeit-i18n.md](PROJ-15-mehrsprachigkeit-i18n.md) | 2026-04-05 |
-
 | PROJ-16 | Wochen-Challenge als pinnable Aufgabe | Deployed | [PROJ-16-wochen-challenge-aufgabe.md](PROJ-16-wochen-challenge-aufgabe.md) | 2026-04-06 |
-
 | PROJ-17 | KI-Assistent (Family AI Agent) | Deployed | [PROJ-17-ki-assistent.md](PROJ-17-ki-assistent.md) | 2026-04-07 |
 | PROJ-18 | Familienmomente | Planned | [PROJ-18-familienmomente.md](PROJ-18-familienmomente.md) | 2026-04-12 |
 

@@ -23,17 +23,17 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 | P0 (MVP) | PROJ-4: Familienkalender | Deployed |
 | P0 (MVP) | PROJ-5: Aufgaben & To-Dos | Deployed |
 | P0 (MVP) | PROJ-6: Belohnungssystem | Deployed |
-| P1 | PROJ-7: Einkaufslisten | Planned |
-| P1 | PROJ-8: Essens- & Rezeptplanung | Planned |
-| P1 | PROJ-9: Chat & Kommunikation | Planned |
-| P1 | PROJ-10: Benachrichtigungen | Planned |
-| P2 | PROJ-11: Bild-Upload im Chat | Planned |
-| P2 | PROJ-12: Kalender-Integrationen (iCloud, Google & mehr) | Planned |
+| P1 | PROJ-7: Einkaufslisten | Deployed |
+| P1 | PROJ-8: Essens- & Rezeptplanung | Deployed |
+| P1 | PROJ-9: Chat & Kommunikation | Deployed |
+| P1 | PROJ-10: Benachrichtigungen | Deployed |
+| P2 | PROJ-11: Bild-Upload im Chat | Deployed |
+| P2 | PROJ-12: Kalender-Integrationen (iCloud, Google & mehr) | Deployed |
 | P1 | PROJ-13: Familien-Timer | Deployed |
 | P1 | PROJ-14: Familien-Rituale | Deployed |
 | P1 | PROJ-15: Mehrsprachigkeit (i18n) | Deployed |
 | P1 | PROJ-16: Wochen-Challenge als pinnable Aufgabe | Deployed |
-| P1 | PROJ-17: KI-Assistent (Family AI Agent) | Planned |
+| P1 | PROJ-17: KI-Assistent (Family AI Agent) | Deployed |
 | P1 | PROJ-18: Familienmomente | Planned |
 
 ## Success Metrics
@@ -49,7 +49,6 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 
 ## Non-Goals
 - Keine offene öffentliche API für Drittanbieter (v1).
-- Kalender-Integrationen (iCloud, Google etc.) sind als P2 geplant, nicht Teil des MVP.
 - Kein Social Login (Google etc.) in v1.
 - Keine nativen Mobile Apps (iOS/Android) – nur responsive Web.
 - Keine finanziellen Features (Budget, Ausgaben) in v1.
