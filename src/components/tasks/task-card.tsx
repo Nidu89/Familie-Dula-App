@@ -89,6 +89,7 @@ interface TaskCardProps {
   currentUserId: string
   onEdit: (task: Task) => void
   onCompleted: () => void
+  onPointsEarned?: (points: number, taskId: string) => void
   weekChallengeTaskId?: string | null
   onChallengeChanged?: () => void
 }
@@ -100,6 +101,7 @@ export function TaskCard({
   currentUserId,
   onEdit,
   onCompleted,
+  onPointsEarned,
   weekChallengeTaskId,
   onChallengeChanged,
 }: TaskCardProps) {
@@ -136,6 +138,8 @@ export function TaskCard({
           title: t("card.completed"),
           description: t("card.pointsAwarded", { points: result.points, balance: result.newBalance ?? 0 }),
         })
+        // Trigger allocation dialog for earned points
+        onPointsEarned?.(result.points, task.id)
       } else {
         toast({
           title: t("card.completed"),

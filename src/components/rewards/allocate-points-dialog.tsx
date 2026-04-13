@@ -34,6 +34,8 @@ interface AllocatePointsDialogProps {
   pointsToAllocate: number
   jars: SavingsJar[]
   onSuccess: () => void
+  sourceType?: "task" | "manual"
+  sourceId?: string | null
 }
 
 const JAR_TYPE_ICONS = {
@@ -49,6 +51,8 @@ export function AllocatePointsDialog({
   pointsToAllocate,
   jars,
   onSuccess,
+  sourceType = "manual",
+  sourceId = null,
 }: AllocatePointsDialogProps) {
   const t = useTranslations("rewards.allocate")
   const tj = useTranslations("rewards.jars")
@@ -107,7 +111,7 @@ export function AllocatePointsDialog({
         .filter(([, amount]) => amount > 0)
         .map(([jarId, amount]) => ({ jarId, amount }))
 
-      const result = await allocatePointsToJarsAction(allocationList)
+      const result = await allocatePointsToJarsAction(allocationList, sourceType, sourceId)
       if ("error" in result) {
         toast({
           title: tc("error"),

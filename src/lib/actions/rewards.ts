@@ -1334,7 +1334,9 @@ export type AllocatePointsResult = {
 }
 
 export async function allocatePointsToJarsAction(
-  allocations: Array<{ jarId: string; amount: number }>
+  allocations: Array<{ jarId: string; amount: number }>,
+  sourceType: "task" | "manual" = "manual",
+  sourceId?: string | null
 ): Promise<AllocatePointsResult | { error: string }> {
   const parsed = allocatePointsSchema.safeParse({ allocations })
   if (!parsed.success) {
@@ -1358,91 +1360,22 @@ export async function allocatePointsToJarsAction(
     return { error: "Keine Punkte zum Verteilen." }
   }
 
-  // Fetch all referenced jars
-  const jarIds = nonZeroAllocations.map((a) => a.jarId)
-  const { data: jars, error: jarsError } = await supabase
-    .from("savings_jars")
-    .select("id, profile_id, family_id, current_amount")
-    .in("id", jarIds)
-    .eq("family_id", profile.family_id)
+  // Use atomic RPC (handles locking, validation, notifications)
+  const { data, error: rpcError } = await supabase.rpc("allocate_points_to_jars", {
+    p_allocations: nonZeroAllocations.map((a) => ({
+      jarId: a.jarId,
+      amount: a.amount,
+    })),
+    p_source_type: sourceType,
+    p_source_id: sourceId || null,
+  })
 
-  if (jarsError || !jars) {
-    return { error: "Toepfe konnten nicht geladen werden." }
+  if (rpcError) {
+    const msg = rpcError.message || "Punkte konnten nicht verteilt werden."
+    return { error: msg }
   }
 
-  // Verify all jars belong to the current user (children allocate to own jars)
-  // or the user is an adult/admin
-  const isAdultOrAdmin = ["adult", "admin"].includes(profile.role ?? "")
-  for (const jar of jars) {
-    if (!isAdultOrAdmin && jar.profile_id !== profile.id) {
-      return { error: "Du kannst nur in deine eigenen Toepfe einzahlen." }
-    }
-  }
-
-  // Verify total allocation doesn't exceed unallocated points
-  const jarOwner = jars[0].profile_id
-  const { data: ownerProfile } = await supabase
-    .from("profiles")
-    .select("points_balance")
-    .eq("id", jarOwner)
-    .single()
-
-  if (!ownerProfile) {
-    return { error: "Profil nicht gefunden." }
-  }
-
-  // Get total in all jars for this child
-  const { data: allJars } = await supabase
-    .from("savings_jars")
-    .select("current_amount")
-    .eq("profile_id", jarOwner)
-    .eq("family_id", profile.family_id)
-
-  const totalInJars = (allJars || []).reduce((sum, j) => sum + (j.current_amount ?? 0), 0)
-  const unallocated = Math.max(0, (ownerProfile.points_balance ?? 0) - totalInJars)
-  const totalAllocating = nonZeroAllocations.reduce((sum, a) => sum + a.amount, 0)
-
-  if (totalAllocating > unallocated) {
-    return { error: "Nicht genuegend unverteilte Punkte." }
-  }
-
-  // Perform allocations
-  const results: Array<{ jarId: string; amount: number; newAmount: number }> = []
-
-  for (const allocation of nonZeroAllocations) {
-    const jar = jars.find((j) => j.id === allocation.jarId)
-    if (!jar) continue
-
-    const newAmount = (jar.current_amount ?? 0) + allocation.amount
-
-    // Update jar current_amount
-    const { error: updateError } = await supabase
-      .from("savings_jars")
-      .update({
-        current_amount: newAmount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", allocation.jarId)
-
-    if (updateError) continue
-
-    // Create transaction log
-    await supabase
-      .from("jar_transactions")
-      .insert({
-        jar_id: allocation.jarId,
-        amount: allocation.amount,
-        source_type: "task",
-        source_id: null,
-      })
-
-    results.push({
-      jarId: allocation.jarId,
-      amount: allocation.amount,
-      newAmount,
-    })
-  }
-
+  const results = (data as Array<{ jarId: string; amount: number; newAmount: number }>) || []
   return { allocations: results }
 }
 

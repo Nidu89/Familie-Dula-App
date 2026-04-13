@@ -9,12 +9,14 @@ import { useTranslations } from "next-intl"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { TaskCard } from "@/components/tasks/task-card"
+import { AllocatePointsDialog } from "@/components/rewards/allocate-points-dialog"
 import dynamic from "next/dynamic"
 
 const TaskFormDialog = dynamic(() =>
   import("@/components/tasks/task-form-dialog").then((m) => m.TaskFormDialog)
 )
 import { getTasksAction, type Task } from "@/lib/actions/tasks"
+import { getJarsForChildAction, type SavingsJar } from "@/lib/actions/rewards"
 import { getFamilyDataAction } from "@/lib/actions/family"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -79,6 +81,24 @@ export function TasksList({
   const [weekChallengeTaskId, setWeekChallengeTaskId] = useState<string | null>(
     initialWeekChallengeTaskId ?? null
   )
+
+  // Jar allocation dialog state (B1 fix: auto-show after task completion)
+  const [allocateOpen, setAllocateOpen] = useState(false)
+  const [allocatePoints, setAllocatePoints] = useState(0)
+  const [allocateJars, setAllocateJars] = useState<SavingsJar[]>([])
+  const [allocateSourceId, setAllocateSourceId] = useState<string | null>(null)
+
+  const handlePointsEarned = useCallback(async (points: number, taskId: string) => {
+    // Fetch jars for current user
+    const result = await getJarsForChildAction(currentUserId)
+    if ("error" in result || result.jars.length === 0) return
+    // Only show if there are unallocated points
+    if (result.unallocatedPoints <= 0) return
+    setAllocatePoints(result.unallocatedPoints)
+    setAllocateJars(result.jars)
+    setAllocateSourceId(taskId)
+    setAllocateOpen(true)
+  }, [currentUserId])
 
   // Auto-open create dialog when ?new=1 is in the URL
   useEffect(() => {
@@ -261,6 +281,7 @@ export function TasksList({
                 currentUserId={currentUserId}
                 onEdit={handleEditTask}
                 onCompleted={fetchTasks}
+                onPointsEarned={handlePointsEarned}
                 weekChallengeTaskId={weekChallengeTaskId}
                 onChallengeChanged={refreshWeekChallenge}
               />
@@ -293,6 +314,7 @@ export function TasksList({
                 currentUserId={currentUserId}
                 onEdit={handleEditTask}
                 onCompleted={fetchTasks}
+                onPointsEarned={handlePointsEarned}
                 weekChallengeTaskId={weekChallengeTaskId}
                 onChallengeChanged={refreshWeekChallenge}
               />
@@ -438,6 +460,17 @@ export function TasksList({
         onOpenChange={setDialogOpen}
         task={selectedTask}
         members={members}
+        onSuccess={fetchTasks}
+      />
+
+      {/* Jar allocation dialog (auto-opens after task awards points) */}
+      <AllocatePointsDialog
+        open={allocateOpen}
+        onOpenChange={setAllocateOpen}
+        pointsToAllocate={allocatePoints}
+        jars={allocateJars}
+        sourceType="task"
+        sourceId={allocateSourceId}
         onSuccess={fetchTasks}
       />
     </>

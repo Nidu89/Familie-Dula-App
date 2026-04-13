@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { ArrowUpCircle, ArrowDownCircle, RotateCcw } from "lucide-react"
 
 import {
@@ -46,16 +46,6 @@ const SOURCE_TYPE_CONFIG = {
   },
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("de-DE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
-
 export function JarHistorySheet({
   open,
   onOpenChange,
@@ -65,6 +55,18 @@ export function JarHistorySheet({
   const { toast } = useToast()
   const t = useTranslations("rewards.jarHistory")
   const tc = useTranslations("common")
+  const locale = useLocale()
+
+  function formatDate(dateStr: string): string {
+    const localeMap: Record<string, string> = { de: "de-DE", en: "en-US", fr: "fr-FR" }
+    return new Date(dateStr).toLocaleDateString(localeMap[locale] || "de-DE", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
   const [transactions, setTransactions] = useState<JarTransaction[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
