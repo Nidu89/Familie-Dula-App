@@ -60,7 +60,7 @@ export function EmojiPicker({ value, onChange }: EmojiPickerProps) {
           {value || "😊"}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
+      <PopoverContent className="z-[80] w-80 p-0" align="start">
         {/* Category tabs */}
         <div className="flex gap-1 overflow-x-auto px-2 pt-2 pb-1 scrollbar-none">
           {EMOJI_CATEGORIES.map((cat, i) => (
