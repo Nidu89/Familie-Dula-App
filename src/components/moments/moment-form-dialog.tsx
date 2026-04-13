@@ -39,7 +39,7 @@ export function MomentFormDialog({
     if (!selected) return
 
     if (selected.size > 5 * 1024 * 1024) {
-      toast.error("Datei darf maximal 5 MB groß sein.")
+      toast.error(t("fileTooLarge"))
       return
     }
 

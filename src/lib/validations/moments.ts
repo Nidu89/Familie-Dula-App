@@ -9,7 +9,9 @@ export const createMomentSchema = z.object({
     .string()
     .max(500, "Beschreibung darf maximal 500 Zeichen lang sein.")
     .optional(),
-  momentDate: z.string().min(1, "Datum ist erforderlich."),
+  momentDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Ungültiges Datumsformat."),
 })
 
 export const deleteMomentSchema = z.object({

@@ -369,11 +369,12 @@ export async function deleteMomentAction(data: {
 
   const supabase = await createClient()
 
-  // Fetch moment to check ownership and get photo path
+  // Fetch moment — scoped to user's family for cross-family isolation
   const { data: moment, error: fetchError } = await supabase
     .from("family_moments")
     .select("id, created_by, photo_path, family_id")
     .eq("id", parsed.data.momentId)
+    .eq("family_id", profile.family_id)
     .single()
 
   if (fetchError || !moment) {
@@ -421,8 +422,21 @@ export async function toggleReactionAction(data: {
 
   const profile = await getCurrentProfile()
   if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehörst keiner Familie an." }
 
   const supabase = await createClient()
+
+  // Verify moment belongs to user's family
+  const { data: momentCheck } = await supabase
+    .from("family_moments")
+    .select("id")
+    .eq("id", parsed.data.momentId)
+    .eq("family_id", profile.family_id)
+    .maybeSingle()
+
+  if (!momentCheck) {
+    return { error: "Moment nicht gefunden." }
+  }
 
   // Check if already liked
   const { data: existing } = await supabase

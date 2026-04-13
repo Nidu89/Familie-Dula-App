@@ -53,6 +53,14 @@ describe("moments validation schemas", () => {
       expect(result.success).toBe(false)
     })
 
+    it("rejects invalid date format", () => {
+      const result = createMomentSchema.safeParse({
+        title: "Test",
+        momentDate: "not-a-date",
+      })
+      expect(result.success).toBe(false)
+    })
+
     it("rejects missing date", () => {
       const result = createMomentSchema.safeParse({
         title: "Test",

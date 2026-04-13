@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useLocale, useTranslations } from "next-intl"
 import { Camera, Plus } from "lucide-react"
 import { getLatestMomentAction } from "@/lib/actions/moments"
+import { hashCode } from "@/lib/utils"
 import type { Moment } from "@/lib/actions/moments"
 
 export function MomentsHero() {
@@ -112,13 +113,4 @@ export function MomentsHero() {
       </div>
     </Link>
   )
-}
-
-function hashCode(str: string): number {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash)
 }
