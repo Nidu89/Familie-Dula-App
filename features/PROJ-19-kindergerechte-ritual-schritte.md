@@ -1,6 +1,6 @@
 # PROJ-19: Kindergerechte Ritual-Schritte
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-12
 **Last Updated:** 2026-04-13
 
@@ -306,4 +306,8 @@ This is a browser-side `new Audio()` call that resolves the path relative to the
 **Overall Assessment:** The PROJ-19 changes are **mostly secure**. The one finding that should be addressed before deploy is **PROJ-19-SEC-02** (emoji field max length). It is a straightforward one-line fix in `src/lib/validations/rituals.ts`. The LOW finding (search_path) is defense-in-depth hygiene and can be addressed in a future cleanup pass.
 
 ## Deployment
-_To be added by /deploy_
+- **Production URL:** https://familie-dula-app.vercel.app/rituals
+- **Deployed:** 2026-04-13
+- **Git Tag:** v1.19.0-PROJ-19
+- **Migration applied:** `20260413_proj19_ritual_step_emoji` — emoji added to system templates, seed function updated
+- **Also deployed:** Fix for Rewards page server-side crash (RewardsPageHeader client component)
