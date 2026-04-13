@@ -9,6 +9,10 @@ import {
   createGoalSchema,
   contributeToGoalSchema,
   redeemRewardSchema,
+  createJarSchema,
+  updateJarSchema,
+  allocatePointsSchema,
+  type JarType,
 } from "@/lib/validations/rewards"
 
 // ============================================================
@@ -1027,4 +1031,599 @@ export async function completeFamilyGoalAction(
   }
 
   return { success: true }
+}
+
+// ============================================================
+// PROJ-24: Savings Jars (Taschengeld-Toepfe)
+// ============================================================
+
+// Types
+
+export type SavingsJar = {
+  id: string
+  profileId: string
+  familyId: string
+  name: string
+  jarType: JarType
+  targetAmount: number
+  currentAmount: number
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type JarTransaction = {
+  id: string
+  jarId: string
+  amount: number
+  sourceType: "task" | "manual" | "refund"
+  sourceId: string | null
+  createdAt: string
+}
+
+// ============================================================
+// getJarsForChildAction
+// ============================================================
+
+export async function getJarsForChildAction(
+  childProfileId: string
+): Promise<{ jars: SavingsJar[]; unallocatedPoints: number } | { error: string }> {
+  if (!childProfileId || typeof childProfileId !== "string") {
+    return { error: "Ungueltige Profil-ID." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  // Children can only see their own jars
+  if (profile.role === "child" && childProfileId !== profile.id) {
+    return { error: "Du kannst nur deine eigenen Toepfe sehen." }
+  }
+
+  const supabase = await createClient()
+
+  // Verify target belongs to same family
+  const { data: targetProfile } = await supabase
+    .from("profiles")
+    .select("id, family_id, points_balance")
+    .eq("id", childProfileId)
+    .eq("family_id", profile.family_id)
+    .single()
+
+  if (!targetProfile) {
+    return { error: "Profil nicht gefunden oder nicht in deiner Familie." }
+  }
+
+  const { data: jars, error: jarsError } = await supabase
+    .from("savings_jars")
+    .select("*")
+    .eq("profile_id", childProfileId)
+    .eq("family_id", profile.family_id)
+    .order("sort_order", { ascending: true })
+
+  if (jarsError) {
+    return { error: "Toepfe konnten nicht geladen werden." }
+  }
+
+  // Calculate unallocated: total points balance - sum of all jar amounts
+  const totalInJars = (jars || []).reduce((sum, j) => sum + (j.current_amount ?? 0), 0)
+  const unallocatedPoints = Math.max(0, (targetProfile.points_balance ?? 0) - totalInJars)
+
+  return {
+    jars: (jars || []).map((j) => ({
+      id: j.id,
+      profileId: j.profile_id,
+      familyId: j.family_id,
+      name: j.name,
+      jarType: j.jar_type as JarType,
+      targetAmount: j.target_amount ?? 0,
+      currentAmount: j.current_amount ?? 0,
+      sortOrder: j.sort_order ?? 0,
+      createdAt: j.created_at,
+      updatedAt: j.updated_at,
+    })),
+    unallocatedPoints,
+  }
+}
+
+// ============================================================
+// createJarAction
+// ============================================================
+
+export async function createJarAction(data: {
+  profileId: string
+  name: string
+  jarType: JarType
+  targetAmount: number
+}): Promise<{ jar: { id: string } } | { error: string }> {
+  const parsed = createJarSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`createJar:${ip}`, 30, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!["adult", "admin"].includes(profile.role ?? "")) {
+    return { error: "Nur Erwachsene und Admins duerfen Toepfe anlegen." }
+  }
+
+  const supabase = await createClient()
+
+  // Verify child belongs to same family
+  const { data: childProfile } = await supabase
+    .from("profiles")
+    .select("id, family_id")
+    .eq("id", parsed.data.profileId)
+    .eq("family_id", profile.family_id)
+    .single()
+
+  if (!childProfile) {
+    return { error: "Kind nicht gefunden oder nicht in deiner Familie." }
+  }
+
+  // Get current max sort_order for this child's jars
+  const { data: existingJars } = await supabase
+    .from("savings_jars")
+    .select("sort_order")
+    .eq("profile_id", parsed.data.profileId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+
+  const nextSortOrder = existingJars && existingJars.length > 0
+    ? (existingJars[0].sort_order ?? 0) + 1
+    : 0
+
+  const { data: jar, error: insertError } = await supabase
+    .from("savings_jars")
+    .insert({
+      profile_id: parsed.data.profileId,
+      family_id: profile.family_id,
+      name: parsed.data.name,
+      jar_type: parsed.data.jarType,
+      target_amount: parsed.data.targetAmount,
+      current_amount: 0,
+      sort_order: nextSortOrder,
+    })
+    .select("id")
+    .single()
+
+  if (insertError || !jar) {
+    return { error: "Topf konnte nicht erstellt werden." }
+  }
+
+  return { jar: { id: jar.id } }
+}
+
+// ============================================================
+// updateJarAction
+// ============================================================
+
+export async function updateJarAction(
+  jarId: string,
+  data: {
+    name?: string
+    jarType?: JarType
+    targetAmount?: number
+  }
+): Promise<{ success: true } | { error: string }> {
+  if (!jarId || typeof jarId !== "string") {
+    return { error: "Ungueltige Topf-ID." }
+  }
+
+  const parsed = updateJarSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!["adult", "admin"].includes(profile.role ?? "")) {
+    return { error: "Nur Erwachsene und Admins duerfen Toepfe bearbeiten." }
+  }
+
+  const supabase = await createClient()
+
+  // Verify jar belongs to caller's family
+  const { data: existing } = await supabase
+    .from("savings_jars")
+    .select("id, family_id")
+    .eq("id", jarId)
+    .eq("family_id", profile.family_id)
+    .single()
+
+  if (!existing) {
+    return { error: "Topf nicht gefunden." }
+  }
+
+  const updatePayload: Record<string, unknown> = {}
+  if (parsed.data.name !== undefined) updatePayload.name = parsed.data.name
+  if (parsed.data.jarType !== undefined) updatePayload.jar_type = parsed.data.jarType
+  if (parsed.data.targetAmount !== undefined) updatePayload.target_amount = parsed.data.targetAmount
+  updatePayload.updated_at = new Date().toISOString()
+
+  if (Object.keys(updatePayload).length <= 1) {
+    return { error: "Keine Aenderungen angegeben." }
+  }
+
+  const { error: updateError } = await supabase
+    .from("savings_jars")
+    .update(updatePayload)
+    .eq("id", jarId)
+
+  if (updateError) {
+    return { error: "Topf konnte nicht aktualisiert werden." }
+  }
+
+  return { success: true }
+}
+
+// ============================================================
+// deleteJarAction
+// ============================================================
+
+export async function deleteJarAction(
+  jarId: string
+): Promise<{ success: true; refundedAmount: number } | { error: string }> {
+  if (!jarId || typeof jarId !== "string") {
+    return { error: "Ungueltige Topf-ID." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!["adult", "admin"].includes(profile.role ?? "")) {
+    return { error: "Nur Erwachsene und Admins duerfen Toepfe loeschen." }
+  }
+
+  const supabase = await createClient()
+
+  // Fetch the jar to get current amount
+  const { data: jar } = await supabase
+    .from("savings_jars")
+    .select("id, family_id, current_amount, profile_id")
+    .eq("id", jarId)
+    .eq("family_id", profile.family_id)
+    .single()
+
+  if (!jar) {
+    return { error: "Topf nicht gefunden." }
+  }
+
+  const refundedAmount = jar.current_amount ?? 0
+
+  // If the jar has points, create a refund transaction log entry
+  if (refundedAmount > 0) {
+    await supabase
+      .from("jar_transactions")
+      .insert({
+        jar_id: jarId,
+        amount: -refundedAmount,
+        source_type: "refund",
+        source_id: null,
+      })
+  }
+
+  // Delete the jar (points return to unallocated automatically since
+  // unallocated = points_balance - sum(jar.current_amount))
+  const { error: deleteError } = await supabase
+    .from("savings_jars")
+    .delete()
+    .eq("id", jarId)
+
+  if (deleteError) {
+    return { error: "Topf konnte nicht geloescht werden." }
+  }
+
+  return { success: true, refundedAmount }
+}
+
+// ============================================================
+// allocatePointsToJarsAction
+// ============================================================
+
+export type AllocatePointsResult = {
+  allocations: Array<{ jarId: string; amount: number; newAmount: number }>
+}
+
+export async function allocatePointsToJarsAction(
+  allocations: Array<{ jarId: string; amount: number }>
+): Promise<AllocatePointsResult | { error: string }> {
+  const parsed = allocatePointsSchema.safeParse({ allocations })
+  if (!parsed.success) {
+    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+  }
+
+  const ip = await getIP()
+  if (!checkRateLimit(`allocatePoints:${ip}`, 60, 60 * 60 * 1000)) {
+    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  // Filter out zero allocations
+  const nonZeroAllocations = parsed.data.allocations.filter((a) => a.amount > 0)
+  if (nonZeroAllocations.length === 0) {
+    return { error: "Keine Punkte zum Verteilen." }
+  }
+
+  // Fetch all referenced jars
+  const jarIds = nonZeroAllocations.map((a) => a.jarId)
+  const { data: jars, error: jarsError } = await supabase
+    .from("savings_jars")
+    .select("id, profile_id, family_id, current_amount")
+    .in("id", jarIds)
+    .eq("family_id", profile.family_id)
+
+  if (jarsError || !jars) {
+    return { error: "Toepfe konnten nicht geladen werden." }
+  }
+
+  // Verify all jars belong to the current user (children allocate to own jars)
+  // or the user is an adult/admin
+  const isAdultOrAdmin = ["adult", "admin"].includes(profile.role ?? "")
+  for (const jar of jars) {
+    if (!isAdultOrAdmin && jar.profile_id !== profile.id) {
+      return { error: "Du kannst nur in deine eigenen Toepfe einzahlen." }
+    }
+  }
+
+  // Verify total allocation doesn't exceed unallocated points
+  const jarOwner = jars[0].profile_id
+  const { data: ownerProfile } = await supabase
+    .from("profiles")
+    .select("points_balance")
+    .eq("id", jarOwner)
+    .single()
+
+  if (!ownerProfile) {
+    return { error: "Profil nicht gefunden." }
+  }
+
+  // Get total in all jars for this child
+  const { data: allJars } = await supabase
+    .from("savings_jars")
+    .select("current_amount")
+    .eq("profile_id", jarOwner)
+    .eq("family_id", profile.family_id)
+
+  const totalInJars = (allJars || []).reduce((sum, j) => sum + (j.current_amount ?? 0), 0)
+  const unallocated = Math.max(0, (ownerProfile.points_balance ?? 0) - totalInJars)
+  const totalAllocating = nonZeroAllocations.reduce((sum, a) => sum + a.amount, 0)
+
+  if (totalAllocating > unallocated) {
+    return { error: "Nicht genuegend unverteilte Punkte." }
+  }
+
+  // Perform allocations
+  const results: Array<{ jarId: string; amount: number; newAmount: number }> = []
+
+  for (const allocation of nonZeroAllocations) {
+    const jar = jars.find((j) => j.id === allocation.jarId)
+    if (!jar) continue
+
+    const newAmount = (jar.current_amount ?? 0) + allocation.amount
+
+    // Update jar current_amount
+    const { error: updateError } = await supabase
+      .from("savings_jars")
+      .update({
+        current_amount: newAmount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", allocation.jarId)
+
+    if (updateError) continue
+
+    // Create transaction log
+    await supabase
+      .from("jar_transactions")
+      .insert({
+        jar_id: allocation.jarId,
+        amount: allocation.amount,
+        source_type: "task",
+        source_id: null,
+      })
+
+    results.push({
+      jarId: allocation.jarId,
+      amount: allocation.amount,
+      newAmount,
+    })
+  }
+
+  return { allocations: results }
+}
+
+// ============================================================
+// getJarHistoryAction
+// ============================================================
+
+export async function getJarHistoryAction(
+  jarId: string
+): Promise<{ transactions: JarTransaction[] } | { error: string }> {
+  if (!jarId || typeof jarId !== "string") {
+    return { error: "Ungueltige Topf-ID." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  // Verify jar belongs to caller's family
+  const { data: jar } = await supabase
+    .from("savings_jars")
+    .select("id, family_id, profile_id")
+    .eq("id", jarId)
+    .eq("family_id", profile.family_id)
+    .single()
+
+  if (!jar) {
+    return { error: "Topf nicht gefunden." }
+  }
+
+  // Children can only see their own jar history
+  if (profile.role === "child" && jar.profile_id !== profile.id) {
+    return { error: "Du kannst nur deine eigene Topf-Historie sehen." }
+  }
+
+  const { data: transactions, error: txError } = await supabase
+    .from("jar_transactions")
+    .select("*")
+    .eq("jar_id", jarId)
+    .order("created_at", { ascending: false })
+    .limit(100)
+
+  if (txError) {
+    return { error: "Topf-Historie konnte nicht geladen werden." }
+  }
+
+  return {
+    transactions: (transactions || []).map((tx) => ({
+      id: tx.id,
+      jarId: tx.jar_id,
+      amount: tx.amount,
+      sourceType: tx.source_type as "task" | "manual" | "refund",
+      sourceId: tx.source_id,
+      createdAt: tx.created_at,
+    })),
+  }
+}
+
+// ============================================================
+// getJarsSummaryForDashboardAction
+// ============================================================
+
+export type JarsSummaryChild = {
+  id: string
+  displayName: string
+  pointsBalance: number
+  totalInJars: number
+  unallocatedPoints: number
+  jars: Array<{
+    id: string
+    name: string
+    jarType: JarType
+    currentAmount: number
+    targetAmount: number
+  }>
+}
+
+// ============================================================
+// reorderJarsAction
+// ============================================================
+
+export async function reorderJarsAction(
+  jarIds: string[]
+): Promise<{ success: true } | { error: string }> {
+  if (!Array.isArray(jarIds) || jarIds.length === 0) {
+    return { error: "Keine Toepfe zum Sortieren." }
+  }
+  if (jarIds.some((id) => typeof id !== "string" || !id)) {
+    return { error: "Ungueltige Topf-IDs." }
+  }
+
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!["adult", "admin"].includes(profile.role ?? "")) {
+    return { error: "Nur Erwachsene und Admins duerfen Toepfe umsortieren." }
+  }
+
+  const supabase = await createClient()
+
+  const { error: rpcError } = await supabase.rpc("reorder_jars", {
+    p_jar_ids: jarIds,
+  })
+
+  if (rpcError) {
+    return { error: "Toepfe konnten nicht umsortiert werden." }
+  }
+
+  return { success: true }
+}
+
+// ============================================================
+// getJarsSummaryForDashboardAction
+// ============================================================
+
+export async function getJarsSummaryForDashboardAction(): Promise<
+  { children: JarsSummaryChild[] } | { error: string }
+> {
+  const profile = await getCurrentProfile()
+  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+
+  const supabase = await createClient()
+
+  // Fetch all children in the family
+  const { data: children, error: childError } = await supabase
+    .from("profiles")
+    .select("id, display_name, points_balance, role")
+    .eq("family_id", profile.family_id)
+    .eq("role", "child")
+    .order("display_name")
+
+  if (childError) {
+    return { error: "Kinder konnten nicht geladen werden." }
+  }
+
+  if (!children || children.length === 0) {
+    return { children: [] }
+  }
+
+  // Fetch all jars for all children in the family
+  const childIds = children.map((c) => c.id)
+  const { data: allJars, error: jarsError } = await supabase
+    .from("savings_jars")
+    .select("id, profile_id, name, jar_type, current_amount, target_amount, sort_order")
+    .in("profile_id", childIds)
+    .eq("family_id", profile.family_id)
+    .order("sort_order", { ascending: true })
+
+  if (jarsError) {
+    return { error: "Toepfe konnten nicht geladen werden." }
+  }
+
+  // Group jars by child
+  const jarsByChild = new Map<string, typeof allJars>()
+  for (const jar of allJars || []) {
+    const existing = jarsByChild.get(jar.profile_id) || []
+    existing.push(jar)
+    jarsByChild.set(jar.profile_id, existing)
+  }
+
+  return {
+    children: children.map((c) => {
+      const childJars = jarsByChild.get(c.id) || []
+      const totalInJars = childJars.reduce((sum, j) => sum + (j.current_amount ?? 0), 0)
+      return {
+        id: c.id,
+        displayName: c.display_name || "Kind",
+        pointsBalance: c.points_balance ?? 0,
+        totalInJars,
+        unallocatedPoints: Math.max(0, (c.points_balance ?? 0) - totalInJars),
+        jars: childJars.map((j) => ({
+          id: j.id,
+          name: j.name,
+          jarType: j.jar_type as JarType,
+          currentAmount: j.current_amount ?? 0,
+          targetAmount: j.target_amount ?? 0,
+        })),
+      }
+    }),
+  }
 }

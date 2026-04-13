@@ -1,23 +1,22 @@
 "use client"
 
 import { useState, useEffect, useCallback, startTransition } from "react"
-import { Star, Trophy } from "lucide-react"
+import { Star, Trophy, PiggyBank, ShoppingCart, Heart, Sparkles, Coins } from "lucide-react"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  getRewardsOverviewAction,
-  type ChildPointsSummary,
+  getJarsSummaryForDashboardAction,
+  type JarsSummaryChild,
 } from "@/lib/actions/rewards"
 
-const LEVEL_KEYS: Record<string, string> = {
-  Starter: "levelStarter",
-  Entdecker: "levelExplorer",
-  Abenteurer: "levelAdventurer",
-  Profi: "levelPro",
-  Meister: "levelMaster",
+const JAR_TYPE_ICONS = {
+  spend: ShoppingCart,
+  save: PiggyBank,
+  donate: Heart,
+  custom: Sparkles,
 }
 
 function getLevel(points: number): {
@@ -39,11 +38,11 @@ interface RewardsWidgetProps {
 
 export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
   const t = useTranslations("dashboard.rewards")
-  const [displayChildren, setDisplayChildren] = useState<ChildPointsSummary[]>([])
+  const [displayChildren, setDisplayChildren] = useState<JarsSummaryChild[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchRewards = useCallback(async () => {
-    const result = await getRewardsOverviewAction()
+    const result = await getJarsSummaryForDashboardAction()
     if (!("error" in result)) {
       const allChildren = result.children
       setDisplayChildren(
@@ -89,7 +88,7 @@ export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {displayChildren.map((child) => {
             const { nameKey, next } = getLevel(child.pointsBalance)
             const prevThreshold =
@@ -122,6 +121,43 @@ export function RewardsWidget({ isAdmin, currentUserId }: RewardsWidgetProps) {
                 <p className="text-[10px] text-muted-foreground">
                   {t(nameKey)} &middot; {t("nextLevel", { points: Math.max(next - child.pointsBalance, 0) })}
                 </p>
+
+                {/* Jar miniatures */}
+                {child.jars.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {child.jars.map((jar) => {
+                      const Icon = JAR_TYPE_ICONS[jar.jarType] || Sparkles
+                      const jarProgress = jar.targetAmount > 0
+                        ? Math.min((jar.currentAmount / jar.targetAmount) * 100, 100)
+                        : -1
+                      return (
+                        <div
+                          key={jar.id}
+                          className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1"
+                        >
+                          <Icon className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] font-medium truncate max-w-[60px]">
+                            {jar.name}
+                          </span>
+                          <span className="text-[10px] font-bold">
+                            {jar.currentAmount}
+                          </span>
+                          {jarProgress >= 0 && jarProgress >= 100 && (
+                            <span className="text-[9px] text-primary">*</span>
+                          )}
+                        </div>
+                      )
+                    })}
+                    {child.unallocatedPoints > 0 && (
+                      <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1">
+                        <Coins className="h-3 w-3 text-primary-foreground/60" />
+                        <span className="text-[10px] font-bold text-primary-foreground/70">
+                          {child.unallocatedPoints}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}

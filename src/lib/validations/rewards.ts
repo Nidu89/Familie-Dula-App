@@ -92,3 +92,58 @@ export const redeemRewardSchema = z.object({
 })
 
 export type RedeemRewardFormValues = z.infer<typeof redeemRewardSchema>
+
+// ============================================================
+// PROJ-24: Savings Jars (Taschengeld-Toepfe) Schemas
+// ============================================================
+
+export const jarTypeEnum = z.enum(["spend", "save", "donate", "custom"])
+
+export type JarType = z.infer<typeof jarTypeEnum>
+
+export const createJarSchema = z.object({
+  profileId: z.string().uuid("Ungueltige Profil-ID"),
+  name: z
+    .string()
+    .min(1, "Name ist erforderlich")
+    .max(50, "Name darf maximal 50 Zeichen lang sein"),
+  jarType: jarTypeEnum,
+  targetAmount: z
+    .number()
+    .int("Zielbetrag muss eine ganze Zahl sein")
+    .min(0, "Zielbetrag darf nicht negativ sein")
+    .max(99999, "Maximal 99.999 Punkte"),
+})
+
+export type CreateJarFormValues = z.infer<typeof createJarSchema>
+
+export const updateJarSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name ist erforderlich")
+    .max(50, "Name darf maximal 50 Zeichen lang sein")
+    .optional(),
+  jarType: jarTypeEnum.optional(),
+  targetAmount: z
+    .number()
+    .int("Zielbetrag muss eine ganze Zahl sein")
+    .min(0, "Zielbetrag darf nicht negativ sein")
+    .max(99999, "Maximal 99.999 Punkte")
+    .optional(),
+})
+
+export type UpdateJarFormValues = z.infer<typeof updateJarSchema>
+
+export const allocatePointsSchema = z.object({
+  allocations: z.array(
+    z.object({
+      jarId: z.string().uuid("Ungueltige Topf-ID"),
+      amount: z
+        .number()
+        .int("Betrag muss eine ganze Zahl sein")
+        .min(0, "Betrag darf nicht negativ sein"),
+    })
+  ),
+})
+
+export type AllocatePointsFormValues = z.infer<typeof allocatePointsSchema>
