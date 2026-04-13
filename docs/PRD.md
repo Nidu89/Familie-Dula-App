@@ -34,7 +34,7 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 | P1 | PROJ-15: Mehrsprachigkeit (i18n) | Deployed |
 | P1 | PROJ-16: Wochen-Challenge als pinnable Aufgabe | Deployed |
 | P1 | PROJ-17: KI-Assistent (Family AI Agent) | Deployed |
-| P1 | PROJ-18: Familienmomente | Planned |
+| P1 | PROJ-18: Familienmomente | Deployed |
 | P2 | PROJ-19: Kindergerechte Ritual-Schritte | Deployed |
 | P2 | PROJ-20: Fokus-Modus für Aufgaben | Planned |
 | P2 | PROJ-21: Visueller Animations-Timer | Planned |
