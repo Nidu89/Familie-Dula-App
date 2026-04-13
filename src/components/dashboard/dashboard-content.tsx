@@ -12,6 +12,7 @@ import { TimerWidget } from "@/components/dashboard/timer-widget"
 import { RitualsWidget } from "@/components/dashboard/rituals-widget"
 import { KidsView } from "@/components/dashboard/kids-view"
 import { DashboardQuote } from "@/components/dashboard/dashboard-quote"
+import { MomentsHero } from "@/components/dashboard/moments-hero"
 
 interface DashboardContentProps {
   user: { id: string; displayName: string }
@@ -56,7 +57,7 @@ export function DashboardContent({
             <RewardsWidget isAdmin={isAdmin} currentUserId={user.id} />
           </div>
 
-{/* Familienmomente — planned feature, placeholder removed */}
+          <MomentsHero />
         </div>
 
         {/* Right column -- 4 cols */}

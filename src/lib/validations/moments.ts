@@ -27,7 +27,7 @@ export const toggleReactionSchema = z.object({
 
 export const momentFileSchema = z.object({
   type: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"], {
-    errorMap: () => ({ message: "Nur JPEG, PNG, WebP oder GIF erlaubt." }),
+    message: "Nur JPEG, PNG, WebP oder GIF erlaubt.",
   }),
   size: z
     .number()

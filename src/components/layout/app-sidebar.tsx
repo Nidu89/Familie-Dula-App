@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   MessageSquare,
   UtensilsCrossed,
+  Camera,
   Users,
   HelpCircle,
   LogOut,
@@ -36,6 +37,7 @@ const NAV_LINKS = [
   { href: "/shopping", labelKey: "shopping" as const, icon: ShoppingCart },
   { href: "/recipes", labelKey: "recipes" as const, icon: UtensilsCrossed },
   { href: "/chat", labelKey: "chat" as const, icon: MessageSquare },
+  { href: "/moments", labelKey: "moments" as const, icon: Camera },
   { href: "/family/settings", labelKey: "family" as const, icon: Users },
 ]
 
