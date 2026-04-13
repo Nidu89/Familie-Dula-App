@@ -1,6 +1,6 @@
 # PROJ-18: Familienmomente
 
-## Status: Planned
+## Status: In Progress
 **Created:** 2026-04-12
 **Last Updated:** 2026-04-12
 
@@ -73,7 +73,66 @@ Eine Memory-Wall für die Familie: Fotos hochladen, besondere Erlebnisse mit Tit
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Database Schema
+
+**Table: `family_moments`**
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | uuid | PK, default gen_random_uuid() |
+| family_id | uuid | FK → families(id), NOT NULL |
+| created_by | uuid | FK → profiles(id), NOT NULL |
+| title | text | NOT NULL, max 80 chars |
+| description | text | nullable, max 500 chars |
+| photo_path | text | nullable (storage path in `moments` bucket) |
+| moment_date | date | NOT NULL, default CURRENT_DATE |
+| created_at | timestamptz | NOT NULL, default now() |
+
+**Table: `family_moment_reactions`**
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | uuid | PK, default gen_random_uuid() |
+| moment_id | uuid | FK → family_moments(id) ON DELETE CASCADE, NOT NULL |
+| user_id | uuid | FK → profiles(id), NOT NULL |
+| created_at | timestamptz | NOT NULL, default now() |
+| | | UNIQUE(moment_id, user_id) |
+
+### RLS Policies
+- **SELECT**: `family_id = (SELECT family_id FROM profiles WHERE id = auth.uid())`
+- **INSERT**: Same family check + `created_by = auth.uid()`
+- **DELETE**: `created_by = auth.uid()` OR user role = 'admin'
+- **Reactions SELECT/INSERT/DELETE**: Via moment family membership
+
+### Storage
+- Bucket: `moments` (private, signed URLs)
+- Path pattern: `{family_id}/{uuid}.{ext}`
+- Max file size: 5 MB
+- Allowed types: image/jpeg, image/png, image/webp, image/gif
+
+### Server Actions (`src/lib/actions/moments.ts`)
+- `getMomentsAction(cursor?, limit=12)` — paginated, newest first
+- `getLatestMomentAction()` — single newest moment for dashboard hero
+- `createMomentAction(FormData)` — with optional photo upload
+- `deleteMomentAction(momentId)` — creator + admin
+- `toggleReactionAction(momentId)` — upsert/delete heart
+
+### Validations (`src/lib/validations/moments.ts`)
+- `createMomentSchema` — title (1-80), description (0-500), momentDate
+- `momentFileSchema` — type + size validation
+
+### Components
+- `src/components/moments/moments-page-client.tsx` — gallery page
+- `src/components/moments/moment-card.tsx` — gallery tile
+- `src/components/moments/moment-detail-dialog.tsx` — fullscreen detail
+- `src/components/moments/moment-form-dialog.tsx` — create/edit form
+- `src/components/moments/heart-button.tsx` — animated reaction toggle
+- `src/components/dashboard/moments-hero.tsx` — dashboard hero widget
+
+### Page
+- `src/app/(app)/moments/page.tsx`
+
+### Navigation
+- Sidebar + Bottom Nav: Add "Momente" link with Camera icon
 
 ## QA Test Results
 _To be added by /qa_

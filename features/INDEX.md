@@ -29,7 +29,7 @@
 | PROJ-15 | Mehrsprachigkeit (i18n) | Deployed | [PROJ-15-mehrsprachigkeit-i18n.md](PROJ-15-mehrsprachigkeit-i18n.md) | 2026-04-05 |
 | PROJ-16 | Wochen-Challenge als pinnable Aufgabe | Deployed | [PROJ-16-wochen-challenge-aufgabe.md](PROJ-16-wochen-challenge-aufgabe.md) | 2026-04-06 |
 | PROJ-17 | KI-Assistent (Family AI Agent) | Deployed | [PROJ-17-ki-assistent.md](PROJ-17-ki-assistent.md) | 2026-04-07 |
-| PROJ-18 | Familienmomente | Planned | [PROJ-18-familienmomente.md](PROJ-18-familienmomente.md) | 2026-04-12 |
+| PROJ-18 | Familienmomente | In Progress | [PROJ-18-familienmomente.md](PROJ-18-familienmomente.md) | 2026-04-12 |
 | PROJ-19 | Kindergerechte Ritual-Schritte | Deployed | [PROJ-19-kindergerechte-ritual-schritte.md](PROJ-19-kindergerechte-ritual-schritte.md) | 2026-04-12 |
 | PROJ-20 | Fokus-Modus für Aufgaben | Planned | [PROJ-20-fokus-modus-aufgaben.md](PROJ-20-fokus-modus-aufgaben.md) | 2026-04-12 |
 | PROJ-21 | Visueller Animations-Timer | Planned | [PROJ-21-visueller-timer.md](PROJ-21-visueller-timer.md) | 2026-04-12 |
