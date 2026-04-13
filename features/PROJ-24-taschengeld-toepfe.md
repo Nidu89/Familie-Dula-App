@@ -1,8 +1,8 @@
 # PROJ-24: Virtuelle Taschengeld-Töpfe (Spend/Save/Donate)
 
-## Status: In Progress
+## Status: Deployed
 **Created:** 2026-04-12
-**Last Updated:** 2026-04-12
+**Last Updated:** 2026-04-13
 
 ## Dependencies
 - Requires: PROJ-6 (Belohnungssystem) — points economy that children earn; jars split those points into named buckets
@@ -166,4 +166,11 @@ Erweitert: → AllocatePointsDialog öffnet sich → Kind verteilt auf Töpfe �
 _To be added by /qa_
 
 ## Deployment
-_To be added by /deploy_
+
+- **Deployed:** 2026-04-13
+- **Tag:** v1.24.0-PROJ-24
+- **Commits:** feat(PROJ-24), fix(PROJ-24) — 6 QA bugs fixed
+- **DB Migrations applied:**
+  - `20260413_proj24_savings_jars` — tables savings_jars + jar_transactions
+  - `20260413_proj24_default_jars_and_reorder` — DB trigger + reorder_jars RPC
+  - `20260413_proj24_atomic_allocation` — atomic allocate_points_to_jars RPC

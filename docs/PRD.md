@@ -40,7 +40,7 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 | P2 | PROJ-21: Visueller Animations-Timer | Planned |
 | P2 | PROJ-22: Transitions-Vorwarnungen | Planned |
 | P2 | PROJ-23: Bewegungspausen in Ritualen | Planned |
-| P1 | PROJ-24: Virtuelle Taschengeld-Töpfe | Planned |
+| P1 | PROJ-24: Virtuelle Taschengeld-Töpfe | Deployed |
 | P2 | PROJ-25: Foto-Verifikation bei Aufgaben | Planned |
 | P2 | PROJ-26: Familien-Standort & Geofencing | Planned |
 | P1 | PROJ-27: Eltern-Genehmigung für Aufgaben | Planned |

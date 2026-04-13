@@ -35,7 +35,7 @@
 | PROJ-21 | Visueller Animations-Timer | Planned | [PROJ-21-visueller-timer.md](PROJ-21-visueller-timer.md) | 2026-04-12 |
 | PROJ-22 | Transitions-Vorwarnungen | Planned | [PROJ-22-transitions-vorwarnungen.md](PROJ-22-transitions-vorwarnungen.md) | 2026-04-12 |
 | PROJ-23 | Bewegungspausen in Ritualen | Planned | [PROJ-23-bewegungspausen-rituale.md](PROJ-23-bewegungspausen-rituale.md) | 2026-04-12 |
-| PROJ-24 | Virtuelle Taschengeld-Töpfe | In Progress | [PROJ-24-taschengeld-toepfe.md](PROJ-24-taschengeld-toepfe.md) | 2026-04-12 |
+| PROJ-24 | Virtuelle Taschengeld-Töpfe | Deployed | [PROJ-24-taschengeld-toepfe.md](PROJ-24-taschengeld-toepfe.md) | 2026-04-12 |
 | PROJ-25 | Foto-Verifikation bei Aufgaben | Planned | [PROJ-25-foto-verifikation-aufgaben.md](PROJ-25-foto-verifikation-aufgaben.md) | 2026-04-12 |
 | PROJ-26 | Familien-Standort & Geofencing | Planned | [PROJ-26-familien-standort-geofencing.md](PROJ-26-familien-standort-geofencing.md) | 2026-04-12 |
 | PROJ-27 | Eltern-Genehmigung für Aufgaben | Planned | [PROJ-27-eltern-genehmigung-aufgaben.md](PROJ-27-eltern-genehmigung-aufgaben.md) | 2026-04-12 |
