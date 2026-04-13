@@ -35,6 +35,23 @@ Die Familie-Dula-App ist eine zentrale Familienorganisations-Plattform, die Kale
 | P1 | PROJ-16: Wochen-Challenge als pinnable Aufgabe | Deployed |
 | P1 | PROJ-17: KI-Assistent (Family AI Agent) | Deployed |
 | P1 | PROJ-18: Familienmomente | Planned |
+| P2 | PROJ-19: Kindergerechte Ritual-Schritte | Planned |
+| P2 | PROJ-20: Fokus-Modus für Aufgaben | Planned |
+| P2 | PROJ-21: Visueller Animations-Timer | Planned |
+| P2 | PROJ-22: Transitions-Vorwarnungen | Planned |
+| P2 | PROJ-23: Bewegungspausen in Ritualen | Planned |
+| P1 | PROJ-24: Virtuelle Taschengeld-Töpfe | Planned |
+| P2 | PROJ-25: Foto-Verifikation bei Aufgaben | Planned |
+| P2 | PROJ-26: Familien-Standort & Geofencing | Planned |
+| P1 | PROJ-27: Eltern-Genehmigung für Aufgaben | Planned |
+| P1 | PROJ-28: Belohnungs-Anfrage durch Kind | Planned |
+| P2 | PROJ-29: Automatische Aufgaben-Rotation | Planned |
+| P2 | PROJ-30: Haushalt-Equity-Tracker (FairShare) | Planned |
+| P2 | PROJ-31: Familien-Quest / Gruppen-Boss | Planned |
+| P2 | PROJ-32: Verspätungs-Penalty auf Aufgaben | Planned |
+| P2 | PROJ-33: Monatlicher Familien-Rückblick | Planned |
+| P2 | PROJ-34: Effort-Gewichtung bei Aufgaben | Planned |
+| P2 | PROJ-35: Aufgaben-Dringlichkeits-Farben | Planned |
 
 ## Success Metrics
 - Alle Familienmitglieder nutzen die App täglich (Dashboard, Kalender, Aufgaben).

@@ -78,14 +78,14 @@ export function RitualCard({
 
       {/* Steps preview */}
       <div className="mt-4 space-y-1.5">
-        {ritual.steps.slice(0, 3).map((step, i) => (
+        {ritual.steps.slice(0, 3).map((step) => (
           <div
             key={step.id}
             className="flex items-center gap-2 text-xs text-muted-foreground"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold">
-              {i + 1}
-            </div>
+            <span className="shrink-0 text-sm" aria-hidden="true">
+              {step.emoji || "\u2B50"}
+            </span>
             <span className="truncate">{step.title}</span>
           </div>
         ))}

@@ -18,6 +18,7 @@ export const ritualStepSchema = z.object({
     .max(7200)
     .nullable()
     .optional(),
+  emoji: z.string().max(32).nullable().optional(),
 })
 
 export type RitualStep = z.infer<typeof ritualStepSchema>

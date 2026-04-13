@@ -772,7 +772,9 @@
     },
     "stepItem": {
       "aria": "Étape {order} : {title}",
-      "resetAria": "Réinitialiser l'étape \"{title}\""
+      "resetAria": "Réinitialiser l'étape \"{title}\"",
+      "done": "Fait",
+      "complete": "Fait !"
     },
     "active": {
       "progress": "Progression",

@@ -755,7 +755,9 @@
     },
     "stepItem": {
       "aria": "Schritt {order}: {title}",
-      "resetAria": "Schritt \"{title}\" zurücksetzen"
+      "resetAria": "Schritt \"{title}\" zurücksetzen",
+      "done": "Erledigt",
+      "complete": "Erledigt!"
     },
     "active": {
       "progress": "Fortschritt",

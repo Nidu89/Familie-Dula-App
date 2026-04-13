@@ -14,7 +14,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { EmojiPicker } from "@/components/ui/emoji-picker"
 import { Plus, ArrowUp, ArrowDown, Trash2, Loader2, Timer } from "lucide-react"
+import { getSuggestedEmoji, DEFAULT_EMOJI } from "@/lib/ritual-emoji-suggestions"
 import type { Ritual } from "@/lib/actions/rituals"
 import type { RitualStep } from "@/lib/validations/rituals"
 
@@ -76,6 +78,7 @@ interface StepFormData {
   title: string
   order: number
   durationMinutes: number | ""
+  emoji: string
 }
 
 interface RitualFormInnerProps {
@@ -106,9 +109,10 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
           title: s.title,
           order: s.order,
           durationMinutes: s.durationSeconds ? Math.round(s.durationSeconds / 60) : "",
+          emoji: s.emoji || getSuggestedEmoji(s.title),
         }))
     }
-    return [{ id: generateStepId(), title: "", order: 0, durationMinutes: "" }]
+    return [{ id: generateStepId(), title: "", order: 0, durationMinutes: "", emoji: DEFAULT_EMOJI }]
   })
   const [hasTimer, setHasTimer] = useState(
     ritual?.timerDurationMinutes != null && ritual.timerDurationMinutes > 0
@@ -129,7 +133,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
     if (steps.length >= 20) return
     setSteps((prev) => [
       ...prev,
-      { id: generateStepId(), title: "", order: prev.length, durationMinutes: "" },
+      { id: generateStepId(), title: "", order: prev.length, durationMinutes: "", emoji: DEFAULT_EMOJI },
     ])
   }, [steps.length])
 
@@ -146,7 +150,24 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
 
   const updateStepTitle = useCallback((index: number, title: string) => {
     setSteps((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, title } : s))
+      prev.map((s, i) => {
+        if (i !== index) return s
+        const newEmoji = getSuggestedEmoji(title)
+        // Only auto-update emoji if the current emoji was also auto-suggested
+        // (i.e. user has not manually picked a different one)
+        const wasAutoSuggested = s.emoji === getSuggestedEmoji(s.title) || s.emoji === DEFAULT_EMOJI
+        return {
+          ...s,
+          title,
+          emoji: wasAutoSuggested ? newEmoji : s.emoji,
+        }
+      })
+    )
+  }, [])
+
+  const updateStepEmoji = useCallback((index: number, emoji: string) => {
+    setSteps((prev) =>
+      prev.map((s, i) => (i === index ? { ...s, emoji } : s))
     )
   }, [])
 
@@ -198,6 +219,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
         !hasTimer && s.durationMinutes !== "" && s.durationMinutes > 0
           ? s.durationMinutes * 60
           : null,
+      emoji: s.emoji || null,
     }))
 
     setSubmitting(true)
@@ -262,8 +284,12 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
           {steps.map((step, index) => (
             <div key={step.id} className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
-                  {index + 1}
+                {/* Emoji button — opens picker on click */}
+                <div className="shrink-0">
+                  <EmojiPicker
+                    value={step.emoji}
+                    onChange={(emoji) => updateStepEmoji(index, emoji)}
+                  />
                 </div>
                 <Input
                   value={step.title}
@@ -310,7 +336,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
 
               {/* Per-step timer input (only when global timer is OFF) */}
               {!hasTimer && (
-                <div className="ml-9 flex items-center gap-2">
+                <div className="ml-16 flex items-center gap-2">
                   <Timer className="h-3.5 w-3.5 text-muted-foreground" />
                   <Input
                     type="number"

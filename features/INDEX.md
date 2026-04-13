@@ -30,7 +30,24 @@
 | PROJ-16 | Wochen-Challenge als pinnable Aufgabe | Deployed | [PROJ-16-wochen-challenge-aufgabe.md](PROJ-16-wochen-challenge-aufgabe.md) | 2026-04-06 |
 | PROJ-17 | KI-Assistent (Family AI Agent) | Deployed | [PROJ-17-ki-assistent.md](PROJ-17-ki-assistent.md) | 2026-04-07 |
 | PROJ-18 | Familienmomente | Planned | [PROJ-18-familienmomente.md](PROJ-18-familienmomente.md) | 2026-04-12 |
+| PROJ-19 | Kindergerechte Ritual-Schritte | In Review | [PROJ-19-kindergerechte-ritual-schritte.md](PROJ-19-kindergerechte-ritual-schritte.md) | 2026-04-12 |
+| PROJ-20 | Fokus-Modus für Aufgaben | Planned | [PROJ-20-fokus-modus-aufgaben.md](PROJ-20-fokus-modus-aufgaben.md) | 2026-04-12 |
+| PROJ-21 | Visueller Animations-Timer | Planned | [PROJ-21-visueller-timer.md](PROJ-21-visueller-timer.md) | 2026-04-12 |
+| PROJ-22 | Transitions-Vorwarnungen | Planned | [PROJ-22-transitions-vorwarnungen.md](PROJ-22-transitions-vorwarnungen.md) | 2026-04-12 |
+| PROJ-23 | Bewegungspausen in Ritualen | Planned | [PROJ-23-bewegungspausen-rituale.md](PROJ-23-bewegungspausen-rituale.md) | 2026-04-12 |
+| PROJ-24 | Virtuelle Taschengeld-Töpfe | Planned | [PROJ-24-taschengeld-toepfe.md](PROJ-24-taschengeld-toepfe.md) | 2026-04-12 |
+| PROJ-25 | Foto-Verifikation bei Aufgaben | Planned | [PROJ-25-foto-verifikation-aufgaben.md](PROJ-25-foto-verifikation-aufgaben.md) | 2026-04-12 |
+| PROJ-26 | Familien-Standort & Geofencing | Planned | [PROJ-26-familien-standort-geofencing.md](PROJ-26-familien-standort-geofencing.md) | 2026-04-12 |
+| PROJ-27 | Eltern-Genehmigung für Aufgaben | Planned | [PROJ-27-eltern-genehmigung-aufgaben.md](PROJ-27-eltern-genehmigung-aufgaben.md) | 2026-04-12 |
+| PROJ-28 | Belohnungs-Anfrage durch Kind | Planned | [PROJ-28-belohnungs-anfrage-kind.md](PROJ-28-belohnungs-anfrage-kind.md) | 2026-04-12 |
+| PROJ-29 | Automatische Aufgaben-Rotation | Planned | [PROJ-29-aufgaben-rotation.md](PROJ-29-aufgaben-rotation.md) | 2026-04-12 |
+| PROJ-30 | Haushalt-Equity-Tracker (FairShare) | Planned | [PROJ-30-haushalt-equity-tracker.md](PROJ-30-haushalt-equity-tracker.md) | 2026-04-12 |
+| PROJ-31 | Familien-Quest / Gruppen-Boss | Planned | [PROJ-31-familien-quest-gruppen-boss.md](PROJ-31-familien-quest-gruppen-boss.md) | 2026-04-12 |
+| PROJ-32 | Verspätungs-Penalty auf Aufgaben | Planned | [PROJ-32-verspaetungs-penalty.md](PROJ-32-verspaetungs-penalty.md) | 2026-04-12 |
+| PROJ-33 | Monatlicher Familien-Rückblick | Planned | [PROJ-33-familien-rueckblick.md](PROJ-33-familien-rueckblick.md) | 2026-04-12 |
+| PROJ-34 | Effort-Gewichtung bei Aufgaben | Planned | [PROJ-34-effort-gewichtung-aufgaben.md](PROJ-34-effort-gewichtung-aufgaben.md) | 2026-04-12 |
+| PROJ-35 | Aufgaben-Dringlichkeits-Farben | Planned | [PROJ-35-aufgaben-dringlichkeits-farben.md](PROJ-35-aufgaben-dringlichkeits-farben.md) | 2026-04-12 |
 
 <!-- Add features above this line -->
 
-## Next Available ID: PROJ-19
+## Next Available ID: PROJ-36

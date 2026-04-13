@@ -772,7 +772,9 @@
     },
     "stepItem": {
       "aria": "Step {order}: {title}",
-      "resetAria": "Reset step \"{title}\""
+      "resetAria": "Reset step \"{title}\"",
+      "done": "Done",
+      "complete": "Done!"
     },
     "active": {
       "progress": "Progress",

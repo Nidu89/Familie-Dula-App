@@ -194,6 +194,7 @@ export function ActiveRitualView({
                 key={step.id}
                 stepId={step.id}
                 title={step.title}
+                emoji={step.emoji ?? null}
                 order={step.order}
                 isCompleted={state.completedStepIds.has(step.id)}
                 isAdult={isAdult}
