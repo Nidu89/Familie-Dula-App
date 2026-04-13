@@ -73,9 +73,12 @@ BEGIN
   SELECT points_balance INTO v_points_balance
   FROM profiles WHERE id = v_jar_owner FOR UPDATE;
 
-  -- Lock all jars for this child to calculate total
+  -- Lock all jars for this child, then calculate total
+  PERFORM id FROM savings_jars
+  WHERE profile_id = v_jar_owner AND family_id = v_family_id FOR UPDATE;
+
   SELECT COALESCE(SUM(current_amount), 0) INTO v_total_in_jars
-  FROM savings_jars WHERE profile_id = v_jar_owner AND family_id = v_family_id FOR UPDATE;
+  FROM savings_jars WHERE profile_id = v_jar_owner AND family_id = v_family_id;
 
   v_unallocated := GREATEST(0, v_points_balance - v_total_in_jars);
 
