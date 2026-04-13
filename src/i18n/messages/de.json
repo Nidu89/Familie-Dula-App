@@ -524,6 +524,7 @@
       "manualSub": "Manuell abgezogen",
       "rewardRedeemed": "Belohnung eingelöst",
       "goalContribution": "Familienziel-Beitrag",
+      "ritualCompletion": "Ritual abgeschlossen",
       "balance": "Saldo: {balance}",
       "loadError": "Punktehistorie konnte nicht geladen werden."
     },

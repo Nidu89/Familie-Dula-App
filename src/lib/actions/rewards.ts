@@ -48,7 +48,7 @@ export type PointsTransaction = {
   id: string
   profileId: string
   amount: number
-  type: "task_completion" | "manual_add" | "manual_deduct" | "reward_redemption" | "goal_contribution"
+  type: "task_completion" | "manual_add" | "manual_deduct" | "reward_redemption" | "goal_contribution" | "ritual_completion"
   taskId: string | null
   taskTitle: string | null
   comment: string | null

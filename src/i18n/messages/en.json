@@ -538,6 +538,7 @@
       "manualSub": "Manually deducted",
       "rewardRedeemed": "Reward redeemed",
       "goalContribution": "Family goal contribution",
+      "ritualCompletion": "Ritual completed",
       "balance": "Balance: {balance}",
       "loadError": "Could not load points history."
     },

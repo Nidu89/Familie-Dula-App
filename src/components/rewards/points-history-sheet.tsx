@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
-import { Star, CheckCircle2, PenLine, Gift, Target } from "lucide-react"
+import { Star, CheckCircle2, PenLine, Gift, Target, Sparkles } from "lucide-react"
 
 import {
   Sheet,
@@ -54,6 +54,11 @@ const TYPE_CONFIG = {
     labelKey: "goalContribution" as const,
     icon: Target,
     className: "text-secondary",
+  },
+  ritual_completion: {
+    labelKey: "ritualCompletion" as const,
+    icon: Sparkles,
+    className: "text-chart-3",
   },
 }
 

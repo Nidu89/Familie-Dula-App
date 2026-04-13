@@ -538,6 +538,7 @@
       "manualSub": "Retrait manuel",
       "rewardRedeemed": "Récompense échangée",
       "goalContribution": "Contribution à l'objectif familial",
+      "ritualCompletion": "Rituel terminé",
       "balance": "Solde : {balance}",
       "loadError": "Impossible de charger l'historique des points."
     },
