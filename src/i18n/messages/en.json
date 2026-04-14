@@ -39,6 +39,266 @@
     "edit": "Edit",
     "actions": "Actions"
   },
+  "emojiPicker": {
+    "rewards": "Rewards",
+    "food": "Food",
+    "activities": "Activities",
+    "animals": "Animals",
+    "nature": "Nature",
+    "faces": "Faces",
+    "objects": "Objects"
+  },
+  "errors": {
+    "auth": {
+      "notLoggedIn": "Not logged in.",
+      "noFamily": "You don't belong to a family.",
+      "invalidInput": "Invalid input.",
+      "rateLimited": "Too many requests. Please try again later.",
+      "rateLimitedShort": "Too many requests. Please wait a moment.",
+      "unknown": "Unknown error.",
+      "loginFailed": "Login failed. Please check your credentials.",
+      "loginRateLimited": "Too many login attempts. Please try again later.",
+      "registerRateLimited": "Too many registration attempts. Please try again later.",
+      "emailExists": "This email address is already registered. Please sign in.",
+      "emailRateLimited": "Too many emails sent. Please wait an hour and try again.",
+      "registerFailed": "Registration failed. Please try again.",
+      "invalidEmail": "Please enter a valid email address.",
+      "genericError": "Something went wrong. Please try again.",
+      "emailSendFailed": "Email could not be sent. Please try again."
+    },
+    "perm": {
+      "denied": "Not authorized.",
+      "adminOnly": "Only admins can perform this action.",
+      "adultRequired": "Only adults and admins can perform this action.",
+      "deleteDenied": "No permission to delete.",
+      "otherFamilyMember": "Not authorized — different family member.",
+      "ownHistoryOnly": "You can only view your own points history.",
+      "ownJarsOnly": "You can only view your own jars.",
+      "accessDenied": "Access denied."
+    },
+    "val": {
+      "invalid": "Invalid input.",
+      "invalidId": "Invalid ID.",
+      "invalidFilter": "Invalid filters.",
+      "invalidEmail": "Please enter a valid email address.",
+      "invalidCode": "Please enter a valid 6-digit code.",
+      "invalidLanguage": "Invalid language.",
+      "invalidWeek": "Invalid week identifier.",
+      "fileTooLarge": "File is too large (max. 5 MB).",
+      "fileInvalidType": "Only JPEG, PNG and WebP are allowed.",
+      "noFile": "No file selected.",
+      "noChanges": "No changes specified.",
+      "quoteTooLong": "Quote must not exceed 500 characters."
+    },
+    "rate": {
+      "limited": "Too many requests. Please try again later.",
+      "limitedShort": "Too many requests. Please wait a moment.",
+      "syncLimited": "Too many sync requests. Please wait a moment.",
+      "uploadLimited": "Too many uploads. Please wait a moment.",
+      "inviteLimited": "Too many invitations. Please try again later.",
+      "joinLimited": "Too many attempts. Please try again later."
+    },
+    "family": {
+      "notFound": "Family not found.",
+      "alreadyMember": "You already belong to a family.",
+      "createFailed": "Family could not be created. Please try again.",
+      "inviteInvalid": "Invite code invalid or expired.",
+      "inviteEmailFailed": "Email invitation could not be sent. Please try again.",
+      "inviteSaveFailed": "Invitation could not be saved. The email was sent though.",
+      "codeDeactivateFailed": "Old codes could not be deactivated. Please try again.",
+      "codeCreateFailed": "Code could not be created. Please try again.",
+      "nameUpdateFailed": "Family name could not be updated.",
+      "roleLastAdmin": "At least one admin must remain in the family.",
+      "roleUpdateFailed": "Role could not be updated.",
+      "removeSelf": "Use 'Leave family' to remove yourself.",
+      "memberNotFound": "Member not found.",
+      "memberLastAdmin": "The last admin cannot be removed.",
+      "memberRemoveFailed": "Member could not be removed.",
+      "leaveFailed": "Could not leave the family.",
+      "languageFailed": "Language could not be updated.",
+      "noFamily": "No family.",
+      "quoteAdminOnly": "Only admins can change the quote.",
+      "quoteSaveFailed": "Quote could not be saved."
+    },
+    "calendar": {
+      "loadFailed": "Events could not be loaded.",
+      "createFailed": "Event could not be created.",
+      "notFound": "Event not found.",
+      "updateFailed": "Event could not be updated.",
+      "exceptionFailed": "Exception could not be created.",
+      "seriesUpdateFailed": "Series could not be updated.",
+      "seriesCreateFailed": "New series could not be created.",
+      "deleteFailed": "Event could not be deleted.",
+      "seriesDeleteFailed": "Series could not be deleted."
+    },
+    "calInt": {
+      "loadFailed": "Integrations could not be loaded.",
+      "saveFailed": "Integration could not be saved.",
+      "notFound": "Integration not found.",
+      "calendarsFailed": "Calendars could not be retrieved.",
+      "calendarsUpdateFailed": "Calendars could not be updated.",
+      "syncIntervalFailed": "Sync interval could not be updated.",
+      "disconnectFailed": "Integration could not be disconnected.",
+      "noCalendars": "No calendars selected for sync.",
+      "eventsSaveFailed": "Events could not be saved.",
+      "syncFailed": "Sync failed: {message}",
+      "externalLoadFailed": "External events could not be loaded."
+    },
+    "tasks": {
+      "loadFailed": "Tasks could not be loaded.",
+      "createFailed": "Task could not be created.",
+      "notFound": "Task not found.",
+      "updateFailed": "Task could not be updated.",
+      "deleteFailed": "Task could not be deleted.",
+      "seriesUpdateFailed": "Series could not be updated.",
+      "seriesCreateFailed": "New series could not be created.",
+      "seriesDeleteFailed": "Series could not be deleted.",
+      "exceptionFailed": "Exception could not be created.",
+      "completeFailed": "Task could not be marked as completed.",
+      "onlyAssignee": "You can only complete tasks assigned to you.",
+      "notYourFamily": "This task does not belong to your family.",
+      "challengeFailed": "Weekly challenge could not be updated."
+    },
+    "shopping": {
+      "listsLoadFailed": "Shopping lists could not be loaded.",
+      "listNotFound": "Shopping list not found.",
+      "itemsLoadFailed": "Items could not be loaded.",
+      "listCreateFailed": "Shopping list could not be created.",
+      "listNameFailed": "Name could not be updated.",
+      "listDeleteFailed": "Shopping list could not be deleted.",
+      "itemAddFailed": "Item could not be added.",
+      "itemUpdateFailed": "Item could not be updated.",
+      "itemDeleteFailed": "Item could not be deleted.",
+      "checkedDeleteFailed": "Checked items could not be deleted.",
+      "suggestionsFailed": "Suggestions could not be loaded."
+    },
+    "chat": {
+      "channelsLoadFailed": "Channels could not be loaded.",
+      "messagesLoadFailed": "Messages could not be loaded.",
+      "sendFailed": "Message could not be sent.",
+      "selfMessage": "You cannot message yourself.",
+      "userNotFound": "User not found in your family.",
+      "channelCreateFailed": "Channel could not be created.",
+      "membersAddFailed": "Members could not be added.",
+      "readStatusFailed": "Read status could not be updated.",
+      "familyNotFound": "Family chat not found.",
+      "messageNotFound": "Message not found.",
+      "messageDeleteFailed": "Message could not be deleted.",
+      "ownMessagesOnly": "Only your own messages can be edited.",
+      "messageEditFailed": "Message could not be edited.",
+      "deleteAdminOnly": "Only admins and adults can delete chats.",
+      "channelNotFound": "Channel not found.",
+      "familyChatUndeletable": "The family chat cannot be deleted.",
+      "deleteFailed": "Chat could not be deleted.",
+      "uploadFailed": "Image could not be uploaded.",
+      "imageNotFound": "Message or image not found.",
+      "imageDeleteFailed": "Image could not be deleted.",
+      "messageUpdateFailed": "Message could not be updated.",
+      "urlFailed": "URL could not be created.",
+      "rateLimited": "Too many messages. Please wait a moment."
+    },
+    "recipes": {
+      "loadFailed": "Recipes could not be loaded.",
+      "createFailed": "Recipe could not be created.",
+      "notFound": "Recipe not found.",
+      "updateFailed": "Recipe could not be updated.",
+      "deleteFailed": "Recipe could not be deleted.",
+      "ingredientsUpdateFailed": "Ingredients could not be updated.",
+      "ingredientsSaveFailed": "Ingredients could not be saved.",
+      "planLoadFailed": "Meal plan could not be loaded.",
+      "entryUpdateFailed": "Entry could not be updated.",
+      "entryCreateFailed": "Entry could not be created.",
+      "entryDeleteFailed": "Entry could not be deleted.",
+      "noIngredients": "No ingredients available.",
+      "toListFailed": "Ingredients could not be added to the list.",
+      "imageUploadFailed": "Image could not be uploaded."
+    },
+    "rewards": {
+      "overviewFailed": "Points overview could not be loaded.",
+      "historyFailed": "Points history could not be loaded.",
+      "profileNotFound": "Profile not found or not in your family.",
+      "manualFailed": "Points could not be updated.",
+      "zeroAmount": "Amount cannot be 0.",
+      "leaderboardFailed": "Leaderboard could not be loaded.",
+      "loadFailed": "Rewards could not be loaded.",
+      "createFailed": "Reward could not be created.",
+      "notFound": "Reward not found.",
+      "updateFailed": "Reward could not be updated.",
+      "insufficientPoints": "Not enough points.",
+      "unavailable": "This reward is no longer available.",
+      "redeemFailed": "Reward could not be redeemed.",
+      "badgesFailed": "Badges could not be loaded.",
+      "pointsExceeded": "Points exceed the maximum.",
+      "pointsFailed": "Points could not be awarded."
+    },
+    "goals": {
+      "loadFailed": "Family goal could not be loaded.",
+      "contributionsFailed": "Contributions could not be loaded.",
+      "pastLoadFailed": "Past goals could not be loaded.",
+      "activeExists": "An active family goal already exists. Please complete it first.",
+      "createFailed": "Family goal could not be created.",
+      "notActive": "This goal is no longer active.",
+      "noPoints": "No points available to contribute.",
+      "notFound": "Family goal not found.",
+      "contributeFailed": "Points could not be contributed.",
+      "alreadyCompleted": "This goal is already completed.",
+      "completeFailed": "Family goal could not be completed."
+    },
+    "jars": {
+      "loadFailed": "Jars could not be loaded.",
+      "createFailed": "Jar could not be created.",
+      "childNotFound": "Child not found or not in your family.",
+      "notFound": "Jar not found.",
+      "updateFailed": "Jar could not be updated.",
+      "deleteFailed": "Jar could not be deleted.",
+      "noPoints": "No points to allocate.",
+      "historyFailed": "Jar history could not be loaded.",
+      "sortEmpty": "No jars to sort.",
+      "sortInvalid": "Invalid jar IDs.",
+      "sortFailed": "Jars could not be reordered.",
+      "childrenFailed": "Children could not be loaded.",
+      "allLoadFailed": "Jars could not be loaded."
+    },
+    "rituals": {
+      "loadFailed": "Rituals could not be loaded.",
+      "createFailed": "Ritual could not be created.",
+      "notFound": "Ritual not found.",
+      "updateFailed": "Ritual could not be updated.",
+      "deleteFailed": "Ritual could not be deleted.",
+      "sessionLoadFailed": "Active ritual session could not be loaded.",
+      "sessionStartFailed": "Ritual session could not be started.",
+      "sessionUpdateFailed": "Session could not be updated.",
+      "sessionEndFailed": "Session could not be ended."
+    },
+    "timer": {
+      "loadFailed": "Templates could not be loaded.",
+      "createFailed": "Template could not be created.",
+      "notFound": "Template not found.",
+      "updateFailed": "Template could not be updated.",
+      "deleteFailed": "Template could not be deleted."
+    },
+    "moments": {
+      "loadFailed": "Moments could not be loaded.",
+      "latestFailed": "Latest moment could not be loaded.",
+      "createFailed": "Moment could not be created.",
+      "photoFailed": "Photo could not be uploaded.",
+      "notFound": "Moment not found.",
+      "deleteFailed": "Moment could not be deleted.",
+      "reactionFailed": "Reaction could not be saved."
+    },
+    "notifications": {
+      "loadFailed": "Notifications could not be loaded.",
+      "updateFailed": "Notification could not be updated.",
+      "bulkUpdateFailed": "Notifications could not be updated.",
+      "settingsLoadFailed": "Settings could not be loaded.",
+      "settingsSaveFailed": "Setting could not be saved."
+    },
+    "assistant": {
+      "keyEncryptFailed": "API key could not be encrypted. Check server configuration.",
+      "keySaveFailed": "API key could not be saved.",
+      "keyDeleteFailed": "API key could not be deleted."
+    }
+  },
 
   "auth": {
     "login": {
@@ -551,7 +811,8 @@
       "rank2": "Rank 2",
       "roleChild": "Child",
       "roleAdmin": "Admin",
-      "roleAdult": "Adult"
+      "roleAdult": "Adult",
+      "ariaLabel": "Family Leaderboard"
     },
     "achievements": {
       "title": "Your Achievements",
@@ -651,7 +912,9 @@
       "visibleToggle": "Visible in shop",
       "visibleHint": "Disabled rewards are hidden from children.",
       "updated": "Reward updated",
+      "updatedDescription": "\"{title}\" has been saved.",
       "created": "Reward created",
+      "createdDescription": "\"{title}\" is now available in the shop.",
       "error": "Reward could not be saved."
     },
     "jars": {
@@ -844,7 +1107,9 @@
       "stepTimerHint": "You can set an individual time for each step.",
       "pointsToggle": "Reward points",
       "nameRequired": "Name is required.",
-      "stepsRequired": "At least one step with a name is required."
+      "stepsRequired": "At least one step with a name is required.",
+      "timerDurationAria": "Timer duration in minutes",
+      "rewardPointsAria": "Reward points"
     },
     "stepItem": {
       "aria": "Step {order}: {title}",
@@ -1206,7 +1471,8 @@
       "roleChangeError": "Role could not be changed.",
       "removeError": "Member could not be removed.",
       "inviteDialogTitle": "Invite Member",
-      "inviteDialogDescription": "Invite new members via email or invite code."
+      "inviteDialogDescription": "Invite new members via email or invite code.",
+      "changeRoleAria": "Change role"
     },
 
     "language": {

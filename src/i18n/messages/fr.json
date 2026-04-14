@@ -39,6 +39,266 @@
     "edit": "Modifier",
     "actions": "Actions"
   },
+  "emojiPicker": {
+    "rewards": "Récompenses",
+    "food": "Nourriture",
+    "activities": "Activités",
+    "animals": "Animaux",
+    "nature": "Nature",
+    "faces": "Visages",
+    "objects": "Objets"
+  },
+  "errors": {
+    "auth": {
+      "notLoggedIn": "Non connecté.",
+      "noFamily": "Tu n'appartiens à aucune famille.",
+      "invalidInput": "Données invalides.",
+      "rateLimited": "Trop de requêtes. Réessaie plus tard.",
+      "rateLimitedShort": "Trop de requêtes. Patiente un instant.",
+      "unknown": "Erreur inconnue.",
+      "loginFailed": "Échec de la connexion. Vérifie tes identifiants.",
+      "loginRateLimited": "Trop de tentatives de connexion. Réessaie plus tard.",
+      "registerRateLimited": "Trop de tentatives d'inscription. Réessaie plus tard.",
+      "emailExists": "Cette adresse e-mail est déjà enregistrée. Connecte-toi.",
+      "emailRateLimited": "Trop d'e-mails envoyés. Attends une heure et réessaie.",
+      "registerFailed": "Échec de l'inscription. Réessaie.",
+      "invalidEmail": "Entre une adresse e-mail valide.",
+      "genericError": "Quelque chose s'est mal passé. Réessaie.",
+      "emailSendFailed": "L'e-mail n'a pas pu être envoyé. Réessaie."
+    },
+    "perm": {
+      "denied": "Non autorisé.",
+      "adminOnly": "Seuls les admins peuvent effectuer cette action.",
+      "adultRequired": "Seuls les adultes et admins peuvent effectuer cette action.",
+      "deleteDenied": "Pas l'autorisation de supprimer.",
+      "otherFamilyMember": "Non autorisé — autre membre de la famille.",
+      "ownHistoryOnly": "Tu ne peux voir que ton propre historique de points.",
+      "ownJarsOnly": "Tu ne peux voir que tes propres tirelires.",
+      "accessDenied": "Accès refusé."
+    },
+    "val": {
+      "invalid": "Données invalides.",
+      "invalidId": "ID invalide.",
+      "invalidFilter": "Filtres invalides.",
+      "invalidEmail": "Entre une adresse e-mail valide.",
+      "invalidCode": "Entre un code valide à 6 chiffres.",
+      "invalidLanguage": "Langue invalide.",
+      "invalidWeek": "Identifiant de semaine invalide.",
+      "fileTooLarge": "Le fichier est trop volumineux (max. 5 Mo).",
+      "fileInvalidType": "Seuls JPEG, PNG et WebP sont autorisés.",
+      "noFile": "Aucun fichier sélectionné.",
+      "noChanges": "Aucune modification spécifiée.",
+      "quoteTooLong": "La citation ne doit pas dépasser 500 caractères."
+    },
+    "rate": {
+      "limited": "Trop de requêtes. Réessaie plus tard.",
+      "limitedShort": "Trop de requêtes. Patiente un instant.",
+      "syncLimited": "Trop de synchronisations. Patiente un instant.",
+      "uploadLimited": "Trop de téléchargements. Patiente un instant.",
+      "inviteLimited": "Trop d'invitations. Réessaie plus tard.",
+      "joinLimited": "Trop de tentatives. Réessaie plus tard."
+    },
+    "family": {
+      "notFound": "Famille introuvable.",
+      "alreadyMember": "Tu appartiens déjà à une famille.",
+      "createFailed": "Impossible de créer la famille. Réessaie.",
+      "inviteInvalid": "Code d'invitation invalide ou expiré.",
+      "inviteEmailFailed": "L'invitation par e-mail n'a pas pu être envoyée. Réessaie.",
+      "inviteSaveFailed": "L'invitation n'a pas pu être enregistrée. L'e-mail a été envoyé.",
+      "codeDeactivateFailed": "Les anciens codes n'ont pas pu être désactivés. Réessaie.",
+      "codeCreateFailed": "Le code n'a pas pu être créé. Réessaie.",
+      "nameUpdateFailed": "Le nom de famille n'a pas pu être mis à jour.",
+      "roleLastAdmin": "Il doit rester au moins un admin dans la famille.",
+      "roleUpdateFailed": "Le rôle n'a pas pu être mis à jour.",
+      "removeSelf": "Utilise 'Quitter la famille' pour te retirer.",
+      "memberNotFound": "Membre introuvable.",
+      "memberLastAdmin": "Le dernier admin ne peut pas être retiré.",
+      "memberRemoveFailed": "Le membre n'a pas pu être retiré.",
+      "leaveFailed": "Impossible de quitter la famille.",
+      "languageFailed": "La langue n'a pas pu être mise à jour.",
+      "noFamily": "Pas de famille.",
+      "quoteAdminOnly": "Seuls les admins peuvent modifier la citation.",
+      "quoteSaveFailed": "La citation n'a pas pu être enregistrée."
+    },
+    "calendar": {
+      "loadFailed": "Les événements n'ont pas pu être chargés.",
+      "createFailed": "L'événement n'a pas pu être créé.",
+      "notFound": "Événement introuvable.",
+      "updateFailed": "L'événement n'a pas pu être mis à jour.",
+      "exceptionFailed": "L'exception n'a pas pu être créée.",
+      "seriesUpdateFailed": "La série n'a pas pu être mise à jour.",
+      "seriesCreateFailed": "La nouvelle série n'a pas pu être créée.",
+      "deleteFailed": "L'événement n'a pas pu être supprimé.",
+      "seriesDeleteFailed": "La série n'a pas pu être supprimée."
+    },
+    "calInt": {
+      "loadFailed": "Les intégrations n'ont pas pu être chargées.",
+      "saveFailed": "L'intégration n'a pas pu être enregistrée.",
+      "notFound": "Intégration introuvable.",
+      "calendarsFailed": "Les calendriers n'ont pas pu être récupérés.",
+      "calendarsUpdateFailed": "Les calendriers n'ont pas pu être mis à jour.",
+      "syncIntervalFailed": "L'intervalle de sync n'a pas pu être mis à jour.",
+      "disconnectFailed": "L'intégration n'a pas pu être déconnectée.",
+      "noCalendars": "Aucun calendrier sélectionné pour la synchronisation.",
+      "eventsSaveFailed": "Les événements n'ont pas pu être enregistrés.",
+      "syncFailed": "Échec de la synchronisation : {message}",
+      "externalLoadFailed": "Les événements externes n'ont pas pu être chargés."
+    },
+    "tasks": {
+      "loadFailed": "Les tâches n'ont pas pu être chargées.",
+      "createFailed": "La tâche n'a pas pu être créée.",
+      "notFound": "Tâche introuvable.",
+      "updateFailed": "La tâche n'a pas pu être mise à jour.",
+      "deleteFailed": "La tâche n'a pas pu être supprimée.",
+      "seriesUpdateFailed": "La série n'a pas pu être mise à jour.",
+      "seriesCreateFailed": "La nouvelle série n'a pas pu être créée.",
+      "seriesDeleteFailed": "La série n'a pas pu être supprimée.",
+      "exceptionFailed": "L'exception n'a pas pu être créée.",
+      "completeFailed": "La tâche n'a pas pu être marquée comme terminée.",
+      "onlyAssignee": "Tu ne peux terminer que les tâches qui te sont assignées.",
+      "notYourFamily": "Cette tâche n'appartient pas à ta famille.",
+      "challengeFailed": "Le défi de la semaine n'a pas pu être mis à jour."
+    },
+    "shopping": {
+      "listsLoadFailed": "Les listes de courses n'ont pas pu être chargées.",
+      "listNotFound": "Liste de courses introuvable.",
+      "itemsLoadFailed": "Les articles n'ont pas pu être chargés.",
+      "listCreateFailed": "La liste de courses n'a pas pu être créée.",
+      "listNameFailed": "Le nom n'a pas pu être mis à jour.",
+      "listDeleteFailed": "La liste de courses n'a pas pu être supprimée.",
+      "itemAddFailed": "L'article n'a pas pu être ajouté.",
+      "itemUpdateFailed": "L'article n'a pas pu être mis à jour.",
+      "itemDeleteFailed": "L'article n'a pas pu être supprimé.",
+      "checkedDeleteFailed": "Les articles cochés n'ont pas pu être supprimés.",
+      "suggestionsFailed": "Les suggestions n'ont pas pu être chargées."
+    },
+    "chat": {
+      "channelsLoadFailed": "Les canaux n'ont pas pu être chargés.",
+      "messagesLoadFailed": "Les messages n'ont pas pu être chargés.",
+      "sendFailed": "Le message n'a pas pu être envoyé.",
+      "selfMessage": "Tu ne peux pas t'envoyer un message.",
+      "userNotFound": "Utilisateur introuvable dans ta famille.",
+      "channelCreateFailed": "Le canal n'a pas pu être créé.",
+      "membersAddFailed": "Les membres n'ont pas pu être ajoutés.",
+      "readStatusFailed": "Le statut de lecture n'a pas pu être mis à jour.",
+      "familyNotFound": "Chat familial introuvable.",
+      "messageNotFound": "Message introuvable.",
+      "messageDeleteFailed": "Le message n'a pas pu être supprimé.",
+      "ownMessagesOnly": "Seuls tes propres messages peuvent être modifiés.",
+      "messageEditFailed": "Le message n'a pas pu être modifié.",
+      "deleteAdminOnly": "Seuls les admins et adultes peuvent supprimer des chats.",
+      "channelNotFound": "Canal introuvable.",
+      "familyChatUndeletable": "Le chat familial ne peut pas être supprimé.",
+      "deleteFailed": "Le chat n'a pas pu être supprimé.",
+      "uploadFailed": "L'image n'a pas pu être téléchargée.",
+      "imageNotFound": "Message ou image introuvable.",
+      "imageDeleteFailed": "L'image n'a pas pu être supprimée.",
+      "messageUpdateFailed": "Le message n'a pas pu être mis à jour.",
+      "urlFailed": "L'URL n'a pas pu être créée.",
+      "rateLimited": "Trop de messages. Patiente un instant."
+    },
+    "recipes": {
+      "loadFailed": "Les recettes n'ont pas pu être chargées.",
+      "createFailed": "La recette n'a pas pu être créée.",
+      "notFound": "Recette introuvable.",
+      "updateFailed": "La recette n'a pas pu être mise à jour.",
+      "deleteFailed": "La recette n'a pas pu être supprimée.",
+      "ingredientsUpdateFailed": "Les ingrédients n'ont pas pu être mis à jour.",
+      "ingredientsSaveFailed": "Les ingrédients n'ont pas pu être enregistrés.",
+      "planLoadFailed": "Le plan de repas n'a pas pu être chargé.",
+      "entryUpdateFailed": "L'entrée n'a pas pu être mise à jour.",
+      "entryCreateFailed": "L'entrée n'a pas pu être créée.",
+      "entryDeleteFailed": "L'entrée n'a pas pu être supprimée.",
+      "noIngredients": "Aucun ingrédient disponible.",
+      "toListFailed": "Les ingrédients n'ont pas pu être ajoutés à la liste.",
+      "imageUploadFailed": "L'image n'a pas pu être téléchargée."
+    },
+    "rewards": {
+      "overviewFailed": "L'aperçu des points n'a pas pu être chargé.",
+      "historyFailed": "L'historique des points n'a pas pu être chargé.",
+      "profileNotFound": "Profil introuvable ou pas dans ta famille.",
+      "manualFailed": "Les points n'ont pas pu être mis à jour.",
+      "zeroAmount": "Le montant ne peut pas être 0.",
+      "leaderboardFailed": "Le classement n'a pas pu être chargé.",
+      "loadFailed": "Les récompenses n'ont pas pu être chargées.",
+      "createFailed": "La récompense n'a pas pu être créée.",
+      "notFound": "Récompense introuvable.",
+      "updateFailed": "La récompense n'a pas pu être mise à jour.",
+      "insufficientPoints": "Pas assez de points.",
+      "unavailable": "Cette récompense n'est plus disponible.",
+      "redeemFailed": "La récompense n'a pas pu être échangée.",
+      "badgesFailed": "Les badges n'ont pas pu être chargés.",
+      "pointsExceeded": "Le nombre de points dépasse le maximum.",
+      "pointsFailed": "Les points n'ont pas pu être attribués."
+    },
+    "goals": {
+      "loadFailed": "L'objectif familial n'a pas pu être chargé.",
+      "contributionsFailed": "Les contributions n'ont pas pu être chargées.",
+      "pastLoadFailed": "Les objectifs passés n'ont pas pu être chargés.",
+      "activeExists": "Un objectif familial actif existe déjà. Termine-le d'abord.",
+      "createFailed": "L'objectif familial n'a pas pu être créé.",
+      "notActive": "Cet objectif n'est plus actif.",
+      "noPoints": "Aucun point disponible pour contribuer.",
+      "notFound": "Objectif familial introuvable.",
+      "contributeFailed": "Les points n'ont pas pu être contribués.",
+      "alreadyCompleted": "Cet objectif est déjà terminé.",
+      "completeFailed": "L'objectif familial n'a pas pu être terminé."
+    },
+    "jars": {
+      "loadFailed": "Les tirelires n'ont pas pu être chargées.",
+      "createFailed": "La tirelire n'a pas pu être créée.",
+      "childNotFound": "Enfant introuvable ou pas dans ta famille.",
+      "notFound": "Tirelire introuvable.",
+      "updateFailed": "La tirelire n'a pas pu être mise à jour.",
+      "deleteFailed": "La tirelire n'a pas pu être supprimée.",
+      "noPoints": "Aucun point à distribuer.",
+      "historyFailed": "L'historique de la tirelire n'a pas pu être chargé.",
+      "sortEmpty": "Aucune tirelire à trier.",
+      "sortInvalid": "IDs de tirelires invalides.",
+      "sortFailed": "Les tirelires n'ont pas pu être réorganisées.",
+      "childrenFailed": "Les enfants n'ont pas pu être chargés.",
+      "allLoadFailed": "Les tirelires n'ont pas pu être chargées."
+    },
+    "rituals": {
+      "loadFailed": "Les rituels n'ont pas pu être chargés.",
+      "createFailed": "Le rituel n'a pas pu être créé.",
+      "notFound": "Rituel introuvable.",
+      "updateFailed": "Le rituel n'a pas pu être mis à jour.",
+      "deleteFailed": "Le rituel n'a pas pu être supprimé.",
+      "sessionLoadFailed": "La session de rituel active n'a pas pu être chargée.",
+      "sessionStartFailed": "La session de rituel n'a pas pu être démarrée.",
+      "sessionUpdateFailed": "La session n'a pas pu être mise à jour.",
+      "sessionEndFailed": "La session n'a pas pu être terminée."
+    },
+    "timer": {
+      "loadFailed": "Les modèles n'ont pas pu être chargés.",
+      "createFailed": "Le modèle n'a pas pu être créé.",
+      "notFound": "Modèle introuvable.",
+      "updateFailed": "Le modèle n'a pas pu être mis à jour.",
+      "deleteFailed": "Le modèle n'a pas pu être supprimé."
+    },
+    "moments": {
+      "loadFailed": "Les moments n'ont pas pu être chargés.",
+      "latestFailed": "Le dernier moment n'a pas pu être chargé.",
+      "createFailed": "Le moment n'a pas pu être créé.",
+      "photoFailed": "La photo n'a pas pu être téléchargée.",
+      "notFound": "Moment introuvable.",
+      "deleteFailed": "Le moment n'a pas pu être supprimé.",
+      "reactionFailed": "La réaction n'a pas pu être enregistrée."
+    },
+    "notifications": {
+      "loadFailed": "Les notifications n'ont pas pu être chargées.",
+      "updateFailed": "La notification n'a pas pu être mise à jour.",
+      "bulkUpdateFailed": "Les notifications n'ont pas pu être mises à jour.",
+      "settingsLoadFailed": "Les paramètres n'ont pas pu être chargés.",
+      "settingsSaveFailed": "Le paramètre n'a pas pu être enregistré."
+    },
+    "assistant": {
+      "keyEncryptFailed": "La clé API n'a pas pu être chiffrée. Vérifier la configuration du serveur.",
+      "keySaveFailed": "La clé API n'a pas pu être enregistrée.",
+      "keyDeleteFailed": "La clé API n'a pas pu être supprimée."
+    }
+  },
 
   "auth": {
     "login": {
@@ -551,7 +811,8 @@
       "rank2": "2e",
       "roleChild": "Enfant",
       "roleAdmin": "Admin",
-      "roleAdult": "Adulte"
+      "roleAdult": "Adulte",
+      "ariaLabel": "Classement familial"
     },
     "achievements": {
       "title": "Tes succès",
@@ -651,7 +912,9 @@
       "visibleToggle": "Visible dans la boutique",
       "visibleHint": "Les récompenses désactivées ne sont pas visibles pour les enfants.",
       "updated": "Récompense mise à jour",
+      "updatedDescription": "\"{title}\" a été enregistrée.",
       "created": "Récompense créée",
+      "createdDescription": "\"{title}\" est maintenant disponible dans la boutique.",
       "error": "Impossible d'enregistrer la récompense."
     },
     "jars": {
@@ -844,7 +1107,9 @@
       "stepTimerHint": "Tu peux définir un temps individuel pour chaque étape.",
       "pointsToggle": "Points de récompense",
       "nameRequired": "Le nom est obligatoire.",
-      "stepsRequired": "Au moins une étape avec un nom est nécessaire."
+      "stepsRequired": "Au moins une étape avec un nom est nécessaire.",
+      "timerDurationAria": "Durée du minuteur en minutes",
+      "rewardPointsAria": "Points de récompense"
     },
     "stepItem": {
       "aria": "Étape {order} : {title}",
@@ -1206,7 +1471,8 @@
       "roleChangeError": "Impossible de changer le rôle.",
       "removeError": "Impossible de retirer le membre.",
       "inviteDialogTitle": "Inviter un membre",
-      "inviteDialogDescription": "Invite de nouveaux membres par e-mail ou code d'invitation."
+      "inviteDialogDescription": "Invite de nouveaux membres par e-mail ou code d'invitation.",
+      "changeRoleAria": "Changer le rôle"
     },
 
     "language": {

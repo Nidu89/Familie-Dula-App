@@ -10,13 +10,15 @@ interface AchievementGalleryProps {
 }
 
 export function AchievementGallery({ achievements }: AchievementGalleryProps) {
+  const t = useTranslations("rewards.achievements")
+
   if (achievements.length === 0) {
     return (
-      <section aria-label="Achievements">
+      <section aria-label={t("title")}>
         <div className="mb-4 flex items-baseline gap-3">
-          <h2 className="font-display text-xl font-bold">Deine Erfolge</h2>
+          <h2 className="font-display text-xl font-bold">{t("title")}</h2>
           <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
-            Badges
+            {t("badge")}
           </span>
         </div>
         <div className="flex flex-col items-center gap-3 rounded-[2rem] bg-card py-12 text-center">
@@ -24,7 +26,7 @@ export function AchievementGallery({ achievements }: AchievementGalleryProps) {
             <Award className="h-7 w-7 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Noch keine Abzeichen verfuegbar.
+            {t("empty")}
           </p>
         </div>
       </section>
@@ -41,9 +43,9 @@ export function AchievementGallery({ achievements }: AchievementGalleryProps) {
   const earnedCount = achievements.filter((a) => a.earned).length
 
   return (
-    <section aria-label="Achievements">
+    <section aria-label={t("title")}>
       <div className="mb-4 flex items-baseline gap-3">
-        <h2 className="font-display text-xl font-bold">Deine Erfolge</h2>
+        <h2 className="font-display text-xl font-bold">{t("title")}</h2>
         <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
           {earnedCount} / {achievements.length}
         </span>

@@ -404,7 +404,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
                 if (timerMinutes === "" || timerMinutes < 1) setTimerMinutes(1)
               }}
               className="w-20 rounded-xl text-center"
-              aria-label="Timer-Dauer in Minuten"
+              aria-label={t("timerDurationAria")}
             />
             <span className="text-sm text-muted-foreground">{tc("minutes")}</span>
           </div>
@@ -450,7 +450,7 @@ function RitualFormInner({ ritual, onSubmit, onCancel }: RitualFormInnerProps) {
                 if (rewardPoints === "") setRewardPoints(0)
               }}
               className="w-20 rounded-xl text-center"
-              aria-label="Belohnungspunkte"
+              aria-label={t("rewardPointsAria")}
             />
             <span className="text-sm text-muted-foreground">{tc("points")}</span>
           </div>

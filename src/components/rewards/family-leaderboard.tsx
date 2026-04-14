@@ -47,7 +47,7 @@ export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboard
 
   if (members.length === 0) {
     return (
-      <section className="rounded-[2rem] bg-card p-8" aria-label="Familien-Leaderboard">
+      <section className="rounded-[2rem] bg-card p-8" aria-label={t("ariaLabel")}>
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
             <Users className="h-7 w-7 text-muted-foreground" />
@@ -61,7 +61,7 @@ export function FamilyLeaderboard({ members, isAdultOrAdmin }: FamilyLeaderboard
   }
 
   return (
-    <section aria-label="Familien-Leaderboard">
+    <section aria-label={t("ariaLabel")}>
       <div className="mb-4 flex items-baseline gap-3">
         <h2 className="font-display text-xl font-bold">{t("title")}</h2>
         <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
