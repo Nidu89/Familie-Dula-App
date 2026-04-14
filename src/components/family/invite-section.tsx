@@ -32,6 +32,7 @@ import {
   inviteByEmailAction,
   generateInviteCodeAction,
 } from "@/lib/actions/family"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface InviteSectionProps {
   existingCode?: string | null
@@ -45,6 +46,7 @@ export function InviteSection({
   embedded = false,
 }: InviteSectionProps) {
   const t = useTranslations("family.invite")
+  const te = useErrorTranslation()
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [isCodeLoading, setIsCodeLoading] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState(false)
@@ -71,7 +73,7 @@ export function InviteSection({
     try {
       const result = await inviteByEmailAction(values.email)
       if (result?.error) {
-        setEmailError(result.error)
+        setEmailError(te(result.error))
       } else {
         setEmailSuccess(true)
         emailForm.reset()
@@ -90,7 +92,7 @@ export function InviteSection({
     try {
       const result = await generateInviteCodeAction()
       if ("error" in result && result.error) {
-        setCodeError(result.error as string)
+        setCodeError(te(result.error as string))
       } else if (result.code) {
         setInviteCode(result.code)
         // Simuliert: 7 Tage ab jetzt

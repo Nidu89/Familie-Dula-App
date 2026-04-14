@@ -27,6 +27,7 @@ import {
   allocatePointsToJarsAction,
   type SavingsJar,
 } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface AllocatePointsDialogProps {
   open: boolean
@@ -57,6 +58,7 @@ export function AllocatePointsDialog({
   const t = useTranslations("rewards.allocate")
   const tj = useTranslations("rewards.jars")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -115,7 +117,7 @@ export function AllocatePointsDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

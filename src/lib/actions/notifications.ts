@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
+import { E } from "@/lib/error-codes"
 import {
   getNotificationsSchema,
   markNotificationReadSchema,
@@ -53,10 +54,10 @@ export async function getNotificationsAction(
   input: { cursor?: string; limit?: number } = {}
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: "Nicht eingeloggt." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const parsed = getNotificationsSchema.safeParse(input)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const { cursor, limit } = parsed.data
   const supabase = await createClient()
@@ -75,7 +76,7 @@ export async function getNotificationsAction(
 
   const { data, error } = await query
 
-  if (error) return { error: "Benachrichtigungen konnten nicht geladen werden." }
+  if (error) return { error: E.NOTIF_LOAD_FAILED }
 
   const notifications: Notification[] = (data || []).map((n) => ({
     id: n.id,
@@ -122,15 +123,15 @@ export async function markNotificationReadAction(
   input: { notificationId: string }
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: "Nicht eingeloggt." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const ip = await getIP()
   if (!checkRateLimit(`markNotifRead:${ip}`, 60, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte warte kurz." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const parsed = markNotificationReadSchema.safeParse(input)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const supabase = await createClient()
 
@@ -140,7 +141,7 @@ export async function markNotificationReadAction(
     .eq("id", parsed.data.notificationId)
     .eq("user_id", user.id)
 
-  if (error) return { error: "Benachrichtigung konnte nicht aktualisiert werden." }
+  if (error) return { error: E.NOTIF_UPDATE_FAILED }
 
   return { success: true }
 }
@@ -152,11 +153,11 @@ export async function markNotificationReadAction(
 
 export async function markAllNotificationsReadAction() {
   const user = await getCurrentUser()
-  if (!user) return { error: "Nicht eingeloggt." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const ip = await getIP()
   if (!checkRateLimit(`markAllRead:${ip}`, 10, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte warte kurz." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const supabase = await createClient()
@@ -167,7 +168,7 @@ export async function markAllNotificationsReadAction() {
     .eq("user_id", user.id)
     .eq("is_read", false)
 
-  if (error) return { error: "Benachrichtigungen konnten nicht aktualisiert werden." }
+  if (error) return { error: E.NOTIF_BULK_UPDATE_FAILED }
 
   return { success: true }
 }
@@ -180,7 +181,7 @@ export async function markAllNotificationsReadAction() {
 
 export async function getNotificationPreferencesAction() {
   const user = await getCurrentUser()
-  if (!user) return { error: "Nicht eingeloggt." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
 
@@ -190,7 +191,7 @@ export async function getNotificationPreferencesAction() {
     .eq("user_id", user.id)
     .limit(10)
 
-  if (error) return { error: "Einstellungen konnten nicht geladen werden." }
+  if (error) return { error: E.NOTIF_SETTINGS_LOAD_FAILED }
 
   // Build full preference list (default: enabled)
   const prefMap = new Map(
@@ -214,15 +215,15 @@ export async function updateNotificationPreferenceAction(
   input: { notificationType: string; enabled: boolean }
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: "Nicht eingeloggt." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const ip = await getIP()
   if (!checkRateLimit(`updatePref:${ip}`, 20, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte warte kurz." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const parsed = updatePreferenceSchema.safeParse(input)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const supabase = await createClient()
 
@@ -237,7 +238,7 @@ export async function updateNotificationPreferenceAction(
       { onConflict: "user_id,notification_type" }
     )
 
-  if (error) return { error: "Einstellung konnte nicht gespeichert werden." }
+  if (error) return { error: E.NOTIF_SETTINGS_SAVE_FAILED }
 
   return { success: true }
 }

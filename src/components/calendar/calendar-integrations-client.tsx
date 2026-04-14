@@ -35,6 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import {
   listIntegrationsAction,
   disconnectIntegrationAction,
@@ -57,6 +58,7 @@ export function CalendarIntegrationsClient() {
   const t = useTranslations("calendarIntegrations")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const searchParams = useSearchParams()
 
   const [integrations, setIntegrations] = useState<CalendarIntegration[]>([])
@@ -117,7 +119,7 @@ export function CalendarIntegrationsClient() {
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
       } else {
@@ -140,7 +142,7 @@ export function CalendarIntegrationsClient() {
     if ("error" in result) {
       toast({
         title: tc("error"),
-        description: result.error,
+        description: te(result.error),
         variant: "destructive",
       })
     } else {

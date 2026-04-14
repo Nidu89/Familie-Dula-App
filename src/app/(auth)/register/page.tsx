@@ -28,10 +28,12 @@ import {
   type RegisterFormValues,
 } from "@/lib/validations/auth"
 import { registerAction, resendConfirmationAction } from "@/lib/actions/auth"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -56,7 +58,7 @@ export default function RegisterPage() {
 
     const result = await registerAction(values.email, values.password, values.displayName)
     if (result?.error) {
-      setErrorMessage(result.error)
+      setErrorMessage(te(result.error))
       setIsLoading(false)
     } else {
       setSubmittedEmail(values.email)

@@ -12,6 +12,7 @@ import {
   type GetTasksFilterValues,
 } from "@/lib/validations/tasks"
 import { checkAndAwardAchievementsAction } from "@/lib/actions/rewards"
+import { E } from "@/lib/error-codes"
 
 // ============================================================
 // PROJ-5: Aufgaben & To-Dos – Server Actions
@@ -38,12 +39,12 @@ async function getCurrentProfile() {
 // Helper: verify caller is adult or admin
 async function verifyAdultOrAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
   if (!profile.family_id)
-    return { error: "Du gehoerst keiner Familie an.", profile: null }
+    return { error: E.AUTH_NO_FAMILY, profile: null }
   if (!["adult", "admin"].includes(profile.role ?? ""))
     return {
-      error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren.",
+      error: E.PERM_ADULT_REQUIRED,
       profile: null,
     }
   return { error: null, profile }
@@ -92,13 +93,13 @@ export async function getTasksAction(
   if (filters) {
     const parsed = getTasksFilterSchema.safeParse(filters)
     if (!parsed.success) {
-      return { error: "Ungueltige Filter." }
+      return { error: E.VAL_INVALID_FILTER }
     }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -167,7 +168,7 @@ export async function getTasksAction(
   const { data: rawTasks, error: tasksError } = await query
 
   if (tasksError) {
-    return { error: "Aufgaben konnten nicht geladen werden." }
+    return { error: E.TASK_LOAD_FAILED }
   }
 
   const tasks: Task[] = (rawTasks || []).map((t) => ({
@@ -231,11 +232,11 @@ export async function createTaskAction(data: {
 }): Promise<{ task: { id: string } } | { error: string }> {
   const parsed = createTaskSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -259,7 +260,7 @@ export async function createTaskAction(data: {
     .single()
 
   if (insertError || !task) {
-    return { error: "Aufgabe konnte nicht erstellt werden." }
+    return { error: E.TASK_CREATE_FAILED }
   }
 
   // Insert subtasks
@@ -305,11 +306,11 @@ export async function updateTaskAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = updateTaskSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -322,7 +323,7 @@ export async function updateTaskAction(
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Aufgabe nicht gefunden." }
+    return { error: E.TASK_NOT_FOUND }
   }
 
   const seriesMode = parsed.data.seriesMode || "single"
@@ -346,7 +347,7 @@ export async function updateTaskAction(
         .update({ ...updatePayload, is_exception: true })
         .eq("id", id)
 
-      if (updateError) return { error: "Aufgabe konnte nicht aktualisiert werden." }
+      if (updateError) return { error: E.TASK_UPDATE_FAILED }
     } else if (existing.recurrence_rule) {
       // This is a recurring parent – create exception
       const { data: exTask, error: exError } = await supabase
@@ -363,7 +364,7 @@ export async function updateTaskAction(
         .single()
 
       if (exError || !exTask)
-        return { error: "Ausnahme konnte nicht erstellt werden." }
+        return { error: E.TASK_EXCEPTION_FAILED }
 
       // Handle subtasks on the new exception
       if (parsed.data.subtasks && parsed.data.subtasks.length > 0) {
@@ -385,7 +386,7 @@ export async function updateTaskAction(
         .update(updatePayload)
         .eq("id", id)
 
-      if (updateError) return { error: "Aufgabe konnte nicht aktualisiert werden." }
+      if (updateError) return { error: E.TASK_UPDATE_FAILED }
     }
   } else if (seriesMode === "all") {
     const parentId = existing.recurrence_parent_id || existing.id
@@ -395,7 +396,7 @@ export async function updateTaskAction(
       .update(updatePayload)
       .eq("id", parentId)
 
-    if (updateError) return { error: "Serie konnte nicht aktualisiert werden." }
+    if (updateError) return { error: E.TASK_SERIES_UPDATE_FAILED }
 
     // Remove all exceptions
     await supabase
@@ -414,7 +415,7 @@ export async function updateTaskAction(
       is_exception: false,
     })
 
-    if (newError) return { error: "Neue Serie konnte nicht erstellt werden." }
+    if (newError) return { error: E.TASK_SERIES_CREATE_FAILED }
 
     // Delete future exceptions from old parent
     if (parsed.data.dueDate) {
@@ -458,11 +459,11 @@ export async function deleteTaskAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = deleteTaskSchema.safeParse({ id, seriesMode })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -474,7 +475,7 @@ export async function deleteTaskAction(
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Aufgabe nicht gefunden." }
+    return { error: E.TASK_NOT_FOUND }
   }
 
   if (parsed.data.seriesMode === "single") {
@@ -484,7 +485,7 @@ export async function deleteTaskAction(
       .delete()
       .eq("id", parsed.data.id)
 
-    if (deleteError) return { error: "Aufgabe konnte nicht geloescht werden." }
+    if (deleteError) return { error: E.TASK_DELETE_FAILED }
   } else if (parsed.data.seriesMode === "all") {
     const parentId = existing.recurrence_parent_id || existing.id
 
@@ -500,7 +501,7 @@ export async function deleteTaskAction(
       .delete()
       .eq("id", parentId)
 
-    if (deleteError) return { error: "Serie konnte nicht geloescht werden." }
+    if (deleteError) return { error: E.TASK_SERIES_DELETE_FAILED }
   } else if (parsed.data.seriesMode === "following") {
     const parentId = existing.recurrence_parent_id || existing.id
 
@@ -538,17 +539,17 @@ export async function completeTaskAction(
   taskId: string
 ): Promise<CompleteTaskResult | { error: string }> {
   if (!taskId || typeof taskId !== "string") {
-    return { error: "Ungueltige Aufgaben-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`completeTask:${ip}`, 60, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -560,15 +561,15 @@ export async function completeTaskAction(
   if (error) {
     // Map known error messages to user-friendly responses
     if (error.message.includes("Children can only complete")) {
-      return { error: "Du kannst nur dir zugewiesene Aufgaben erledigen." }
+      return { error: E.TASK_ONLY_ASSIGNEE }
     }
     if (error.message.includes("Task not found")) {
-      return { error: "Aufgabe nicht gefunden." }
+      return { error: E.TASK_NOT_FOUND }
     }
     if (error.message.includes("Not authorized")) {
-      return { error: "Nicht berechtigt." }
+      return { error: E.PERM_DENIED }
     }
-    return { error: "Aufgabe konnte nicht als erledigt markiert werden." }
+    return { error: E.TASK_COMPLETE_FAILED }
   }
 
   const result = data as {
@@ -620,11 +621,11 @@ export async function pinWeekChallengeAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = pinWeekChallengeSchema.safeParse({ taskId })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -634,15 +635,15 @@ export async function pinWeekChallengeAction(
 
   if (error) {
     if (error.message.includes("Not authorized")) {
-      return { error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren." }
+      return { error: E.PERM_ADULT_REQUIRED }
     }
     if (error.message.includes("Task not found")) {
-      return { error: "Aufgabe nicht gefunden." }
+      return { error: E.TASK_NOT_FOUND }
     }
     if (error.message.includes("does not belong")) {
-      return { error: "Diese Aufgabe gehoert nicht zu deiner Familie." }
+      return { error: E.TASK_NOT_YOUR_FAMILY }
     }
-    return { error: "Wochen-Challenge konnte nicht aktualisiert werden." }
+    return { error: E.TASK_CHALLENGE_FAILED }
   }
 
   return { success: true }

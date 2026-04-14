@@ -25,10 +25,12 @@ import {
 } from "@/components/ui/form"
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth"
 import { loginAction } from "@/lib/actions/auth"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 export default function LoginPage() {
   const t = useTranslations("auth.login")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -47,7 +49,7 @@ export default function LoginPage() {
 
     const result = await loginAction(values.email, values.password)
     if (result?.error) {
-      setErrorMessage(result.error)
+      setErrorMessage(te(result.error))
       setIsLoading(false)
     }
   }

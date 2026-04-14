@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createMomentAction } from "@/lib/actions/moments"
 import { toast } from "sonner"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface MomentFormDialogProps {
   open: boolean
@@ -29,6 +30,7 @@ export function MomentFormDialog({
 }: MomentFormDialogProps) {
   const t = useTranslations("moments")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const [isPending, startTransition] = useTransition()
   const [preview, setPreview] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -62,7 +64,7 @@ export function MomentFormDialog({
     startTransition(async () => {
       const result = await createMomentAction(formData)
       if ("error" in result) {
-        toast.error(result.error)
+        toast.error(te(result.error))
         return
       }
       toast.success(t("created"))

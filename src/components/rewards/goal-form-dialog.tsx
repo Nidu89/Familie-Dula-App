@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { createFamilyGoalAction } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import {
   createGoalSchema,
   type CreateGoalFormValues,
@@ -44,6 +45,7 @@ export function GoalFormDialog({
 }: GoalFormDialogProps) {
   const t = useTranslations("rewards")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -76,7 +78,7 @@ export function GoalFormDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

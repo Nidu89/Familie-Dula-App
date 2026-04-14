@@ -12,6 +12,7 @@ import {
   removeMemberSchema,
   updateLocaleSchema,
 } from "@/lib/validations/family"
+import { E } from "@/lib/error-codes"
 
 // ============================================================
 // PROJ-2 Family Server Actions – Supabase Backend
@@ -70,22 +71,22 @@ async function getCurrentProfile() {
 // Helper: verify caller is admin of their family
 async function verifyAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY, profile: null }
   if (profile.role !== "admin")
-    return { error: "Nur Admins duerfen diese Aktion ausfuehren.", profile: null }
+    return { error: E.PERM_ADMIN_ONLY, profile: null }
   return { error: null, profile }
 }
 
 export async function createFamilyAction(familyName: string) {
   const parsed = createFamilySchema.safeParse({ familyName })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`createFamily:${ip}`, 5, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const supabase = await createClient()
@@ -94,7 +95,7 @@ export async function createFamilyAction(familyName: string) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: "Nicht angemeldet." }
+    return { error: E.AUTH_NOT_LOGGED_IN }
   }
 
   // Check if user already belongs to a family
@@ -105,7 +106,7 @@ export async function createFamilyAction(familyName: string) {
     .single()
 
   if (existingProfile?.family_id) {
-    return { error: "Du gehoerst bereits einer Familie an." }
+    return { error: E.FAMILY_ALREADY_MEMBER }
   }
 
   // Create family and join as admin atomically via SECURITY DEFINER RPC
@@ -115,12 +116,12 @@ export async function createFamilyAction(familyName: string) {
 
   if (createError) {
     if (createError.message.includes("Already in a family")) {
-      return { error: "Du gehoerst bereits einer Familie an." }
+      return { error: E.FAMILY_ALREADY_MEMBER }
     }
     if (createError.message.includes("Not authenticated")) {
-      return { error: "Nicht angemeldet." }
+      return { error: E.AUTH_NOT_LOGGED_IN }
     }
-    return { error: "Familie konnte nicht erstellt werden. Bitte versuche es erneut." }
+    return { error: E.FAMILY_CREATE_FAILED }
   }
 
   // Invalidate middleware family-status cache
@@ -133,12 +134,12 @@ export async function createFamilyAction(familyName: string) {
 export async function joinFamilyByCodeAction(code: string) {
   const parsed = joinFamilyByCodeSchema.safeParse({ code })
   if (!parsed.success) {
-    return { error: "Bitte gib einen gueltigen 6-stelligen Code ein." }
+    return { error: E.VAL_INVALID_CODE }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`joinFamily:${ip}`, 10, 15 * 60 * 1000)) {
-    return { error: "Zu viele Versuche. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_JOIN_LIMITED }
   }
 
   const supabase = await createClient()
@@ -147,7 +148,7 @@ export async function joinFamilyByCodeAction(code: string) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: "Nicht angemeldet." }
+    return { error: E.AUTH_NOT_LOGGED_IN }
   }
 
   // Check if user already belongs to a family
@@ -158,7 +159,7 @@ export async function joinFamilyByCodeAction(code: string) {
     .single()
 
   if (existingProfile?.family_id) {
-    return { error: "Du gehoerst bereits einer Familie an." }
+    return { error: E.FAMILY_ALREADY_MEMBER }
   }
 
   // Atomically redeem the invite code: find, lock, mark used, join family
@@ -167,7 +168,7 @@ export async function joinFamilyByCodeAction(code: string) {
   })
 
   if (redeemError) {
-    return { error: "Einladungscode ungueltig oder abgelaufen." }
+    return { error: E.FAMILY_INVITE_INVALID }
   }
 
   // Invalidate middleware family-status cache
@@ -180,17 +181,17 @@ export async function joinFamilyByCodeAction(code: string) {
 export async function inviteByEmailAction(email: string) {
   const parsed = inviteByEmailSchema.safeParse({ email })
   if (!parsed.success) {
-    return { error: "Bitte gib eine gueltige E-Mail-Adresse ein." }
+    return { error: E.VAL_INVALID_EMAIL }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`inviteEmail:${ip}`, 10, 60 * 60 * 1000)) {
-    return { error: "Zu viele Einladungen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_INVITE_LIMITED }
   }
 
   const { error: adminError, profile } = await verifyAdmin()
   if (adminError || !profile) {
-    return { error: adminError || "Unbekannter Fehler." }
+    return { error: adminError || E.AUTH_UNKNOWN }
   }
 
   const supabase = await createClient()
@@ -207,7 +208,7 @@ export async function inviteByEmailAction(email: string) {
   })
 
   if (otpError) {
-    return { error: "E-Mail-Einladung konnte nicht gesendet werden. Bitte versuche es erneut." }
+    return { error: E.FAMILY_INVITE_EMAIL_FAILED }
   }
 
   // Create family_invitations record of type 'email'
@@ -220,7 +221,7 @@ export async function inviteByEmailAction(email: string) {
   })
 
   if (insertError) {
-    return { error: "Einladung konnte nicht gespeichert werden. Die E-Mail wurde aber gesendet." }
+    return { error: E.FAMILY_INVITE_SAVE_FAILED }
   }
 
   return { success: true }
@@ -229,12 +230,12 @@ export async function inviteByEmailAction(email: string) {
 export async function generateInviteCodeAction() {
   const ip = await getIP()
   if (!checkRateLimit(`generateCode:${ip}`, 10, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const { error: adminError, profile } = await verifyAdmin()
   if (adminError || !profile) {
-    return { error: adminError || "Unbekannter Fehler." }
+    return { error: adminError || E.AUTH_UNKNOWN }
   }
 
   const supabase = await createClient()
@@ -245,7 +246,7 @@ export async function generateInviteCodeAction() {
   })
 
   if (invalidateError) {
-    return { error: "Alte Codes konnten nicht deaktiviert werden. Bitte versuche es erneut." }
+    return { error: E.FAMILY_CODE_DEACTIVATE_FAILED }
   }
 
   // Generate random 6-digit numeric code
@@ -261,7 +262,7 @@ export async function generateInviteCodeAction() {
   })
 
   if (insertError) {
-    return { error: "Code konnte nicht erstellt werden. Bitte versuche es erneut." }
+    return { error: E.FAMILY_CODE_CREATE_FAILED }
   }
 
   return { success: true, code }
@@ -270,17 +271,17 @@ export async function generateInviteCodeAction() {
 export async function updateFamilyNameAction(familyName: string) {
   const parsed = updateFamilyNameSchema.safeParse({ familyName })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`updateName:${ip}`, 10, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const { error: adminError, profile } = await verifyAdmin()
   if (adminError || !profile) {
-    return { error: adminError || "Unbekannter Fehler." }
+    return { error: adminError || E.AUTH_UNKNOWN }
   }
 
   const supabase = await createClient()
@@ -291,7 +292,7 @@ export async function updateFamilyNameAction(familyName: string) {
     .eq("id", profile.family_id)
 
   if (updateError) {
-    return { error: "Familienname konnte nicht aktualisiert werden." }
+    return { error: E.FAMILY_NAME_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -300,17 +301,17 @@ export async function updateFamilyNameAction(familyName: string) {
 export async function updateMemberRoleAction(memberId: string, role: string) {
   const parsed = updateRoleSchema.safeParse({ memberId, role })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`updateRole:${ip}`, 20, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const { error: adminError, profile } = await verifyAdmin()
   if (adminError || !profile) {
-    return { error: adminError || "Unbekannter Fehler." }
+    return { error: adminError || E.AUTH_UNKNOWN }
   }
 
   const supabase = await createClient()
@@ -334,7 +335,7 @@ export async function updateMemberRoleAction(memberId: string, role: string) {
         .eq("role", "admin")
 
       if (count !== null && count <= 1) {
-        return { error: "Es muss mindestens ein Admin in der Familie verbleiben." }
+        return { error: E.FAMILY_ROLE_LAST_ADMIN }
       }
     }
   }
@@ -347,7 +348,7 @@ export async function updateMemberRoleAction(memberId: string, role: string) {
     .eq("family_id", profile.family_id)
 
   if (updateError) {
-    return { error: "Rolle konnte nicht aktualisiert werden." }
+    return { error: E.FAMILY_ROLE_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -356,22 +357,22 @@ export async function updateMemberRoleAction(memberId: string, role: string) {
 export async function removeMemberAction(memberId: string) {
   const parsed = removeMemberSchema.safeParse({ memberId })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`removeMember:${ip}`, 10, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const { error: adminError, profile } = await verifyAdmin()
   if (adminError || !profile) {
-    return { error: adminError || "Unbekannter Fehler." }
+    return { error: adminError || E.AUTH_UNKNOWN }
   }
 
   // Cannot remove yourself via this action (use leaveFamilyAction)
   if (parsed.data.memberId === profile.id) {
-    return { error: "Verwende 'Familie verlassen' um dich selbst zu entfernen." }
+    return { error: E.FAMILY_REMOVE_SELF }
   }
 
   const supabase = await createClient()
@@ -385,7 +386,7 @@ export async function removeMemberAction(memberId: string) {
     .single()
 
   if (!targetProfile) {
-    return { error: "Mitglied nicht gefunden." }
+    return { error: E.FAMILY_MEMBER_NOT_FOUND }
   }
 
   if (targetProfile.role === "admin") {
@@ -396,7 +397,7 @@ export async function removeMemberAction(memberId: string) {
       .eq("role", "admin")
 
     if (count !== null && count <= 1) {
-      return { error: "Der letzte Admin kann nicht entfernt werden." }
+      return { error: E.FAMILY_MEMBER_LAST_ADMIN }
     }
   }
 
@@ -408,7 +409,7 @@ export async function removeMemberAction(memberId: string) {
     .eq("family_id", profile.family_id)
 
   if (updateError) {
-    return { error: "Mitglied konnte nicht entfernt werden." }
+    return { error: E.FAMILY_MEMBER_REMOVE_FAILED }
   }
 
   return { success: true }
@@ -417,16 +418,16 @@ export async function removeMemberAction(memberId: string) {
 export async function leaveFamilyAction() {
   const ip = await getIP()
   if (!checkRateLimit(`leaveFamily:${ip}`, 5, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const profile = await getCurrentProfile()
   if (!profile) {
-    return { error: "Nicht angemeldet." }
+    return { error: E.AUTH_NOT_LOGGED_IN }
   }
 
   if (!profile.family_id) {
-    return { error: "Du gehoerst keiner Familie an." }
+    return { error: E.AUTH_NO_FAMILY }
   }
 
   // If admin, check if last admin
@@ -440,8 +441,7 @@ export async function leaveFamilyAction() {
 
     if (count !== null && count <= 1) {
       return {
-        error:
-          "Du bist der letzte Admin. Bitte ernenne zuerst ein anderes Mitglied zum Admin, bevor du die Familie verlaesst.",
+        error: E.FAMILY_ROLE_LAST_ADMIN,
       }
     }
   }
@@ -454,7 +454,7 @@ export async function leaveFamilyAction() {
     .eq("id", profile.id)
 
   if (updateError) {
-    return { error: "Familie konnte nicht verlassen werden." }
+    return { error: E.FAMILY_LEAVE_FAILED }
   }
 
   redirect("/onboarding")
@@ -498,12 +498,12 @@ export async function checkAndJoinEmailInvitationAction(): Promise<{ familyId: s
 export async function updateLocaleAction(locale: string) {
   const parsed = updateLocaleSchema.safeParse({ locale })
   if (!parsed.success) {
-    return { error: "Ungueltige Sprache." }
+    return { error: E.VAL_INVALID_LANGUAGE }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`updateLocale:${ip}`, 20, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const supabase = await createClient()
@@ -512,7 +512,7 @@ export async function updateLocaleAction(locale: string) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: "Nicht angemeldet." }
+    return { error: E.AUTH_NOT_LOGGED_IN }
   }
 
   const { error: updateError } = await supabase
@@ -521,7 +521,7 @@ export async function updateLocaleAction(locale: string) {
     .eq("id", user.id)
 
   if (updateError) {
-    return { error: "Sprache konnte nicht aktualisiert werden." }
+    return { error: E.FAMILY_LANGUAGE_FAILED }
   }
 
   return { success: true }
@@ -534,7 +534,7 @@ export async function getFamilyDataAction() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: "Nicht angemeldet." }
+    return { error: E.AUTH_NOT_LOGGED_IN }
   }
 
   // Get caller's profile
@@ -545,7 +545,7 @@ export async function getFamilyDataAction() {
     .single()
 
   if (!profile?.family_id) {
-    return { error: "Du gehoerst keiner Familie an." }
+    return { error: E.AUTH_NO_FAMILY }
   }
 
   // Load family name and week challenge task id
@@ -556,7 +556,7 @@ export async function getFamilyDataAction() {
     .single()
 
   if (!family) {
-    return { error: "Familie nicht gefunden." }
+    return { error: E.FAMILY_NOT_FOUND }
   }
 
   // Load all members (join via profiles)
@@ -621,14 +621,14 @@ export async function getFamilyQuoteAction(): Promise<
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("family_id")
     .eq("id", user.id)
     .single()
-  if (!profile?.family_id) return { error: "Keine Familie." }
+  if (!profile?.family_id) return { error: E.FAMILY_NO_FAMILY }
 
   const { data: family } = await supabase
     .from("families")
@@ -642,27 +642,27 @@ export async function getFamilyQuoteAction(): Promise<
 export async function updateFamilyQuoteAction(quote: string): Promise<
   { success: true } | { error: string }
 > {
-  if (quote.length > 500) return { error: "Zitat darf maximal 500 Zeichen lang sein." }
+  if (quote.length > 500) return { error: E.VAL_QUOTE_TOO_LONG }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("family_id, role")
     .eq("id", user.id)
     .single()
-  if (!profile?.family_id) return { error: "Keine Familie." }
-  if (profile.role !== "admin") return { error: "Nur Admins können das Zitat ändern." }
+  if (!profile?.family_id) return { error: E.FAMILY_NO_FAMILY }
+  if (profile.role !== "admin") return { error: E.FAMILY_QUOTE_ADMIN_ONLY }
 
   const { error: updateError } = await supabase
     .from("families")
     .update({ custom_quote: quote || null })
     .eq("id", profile.family_id)
 
-  if (updateError) return { error: "Zitat konnte nicht gespeichert werden." }
+  if (updateError) return { error: E.FAMILY_QUOTE_SAVE_FAILED }
   return { success: true }
 }

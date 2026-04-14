@@ -7,6 +7,7 @@ import {
   updateTimerTemplateSchema,
   deleteTimerTemplateSchema,
 } from "@/lib/validations/timer"
+import { E } from "@/lib/error-codes"
 
 // ============================================================
 // PROJ-13: Familien-Timer – Server Actions
@@ -33,12 +34,12 @@ async function getCurrentProfile() {
 // Helper: verify caller is adult or admin
 async function verifyAdultOrAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
   if (!profile.family_id)
-    return { error: "Du gehoerst keiner Familie an.", profile: null }
+    return { error: E.AUTH_NO_FAMILY, profile: null }
   if (!["adult", "admin"].includes(profile.role ?? ""))
     return {
-      error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren.",
+      error: E.PERM_ADULT_REQUIRED,
       profile: null,
     }
   return { error: null, profile }
@@ -66,8 +67,8 @@ export async function getTimerTemplatesAction(): Promise<
   { templates: TimerTemplate[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -80,7 +81,7 @@ export async function getTimerTemplatesAction(): Promise<
     .limit(50)
 
   if (error) {
-    return { error: "Vorlagen konnten nicht geladen werden." }
+    return { error: E.TIMER_LOAD_FAILED }
   }
 
   const templates: TimerTemplate[] = (data || []).map((row) => ({
@@ -106,17 +107,17 @@ export async function createTimerTemplateAction(data: {
 }): Promise<{ template: { id: string } } | { error: string }> {
   const parsed = createTimerTemplateSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`timerTemplate:${ip}`, 20, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -133,7 +134,7 @@ export async function createTimerTemplateAction(data: {
     .single()
 
   if (insertError || !template) {
-    return { error: "Vorlage konnte nicht erstellt werden." }
+    return { error: E.TIMER_CREATE_FAILED }
   }
 
   return { template: { id: template.id } }
@@ -150,12 +151,12 @@ export async function updateTimerTemplateAction(data: {
 }): Promise<{ success: true } | { error: string }> {
   const parsed = updateTimerTemplateSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -168,7 +169,7 @@ export async function updateTimerTemplateAction(data: {
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Vorlage nicht gefunden." }
+    return { error: E.TIMER_NOT_FOUND }
   }
 
   const { error: updateError } = await supabase
@@ -180,7 +181,7 @@ export async function updateTimerTemplateAction(data: {
     .eq("id", parsed.data.id)
 
   if (updateError) {
-    return { error: "Vorlage konnte nicht aktualisiert werden." }
+    return { error: E.TIMER_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -195,12 +196,12 @@ export async function deleteTimerTemplateAction(data: {
 }): Promise<{ success: true } | { error: string }> {
   const parsed = deleteTimerTemplateSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -213,7 +214,7 @@ export async function deleteTimerTemplateAction(data: {
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Vorlage nicht gefunden." }
+    return { error: E.TIMER_NOT_FOUND }
   }
 
   const { error: deleteError } = await supabase
@@ -222,7 +223,7 @@ export async function deleteTimerTemplateAction(data: {
     .eq("id", parsed.data.id)
 
   if (deleteError) {
-    return { error: "Vorlage konnte nicht geloescht werden." }
+    return { error: E.TIMER_DELETE_FAILED }
   }
 
   return { success: true }

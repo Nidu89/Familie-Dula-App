@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { createDirectChannelAction, deleteChannelAction, type ChatChannel } from "@/lib/actions/chat"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface ChatSidebarProps {
   channels: ChatChannel[]
@@ -51,6 +52,7 @@ export function ChatSidebar({
   const t = useTranslations("chat")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const [dmSheetOpen, setDmSheetOpen] = useState(false)
   const [creatingDm, setCreatingDm] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ChatChannel | null>(null)
@@ -73,7 +75,7 @@ export function ChatSidebar({
     try {
       const result = await createDirectChannelAction({ targetUserId })
       if ("error" in result) {
-        toast({ title: tc("error"), description: result.error, variant: "destructive" })
+        toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
         return
       }
       const target = familyMembers.find((m) => m.id === targetUserId)
@@ -107,7 +109,7 @@ export function ChatSidebar({
     try {
       const result = await deleteChannelAction({ channelId: deleteTarget.id })
       if ("error" in result) {
-        toast({ title: tc("error"), description: result.error, variant: "destructive" })
+        toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
         return
       }
       onChannelDeleted(deleteTarget.id)

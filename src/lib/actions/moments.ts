@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
+import { E } from "@/lib/error-codes"
 import {
   createMomentSchema,
   deleteMomentSchema,
@@ -57,11 +58,11 @@ export async function getMomentsAction(
   data: { cursor?: string; limit?: number } = {}
 ): Promise<{ moments: Moment[]; hasMore: boolean } | { error: string }> {
   const parsed = getMomentsSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungültige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehörst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
   const limit = parsed.data.limit
@@ -93,7 +94,7 @@ export async function getMomentsAction(
 
   if (fetchError) {
     console.error("getMomentsAction error:", fetchError.message)
-    return { error: "Momente konnten nicht geladen werden." }
+    return { error: E.MOMENT_LOAD_FAILED }
   }
 
   const hasMore = (rawMoments?.length || 0) > limit
@@ -178,8 +179,8 @@ export async function getLatestMomentAction(): Promise<
   { moment: Moment | null } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehörst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -205,7 +206,7 @@ export async function getLatestMomentAction(): Promise<
 
   if (fetchError) {
     console.error("getLatestMomentAction error:", fetchError.message)
-    return { error: "Neuester Moment konnte nicht geladen werden." }
+    return { error: E.MOMENT_LATEST_FAILED }
   }
 
   if (!rawMoment) return { moment: null }
@@ -269,12 +270,12 @@ export async function createMomentAction(
 ): Promise<{ moment: { id: string } } | { error: string }> {
   const ip = await getIP()
   if (!checkRateLimit(`momentCreate:${ip}`, 10, 60_000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehörst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const title = formData.get("title") as string
   const description = (formData.get("description") as string) || undefined
@@ -283,7 +284,7 @@ export async function createMomentAction(
 
   const parsed = createMomentSchema.safeParse({ title, description, momentDate })
   if (!parsed.success) {
-    return { error: parsed.error.issues[0].message }
+    return { error: E.VAL_INVALID }
   }
 
   const supabase = await createClient()
@@ -296,7 +297,7 @@ export async function createMomentAction(
       size: file.size,
     })
     if (!fileValidation.success) {
-      return { error: fileValidation.error.issues[0].message }
+      return { error: E.VAL_INVALID }
     }
 
     const extMap: Record<string, string> = {
@@ -318,7 +319,7 @@ export async function createMomentAction(
 
     if (uploadError) {
       console.error("Moment photo upload failed:", uploadError.message)
-      return { error: "Foto konnte nicht hochgeladen werden." }
+      return { error: E.MOMENT_PHOTO_FAILED }
     }
   }
 
@@ -342,7 +343,7 @@ export async function createMomentAction(
       await supabase.storage.from("moments").remove([photoPath])
     }
     console.error("createMomentAction insert error:", insertError.message)
-    return { error: "Moment konnte nicht erstellt werden." }
+    return { error: E.MOMENT_CREATE_FAILED }
   }
 
   return { moment: { id: moment.id } }
@@ -356,16 +357,16 @@ export async function deleteMomentAction(data: {
   momentId: string
 }): Promise<{ success: true } | { error: string }> {
   const parsed = deleteMomentSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungültige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`momentDel:${ip}`, 15, 60_000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehörst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -378,12 +379,12 @@ export async function deleteMomentAction(data: {
     .single()
 
   if (fetchError || !moment) {
-    return { error: "Moment nicht gefunden." }
+    return { error: E.MOMENT_NOT_FOUND }
   }
 
   // Authorization: creator or admin
   if (moment.created_by !== profile.id && profile.role !== "admin") {
-    return { error: "Keine Berechtigung zum Löschen." }
+    return { error: E.PERM_DELETE_DENIED }
   }
 
   // Delete photo from storage
@@ -399,7 +400,7 @@ export async function deleteMomentAction(data: {
 
   if (deleteError) {
     console.error("deleteMomentAction error:", deleteError.message)
-    return { error: "Moment konnte nicht gelöscht werden." }
+    return { error: E.MOMENT_DELETE_FAILED }
   }
 
   return { success: true }
@@ -413,16 +414,16 @@ export async function toggleReactionAction(data: {
   momentId: string
 }): Promise<{ liked: boolean; heartCount: number } | { error: string }> {
   const parsed = toggleReactionSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungültige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`momentReact:${ip}`, 30, 60_000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehörst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -435,7 +436,7 @@ export async function toggleReactionAction(data: {
     .maybeSingle()
 
   if (!momentCheck) {
-    return { error: "Moment nicht gefunden." }
+    return { error: E.MOMENT_NOT_FOUND }
   }
 
   // Check if already liked
@@ -463,7 +464,7 @@ export async function toggleReactionAction(data: {
 
     if (insertError) {
       console.error("toggleReactionAction error:", insertError.message)
-      return { error: "Reaktion konnte nicht gespeichert werden." }
+      return { error: E.MOMENT_REACTION_FAILED }
     }
   }
 

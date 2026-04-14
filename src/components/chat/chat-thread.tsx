@@ -21,6 +21,7 @@ import {
 } from "@/lib/actions/chat"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface ChatThreadProps {
   channel: ChatChannel
@@ -44,6 +45,7 @@ export function ChatThread({
   const t = useTranslations("chat")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
 
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -75,7 +77,7 @@ export function ChatThread({
         const result = await getMessagesAction({ channelId: channel.id })
         if (cancelled) return
         if ("error" in result) {
-          toast({ title: tc("error"), description: result.error, variant: "destructive" })
+          toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
           return
         }
         setMessages(result.messages)
@@ -90,7 +92,7 @@ export function ChatThread({
     }
     load()
     return () => { cancelled = true }
-  }, [channel.id, toast, tc, t])
+  }, [channel.id, toast, tc, t, te])
 
   // Scroll to bottom after initial load
   useEffect(() => {
@@ -227,7 +229,7 @@ export function ChatThread({
         formData.append("file", file)
         const uploadResult = await uploadChatImageAction(formData)
         if ("error" in uploadResult) {
-          toast({ title: tc("error"), description: uploadResult.error, variant: "destructive" })
+          toast({ title: tc("error"), description: te(uploadResult.error), variant: "destructive" })
           if (localBlobUrl) URL.revokeObjectURL(localBlobUrl)
           setIsUploading(false)
           setIsSending(false)
@@ -274,7 +276,7 @@ export function ChatThread({
         setMessages((prev) => prev.filter((m) => m.id !== tempId))
         pendingMutationRef.current = false
         if (localBlobUrl) URL.revokeObjectURL(localBlobUrl)
-        toast({ title: tc("error"), description: result.error, variant: "destructive" })
+        toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
         return
       }
 
@@ -309,7 +311,7 @@ export function ChatThread({
   async function handleDeleteImage(messageId: string) {
     const result = await deleteChatImageAction({ messageId })
     if ("error" in result) {
-      toast({ title: tc("error"), description: result.error, variant: "destructive" })
+      toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
       return
     }
     // Remove imageUrl from local state
@@ -323,7 +325,7 @@ export function ChatThread({
   async function handleDeleteMessage(messageId: string) {
     const result = await deleteMessageAction({ messageId })
     if ("error" in result) {
-      toast({ title: tc("error"), description: result.error, variant: "destructive" })
+      toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
       return
     }
     setMessages((prev) => prev.filter((m) => m.id !== messageId))
@@ -334,7 +336,7 @@ export function ChatThread({
   async function handleEditMessage(messageId: string, content: string) {
     const result = await editMessageAction({ messageId, content })
     if ("error" in result) {
-      toast({ title: tc("error"), description: result.error, variant: "destructive" })
+      toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
       return
     }
     setMessages((prev) =>

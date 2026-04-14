@@ -17,6 +17,7 @@ import {
   type FamilyGoal,
   type GoalContribution,
 } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface CommunityGoalProps {
   initialGoal: FamilyGoal | null
@@ -35,6 +36,7 @@ export function CommunityGoal({
 }: CommunityGoalProps) {
   const t = useTranslations("rewards")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
   const [goal, setGoal] = useState<FamilyGoal | null>(initialGoal)
   const [contributions, setContributions] =
@@ -55,7 +57,7 @@ export function CommunityGoal({
       if ("error" in goalResult) {
         toast({
           title: tc("error"),
-          description: goalResult.error,
+          description: te(goalResult.error),
           variant: "destructive",
         })
         return
@@ -72,7 +74,7 @@ export function CommunityGoal({
         variant: "destructive",
       })
     }
-  }, [toast, tc, t])
+  }, [toast, tc, t, te])
 
   async function handleComplete() {
     if (!goal) return
@@ -82,7 +84,7 @@ export function CommunityGoal({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

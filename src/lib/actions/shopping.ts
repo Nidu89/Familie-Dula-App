@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { E } from "@/lib/error-codes"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
 import { z } from "zod"
 import {
@@ -38,12 +39,12 @@ async function getCurrentProfile() {
 // Helper: verify caller is adult or admin
 async function verifyAdultOrAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
   if (!profile.family_id)
-    return { error: "Du gehoerst keiner Familie an.", profile: null }
+    return { error: E.AUTH_NO_FAMILY, profile: null }
   if (!["adult", "admin"].includes(profile.role ?? ""))
     return {
-      error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren.",
+      error: E.PERM_ADULT_REQUIRED,
       profile: null,
     }
   return { error: null, profile }
@@ -86,8 +87,8 @@ export async function getShoppingListsAction(): Promise<
   { lists: ShoppingList[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -111,7 +112,7 @@ export async function getShoppingListsAction(): Promise<
     .limit(50)
 
   if (listsError) {
-    return { error: "Einkaufslisten konnten nicht geladen werden." }
+    return { error: E.SHOP_LISTS_LOAD_FAILED }
   }
 
   const lists: ShoppingList[] = (rawLists || []).map((l) => {
@@ -151,12 +152,12 @@ export async function getShoppingListDetailAction(
 > {
   const uuidResult = z.string().uuid().safeParse(listId)
   if (!uuidResult.success) {
-    return { error: "Ungueltige Listen-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -178,7 +179,7 @@ export async function getShoppingListDetailAction(
     .single()
 
   if (listError || !rawList) {
-    return { error: "Einkaufsliste nicht gefunden." }
+    return { error: E.SHOP_LIST_NOT_FOUND }
   }
 
   const { data: rawItems, error: itemsError } = await supabase
@@ -203,7 +204,7 @@ export async function getShoppingListDetailAction(
     .limit(500)
 
   if (itemsError) {
-    return { error: "Artikel konnten nicht geladen werden." }
+    return { error: E.SHOP_ITEMS_LOAD_FAILED }
   }
 
   const list: ShoppingList = {
@@ -259,17 +260,17 @@ export async function createShoppingListAction(data: {
 }): Promise<{ list: { id: string } } | { error: string }> {
   const parsed = createShoppingListSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`createList:${ip}`, 20, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -284,7 +285,7 @@ export async function createShoppingListAction(data: {
     .single()
 
   if (insertError || !list) {
-    return { error: "Einkaufsliste konnte nicht erstellt werden." }
+    return { error: E.SHOP_LIST_CREATE_FAILED }
   }
 
   return { list: { id: list.id } }
@@ -300,12 +301,12 @@ export async function updateShoppingListAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = updateShoppingListSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -316,7 +317,7 @@ export async function updateShoppingListAction(
     .eq("family_id", profile.family_id)
 
   if (updateError) {
-    return { error: "Name konnte nicht aktualisiert werden." }
+    return { error: E.SHOP_LIST_NAME_FAILED }
   }
 
   return { success: true }
@@ -331,12 +332,12 @@ export async function deleteShoppingListAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = deleteShoppingListSchema.safeParse({ id: listId })
   if (!parsed.success) {
-    return { error: "Ungueltige Listen-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -348,7 +349,7 @@ export async function deleteShoppingListAction(
     .eq("family_id", profile.family_id)
 
   if (deleteError) {
-    return { error: "Einkaufsliste konnte nicht geloescht werden." }
+    return { error: E.SHOP_LIST_DELETE_FAILED }
   }
 
   return { success: true }
@@ -367,17 +368,17 @@ export async function addShoppingItemAction(data: {
 }): Promise<{ item: { id: string } } | { error: string }> {
   const parsed = addShoppingItemSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`addItem:${ip}`, 60, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -397,7 +398,7 @@ export async function addShoppingItemAction(data: {
     .single()
 
   if (insertError || !item) {
-    return { error: "Artikel konnte nicht hinzugefuegt werden." }
+    return { error: E.SHOP_ITEM_ADD_FAILED }
   }
 
   return { item: { id: item.id } }
@@ -413,14 +414,14 @@ export async function toggleShoppingItemAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = toggleShoppingItemSchema.safeParse({ itemId, isDone })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   // RLS enforces family ownership — update only succeeds for family members
   const { error: updateError } = await supabase
@@ -429,7 +430,7 @@ export async function toggleShoppingItemAction(
     .eq("id", parsed.data.itemId)
 
   if (updateError) {
-    return { error: "Artikel konnte nicht aktualisiert werden." }
+    return { error: E.SHOP_ITEM_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -444,14 +445,14 @@ export async function deleteShoppingItemAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = deleteShoppingItemSchema.safeParse({ itemId })
   if (!parsed.success) {
-    return { error: "Ungueltige Artikel-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   // RLS enforces family ownership — delete only succeeds for family members
   const { error: deleteError } = await supabase
@@ -460,7 +461,7 @@ export async function deleteShoppingItemAction(
     .eq("id", parsed.data.itemId)
 
   if (deleteError) {
-    return { error: "Artikel konnte nicht geloescht werden." }
+    return { error: E.SHOP_ITEM_DELETE_FAILED }
   }
 
   return { success: true }
@@ -475,12 +476,12 @@ export async function clearCompletedItemsAction(
 ): Promise<{ success: true; deletedCount: number } | { error: string }> {
   const parsed = clearCompletedItemsSchema.safeParse({ listId })
   if (!parsed.success) {
-    return { error: "Ungueltige Listen-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -493,7 +494,7 @@ export async function clearCompletedItemsAction(
     .single()
 
   if (!list) {
-    return { error: "Einkaufsliste nicht gefunden." }
+    return { error: E.SHOP_LIST_NOT_FOUND }
   }
 
   // Count before deleting
@@ -510,7 +511,7 @@ export async function clearCompletedItemsAction(
     .eq("is_done", true)
 
   if (deleteError) {
-    return { error: "Erledigte Artikel konnten nicht geloescht werden." }
+    return { error: E.SHOP_CHECKED_DELETE_FAILED }
   }
 
   return { success: true, deletedCount: count || 0 }
@@ -524,8 +525,8 @@ export async function getSuggestedItemsAction(
   listId: string
 ): Promise<{ suggestions: string[] } | { error: string }> {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -537,7 +538,7 @@ export async function getSuggestedItemsAction(
     .limit(500)
 
   if (itemsError) {
-    return { error: "Vorschlaege konnten nicht geladen werden." }
+    return { error: E.SHOP_SUGGESTIONS_FAILED }
   }
 
   // Count frequency per product name

@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { E } from "@/lib/error-codes"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
 import { z } from "zod"
 import {
@@ -72,8 +73,8 @@ export async function getChannelsAction(): Promise<
   { channels: ChatChannel[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -85,7 +86,7 @@ export async function getChannelsAction(): Promise<
     .limit(50)
 
   if (memberError) {
-    return { error: "Kanaele konnten nicht geladen werden." }
+    return { error: E.CHAT_CHANNELS_LOAD_FAILED }
   }
 
   if (!memberships || memberships.length === 0) {
@@ -121,7 +122,7 @@ export async function getChannelsAction(): Promise<
   ])
 
   if (channelResult.error || !channelResult.data) {
-    return { error: "Kanaele konnten nicht geladen werden." }
+    return { error: E.CHAT_CHANNELS_LOAD_FAILED }
   }
 
   const rawChannels = channelResult.data
@@ -232,14 +233,14 @@ export async function getMessagesAction(data: {
 > {
   const parsed = getMessagesSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   // RLS ensures only channel members can read
   let query = supabase
@@ -266,7 +267,7 @@ export async function getMessagesAction(data: {
   const { data: rawMessages, error: msgError } = await query
 
   if (msgError) {
-    return { error: "Nachrichten konnten nicht geladen werden." }
+    return { error: E.CHAT_MESSAGES_LOAD_FAILED }
   }
 
   const hasMore = (rawMessages?.length || 0) > parsed.data.limit
@@ -326,19 +327,19 @@ export async function sendMessageAction(data: {
 }): Promise<{ message: { id: string; createdAt: string } } | { error: string }> {
   const parsed = sendMessageSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`sendMsg:${ip}`, 30, 60 * 1000)) {
-    return { error: "Zu viele Nachrichten. Bitte kurz warten." }
+    return { error: E.CHAT_RATE_LIMITED }
   }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   // RLS on insert ensures sender is a channel member
   const { data: msg, error: insertError } = await supabase
@@ -353,7 +354,7 @@ export async function sendMessageAction(data: {
     .single()
 
   if (insertError || !msg) {
-    return { error: "Nachricht konnte nicht gesendet werden." }
+    return { error: E.CHAT_SEND_FAILED }
   }
 
   return { message: { id: msg.id, createdAt: msg.created_at } }
@@ -368,21 +369,21 @@ export async function createDirectChannelAction(data: {
 }): Promise<{ channelId: string } | { error: string }> {
   const parsed = createDirectChannelSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`createDm:${ip}`, 10, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   // Cannot DM yourself
   if (parsed.data.targetUserId === profile.id) {
-    return { error: "Du kannst dir nicht selbst schreiben." }
+    return { error: E.CHAT_SELF_MESSAGE }
   }
 
   const supabase = await createClient()
@@ -396,7 +397,7 @@ export async function createDirectChannelAction(data: {
     .single()
 
   if (!target) {
-    return { error: "Nutzer nicht in deiner Familie gefunden." }
+    return { error: E.CHAT_USER_NOT_FOUND }
   }
 
   // Check if a DM channel already exists between these two users
@@ -436,7 +437,7 @@ export async function createDirectChannelAction(data: {
     .single()
 
   if (channelError || !newChannel) {
-    return { error: "Kanal konnte nicht erstellt werden." }
+    return { error: E.CHAT_CHANNEL_CREATE_FAILED }
   }
 
   // Add both users as members
@@ -448,7 +449,7 @@ export async function createDirectChannelAction(data: {
     ])
 
   if (memberError) {
-    return { error: "Mitglieder konnten nicht hinzugefuegt werden." }
+    return { error: E.CHAT_MEMBERS_ADD_FAILED }
   }
 
   return { channelId: newChannel.id }
@@ -463,19 +464,19 @@ export async function markChannelReadAction(data: {
 }): Promise<{ success: true } | { error: string }> {
   const parsed = markReadSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`markRead:${ip}`, 60, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   // Upsert read receipt
   const { error: upsertError } = await supabase
@@ -490,7 +491,7 @@ export async function markChannelReadAction(data: {
     )
 
   if (upsertError) {
-    return { error: "Lesestatus konnte nicht aktualisiert werden." }
+    return { error: E.CHAT_READ_STATUS_FAILED }
   }
 
   return { success: true }
@@ -504,7 +505,7 @@ export async function getUnreadCountsAction(): Promise<
   { counts: Record<string, number>; total: number } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
 
@@ -572,8 +573,8 @@ export async function getFamilyChannelIdAction(): Promise<
   { channelId: string } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -585,7 +586,7 @@ export async function getFamilyChannelIdAction(): Promise<
     .single()
 
   if (!channel) {
-    return { error: "Familienchat nicht gefunden." }
+    return { error: E.CHAT_FAMILY_NOT_FOUND }
   }
 
   return { channelId: channel.id }
@@ -599,15 +600,15 @@ export async function deleteMessageAction(data: {
   messageId: string
 }): Promise<{ success: true } | { error: string }> {
   const parsed = deleteMessageSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungültige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`delMsg:${ip}`, 30, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
 
@@ -617,12 +618,12 @@ export async function deleteMessageAction(data: {
     .eq("id", parsed.data.messageId)
     .single()
 
-  if (!msg) return { error: "Nachricht nicht gefunden." }
+  if (!msg) return { error: E.CHAT_MESSAGE_NOT_FOUND }
 
   const isOwn = msg.sender_id === profile.id
   const isAdminOrAdult = profile.role === "admin" || profile.role === "adult"
   if (!isOwn && !isAdminOrAdult) {
-    return { error: "Keine Berechtigung." }
+    return { error: E.PERM_DENIED }
   }
 
   // Delete associated image from storage if present
@@ -635,7 +636,7 @@ export async function deleteMessageAction(data: {
     .delete()
     .eq("id", parsed.data.messageId)
 
-  if (deleteError) return { error: "Nachricht konnte nicht gelöscht werden." }
+  if (deleteError) return { error: E.CHAT_MESSAGE_DELETE_FAILED }
 
   return { success: true }
 }
@@ -649,15 +650,15 @@ export async function editMessageAction(data: {
   content: string
 }): Promise<{ success: true } | { error: string }> {
   const parsed = editMessageSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungültige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`editMsg:${ip}`, 30, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
 
@@ -667,9 +668,9 @@ export async function editMessageAction(data: {
     .eq("id", parsed.data.messageId)
     .single()
 
-  if (!msg) return { error: "Nachricht nicht gefunden." }
+  if (!msg) return { error: E.CHAT_MESSAGE_NOT_FOUND }
   if (msg.sender_id !== profile.id) {
-    return { error: "Nur eigene Nachrichten können bearbeitet werden." }
+    return { error: E.CHAT_OWN_MESSAGES_ONLY }
   }
 
   const { error: updateError } = await supabase
@@ -677,7 +678,7 @@ export async function editMessageAction(data: {
     .update({ content: parsed.data.content })
     .eq("id", parsed.data.messageId)
 
-  if (updateError) return { error: "Nachricht konnte nicht bearbeitet werden." }
+  if (updateError) return { error: E.CHAT_MESSAGE_EDIT_FAILED }
 
   return { success: true }
 }
@@ -690,19 +691,19 @@ export async function deleteChannelAction(data: {
   channelId: string
 }): Promise<{ success: true } | { error: string }> {
   const parsed = deleteChannelSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungültige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`delChan:${ip}`, 10, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const isAdminOrAdult = profile.role === "admin" || profile.role === "adult"
   if (!isAdminOrAdult) {
-    return { error: "Nur Admins und Erwachsene können Chats löschen." }
+    return { error: E.CHAT_DELETE_ADMIN_ONLY }
   }
 
   const supabase = await createClient()
@@ -714,9 +715,9 @@ export async function deleteChannelAction(data: {
     .eq("id", parsed.data.channelId)
     .single()
 
-  if (!channel) return { error: "Kanal nicht gefunden." }
+  if (!channel) return { error: E.CHAT_CHANNEL_NOT_FOUND }
   if (channel.type === "family") {
-    return { error: "Der Familienchat kann nicht gelöscht werden." }
+    return { error: E.CHAT_FAMILY_CHAT_UNDELETABLE }
   }
 
   // Delete all messages' images from storage
@@ -743,7 +744,7 @@ export async function deleteChannelAction(data: {
     .delete()
     .eq("id", parsed.data.channelId)
 
-  if (deleteError) return { error: "Chat konnte nicht gelöscht werden." }
+  if (deleteError) return { error: E.CHAT_DELETE_FAILED }
 
   return { success: true }
 }
@@ -761,16 +762,16 @@ export async function uploadChatImageAction(
 ): Promise<{ path: string } | { error: string }> {
   const ip = await getIP()
   if (!checkRateLimit(`chatImgUp:${ip}`, 15, 60 * 1000)) {
-    return { error: "Zu viele Uploads. Bitte kurz warten." }
+    return { error: E.RATE_UPLOAD_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const file = formData.get("file")
   if (!file || !(file instanceof File)) {
-    return { error: "Keine Datei ausgewaehlt." }
+    return { error: E.VAL_NO_FILE }
   }
 
   // Validate file type and size
@@ -803,7 +804,7 @@ export async function uploadChatImageAction(
 
   if (uploadError) {
     console.error("Chat image upload failed:", uploadError.message)
-    return { error: "Bild konnte nicht hochgeladen werden." }
+    return { error: E.CHAT_UPLOAD_FAILED }
   }
 
   return { path: storagePath }
@@ -818,17 +819,17 @@ export async function deleteChatImageAction(data: {
 }): Promise<{ success: true } | { error: string }> {
   const parsed = deleteChatImageSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`chatImgDel:${ip}`, 15, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -840,14 +841,14 @@ export async function deleteChatImageAction(data: {
     .single()
 
   if (!msg || !msg.image_url) {
-    return { error: "Nachricht oder Bild nicht gefunden." }
+    return { error: E.CHAT_IMAGE_NOT_FOUND }
   }
 
   // Authorization: own message OR admin/adult
   const isOwn = msg.sender_id === profile.id
   const isAdminOrAdult = profile.role === "admin" || profile.role === "adult"
   if (!isOwn && !isAdminOrAdult) {
-    return { error: "Keine Berechtigung zum Loeschen." }
+    return { error: E.PERM_DELETE_DENIED }
   }
 
   // Delete from storage (RLS also enforces this)
@@ -856,7 +857,7 @@ export async function deleteChatImageAction(data: {
     .remove([msg.image_url])
 
   if (storageError) {
-    return { error: "Bild konnte nicht geloescht werden." }
+    return { error: E.CHAT_IMAGE_DELETE_FAILED }
   }
 
   // Clear image_url on the message
@@ -866,7 +867,7 @@ export async function deleteChatImageAction(data: {
     .eq("id", parsed.data.messageId)
 
   if (updateError) {
-    return { error: "Nachricht konnte nicht aktualisiert werden." }
+    return { error: E.CHAT_MESSAGE_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -881,19 +882,19 @@ export async function getSignedImageUrlAction(data: {
 }): Promise<{ url: string } | { error: string }> {
   const parsed = getSignedImageUrlSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`chatImgUrl:${ip}`, 60, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: "Nicht angemeldet." }
+  if (!user) return { error: E.AUTH_NOT_LOGGED_IN }
 
   // Verify user belongs to a family and the path belongs to their family
   const { data: profile } = await supabase
@@ -901,11 +902,11 @@ export async function getSignedImageUrlAction(data: {
     .select("family_id")
     .eq("id", user.id)
     .single()
-  if (!profile?.family_id) return { error: "Keine Familie zugeordnet." }
+  if (!profile?.family_id) return { error: E.AUTH_NO_FAMILY }
 
   // Path must start with the user's family_id to prevent cross-family image access
   if (!parsed.data.path.startsWith(`${profile.family_id}/`)) {
-    return { error: "Zugriff verweigert." }
+    return { error: E.PERM_ACCESS_DENIED }
   }
 
   const { data: signedUrlData, error: signError } = await supabase.storage
@@ -913,7 +914,7 @@ export async function getSignedImageUrlAction(data: {
     .createSignedUrl(parsed.data.path, 3600) // 1 hour
 
   if (signError || !signedUrlData?.signedUrl) {
-    return { error: "URL konnte nicht erstellt werden." }
+    return { error: E.CHAT_URL_FAILED }
   }
 
   return { url: signedUrlData.signedUrl }

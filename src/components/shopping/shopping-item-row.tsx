@@ -11,6 +11,7 @@ import {
   type ShoppingItem,
 } from "@/lib/actions/shopping"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface ShoppingItemRowProps {
   item: ShoppingItem
@@ -28,6 +29,7 @@ export function ShoppingItemRow({
   const tc = useTranslations("common")
   const t = useTranslations("shopping")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const [isDeleting, setIsDeleting] = useState(false)
 
   const isTempItem = item.id.startsWith("temp-")
@@ -44,7 +46,7 @@ export function ShoppingItemRow({
         onRevert(item.id, item)
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
       }
@@ -74,7 +76,7 @@ export function ShoppingItemRow({
         onRevert(item.id, item)
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
       }

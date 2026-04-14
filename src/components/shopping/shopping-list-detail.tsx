@@ -33,6 +33,8 @@ import {
 } from "@/lib/actions/shopping"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
+import { E } from "@/lib/error-codes"
 
 interface ShoppingListDetailProps {
   listId: string
@@ -50,6 +52,7 @@ export function ShoppingListDetail({
   const t = useTranslations("shopping")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const router = useRouter()
   const [list, setList] = useState<ShoppingList>(initialList)
   const [items, setItems] = useState<ShoppingItem[]>(initialItems)
@@ -67,14 +70,14 @@ export function ShoppingListDetail({
     try {
       const result = await getShoppingListDetailAction(listId)
       if ("error" in result) {
-        if (result.error.includes("nicht gefunden") || result.error.includes("not found")) {
+        if (result.error === E.SHOP_LIST_NOT_FOUND) {
           toast({ title: t("listDeletedToast") })
           router.push("/shopping")
           return
         }
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -90,7 +93,7 @@ export function ShoppingListDetail({
     } finally {
       setIsLoading(false)
     }
-  }, [listId, toast, tc, t, router])
+  }, [listId, toast, tc, t, te, router])
 
   // Debounced realtime handler — skips if we just did a local mutation
   const handleRealtimeChange = useCallback(() => {
@@ -219,7 +222,7 @@ export function ShoppingListDetail({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -253,7 +256,7 @@ export function ShoppingListDetail({
         setItems((prev) => [...prev, ...removedItems])
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

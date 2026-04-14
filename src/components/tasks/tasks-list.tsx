@@ -20,6 +20,7 @@ import { getJarsForChildAction, type SavingsJar } from "@/lib/actions/rewards"
 import { getFamilyDataAction } from "@/lib/actions/family"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 /* ── helpers ───────────────────────────────────────────── */
 
@@ -73,6 +74,7 @@ export function TasksList({
   const t = useTranslations("tasks")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const searchParams = useSearchParams()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [isLoading, setIsLoading] = useState(false)
@@ -118,7 +120,7 @@ export function TasksList({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -133,7 +135,7 @@ export function TasksList({
     } finally {
       setIsLoading(false)
     }
-  }, [toast, tc, t])
+  }, [toast, tc, t, te])
 
   /* ── derived state ──────────────────────────────────── */
 

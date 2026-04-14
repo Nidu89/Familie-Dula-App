@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
+import { E } from "@/lib/error-codes"
 import { encrypt, decrypt, maskApiKey } from "@/lib/crypto"
 import { saveApiKeySchema } from "@/lib/validations/assistant"
 
@@ -30,12 +31,12 @@ async function getCurrentProfile() {
 // Helper: verify caller is admin
 async function verifyAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
   if (!profile.family_id)
-    return { error: "Du gehoerst keiner Familie an.", profile: null }
+    return { error: E.AUTH_NO_FAMILY, profile: null }
   if (profile.role !== "admin")
     return {
-      error: "Nur Admins duerfen diese Aktion ausfuehren.",
+      error: E.PERM_ADMIN_ONLY,
       profile: null,
     }
   return { error: null, profile }
@@ -50,16 +51,16 @@ export async function saveApiKeyAction(data: {
 }): Promise<{ success: true; masked: string } | { error: string }> {
   const parsed = saveApiKeySchema.safeParse(data)
   if (!parsed.success) {
-    return { error: parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`saveApiKey:${ip}`, 10, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const { error: authError, profile } = await verifyAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   // Encrypt the API key
   let encrypted: string
@@ -67,7 +68,7 @@ export async function saveApiKeyAction(data: {
     encrypted = encrypt(parsed.data.apiKey)
   } catch (err) {
     console.error("[PROJ-17] Encryption failed:", err)
-    return { error: "API-Key konnte nicht verschluesselt werden. Server-Konfiguration pruefen." }
+    return { error: E.ASST_KEY_ENCRYPT_FAILED }
   }
 
   const supabase = await createClient()
@@ -86,7 +87,7 @@ export async function saveApiKeyAction(data: {
 
   if (upsertError) {
     console.error("[PROJ-17] Upsert failed:", upsertError)
-    return { error: "API-Key konnte nicht gespeichert werden." }
+    return { error: E.ASST_KEY_SAVE_FAILED }
   }
 
   return { success: true, masked: maskApiKey(parsed.data.apiKey) }
@@ -101,11 +102,11 @@ export async function deleteApiKeyAction(): Promise<
 > {
   const ip = await getIP()
   if (!checkRateLimit(`deleteApiKey:${ip}`, 10, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const { error: authError, profile } = await verifyAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -115,7 +116,7 @@ export async function deleteApiKeyAction(): Promise<
     .eq("family_id", profile.family_id)
 
   if (deleteError) {
-    return { error: "API-Key konnte nicht geloescht werden." }
+    return { error: E.ASST_KEY_DELETE_FAILED }
   }
 
   return { success: true }
@@ -130,8 +131,8 @@ export async function getApiKeyStatusAction(): Promise<
   { configured: boolean; masked?: string } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createShoppingListAction } from "@/lib/actions/shopping"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface CreateListDialogProps {
   onCreated: () => void
@@ -24,6 +25,7 @@ export function CreateListDialog({ onCreated }: CreateListDialogProps) {
   const t = useTranslations("shopping")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -38,7 +40,7 @@ export function CreateListDialog({ onCreated }: CreateListDialogProps) {
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

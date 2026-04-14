@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
+import { E } from "@/lib/error-codes"
 import {
   createRitualSchema,
   updateRitualSchema,
@@ -35,12 +36,12 @@ async function getCurrentProfile() {
 // Helper: verify caller is adult or admin
 async function verifyAdultOrAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
   if (!profile.family_id)
-    return { error: "Du gehoerst keiner Familie an.", profile: null }
+    return { error: E.AUTH_NO_FAMILY, profile: null }
   if (!["adult", "admin"].includes(profile.role ?? ""))
     return {
-      error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren.",
+      error: E.PERM_ADULT_REQUIRED,
       profile: null,
     }
   return { error: null, profile }
@@ -72,8 +73,8 @@ export async function getRitualsAction(): Promise<
   { rituals: Ritual[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -86,7 +87,7 @@ export async function getRitualsAction(): Promise<
     .limit(50)
 
   if (error) {
-    return { error: "Rituale konnten nicht geladen werden." }
+    return { error: E.RITUAL_LOAD_FAILED }
   }
 
   const rituals: Ritual[] = (data || []).map((row) => ({
@@ -120,15 +121,13 @@ export async function createRitualAction(data: {
   const parsed = createRitualSchema.safeParse(data)
   if (!parsed.success) {
     return {
-      error:
-        "Ungueltige Eingaben: " +
-        parsed.error.issues.map((i) => i.message).join(", "),
+      error: E.VAL_INVALID,
     }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -161,7 +160,7 @@ export async function createRitualAction(data: {
     .single()
 
   if (insertError || !ritual) {
-    return { error: "Ritual konnte nicht erstellt werden." }
+    return { error: E.RITUAL_CREATE_FAILED }
   }
 
   return { ritual: { id: ritual.id } }
@@ -182,15 +181,13 @@ export async function updateRitualAction(data: {
   const parsed = updateRitualSchema.safeParse(data)
   if (!parsed.success) {
     return {
-      error:
-        "Ungueltige Eingaben: " +
-        parsed.error.issues.map((i) => i.message).join(", "),
+      error: E.VAL_INVALID,
     }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -203,7 +200,7 @@ export async function updateRitualAction(data: {
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Ritual nicht gefunden." }
+    return { error: E.RITUAL_NOT_FOUND }
   }
 
   const { error: updateError } = await supabase
@@ -218,7 +215,7 @@ export async function updateRitualAction(data: {
     .eq("id", parsed.data.id)
 
   if (updateError) {
-    return { error: "Ritual konnte nicht aktualisiert werden." }
+    return { error: E.RITUAL_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -233,12 +230,12 @@ export async function deleteRitualAction(data: {
 }): Promise<{ success: true } | { error: string }> {
   const parsed = deleteRitualSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -251,7 +248,7 @@ export async function deleteRitualAction(data: {
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Ritual nicht gefunden." }
+    return { error: E.RITUAL_NOT_FOUND }
   }
 
   const { error: deleteError } = await supabase
@@ -260,7 +257,7 @@ export async function deleteRitualAction(data: {
     .eq("id", parsed.data.id)
 
   if (deleteError) {
-    return { error: "Ritual konnte nicht geloescht werden." }
+    return { error: E.RITUAL_DELETE_FAILED }
   }
 
   return { success: true }
@@ -284,17 +281,17 @@ export async function awardRitualCompletionAction(
     ritualName,
   })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`awardRitual:${ip}`, 30, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -306,15 +303,15 @@ export async function awardRitualCompletionAction(
 
   if (error) {
     if (error.message.includes("same family")) {
-      return { error: "Nicht berechtigt – anderes Familienmitglied." }
+      return { error: E.PERM_OTHER_FAMILY_MEMBER }
     }
     if (error.message.includes("Not authorized")) {
-      return { error: "Nicht berechtigt." }
+      return { error: E.PERM_DENIED }
     }
     if (error.message.includes("exceed maximum")) {
-      return { error: "Punktezahl ueberschreitet das Maximum." }
+      return { error: E.REWARD_POINTS_EXCEEDED }
     }
-    return { error: "Punkte konnten nicht vergeben werden." }
+    return { error: E.REWARD_POINTS_FAILED }
   }
 
   const result = data as { new_balance: number }
@@ -344,8 +341,8 @@ export async function getActiveRitualSessionAction(): Promise<
   { session: ActiveRitualSession | null } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -356,7 +353,7 @@ export async function getActiveRitualSessionAction(): Promise<
     .maybeSingle()
 
   if (error) {
-    return { error: "Aktive Ritual-Session konnte nicht geladen werden." }
+    return { error: E.RITUAL_SESSION_LOAD_FAILED }
   }
 
   if (!data) return { session: null }
@@ -387,8 +384,8 @@ export async function getFamilyChildrenAction(): Promise<
   { children: { id: string; displayName: string }[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -414,7 +411,7 @@ export async function startRitualSessionAction(
   assignedToName?: string | null
 ): Promise<{ session: ActiveRitualSession } | { error: string }> {
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -440,7 +437,7 @@ export async function startRitualSessionAction(
     .single()
 
   if (error || !data) {
-    return { error: "Ritual-Session konnte nicht gestartet werden." }
+    return { error: E.RITUAL_SESSION_START_FAILED }
   }
 
   return {
@@ -465,8 +462,8 @@ export async function updateRitualSessionAction(data: {
   status?: "running" | "paused" | "completed"
 }): Promise<{ success: true } | { error: string }> {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -487,7 +484,7 @@ export async function updateRitualSessionAction(data: {
     .eq("family_id", profile.family_id)
 
   if (error) {
-    return { error: "Session konnte nicht aktualisiert werden." }
+    return { error: E.RITUAL_SESSION_UPDATE_FAILED }
   }
 
   // Auto-award points when ritual is completed (server-side, exactly once)
@@ -536,8 +533,8 @@ export async function endRitualSessionAction(): Promise<
   { success: true } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -547,7 +544,7 @@ export async function endRitualSessionAction(): Promise<
     .eq("family_id", profile.family_id)
 
   if (error) {
-    return { error: "Session konnte nicht beendet werden." }
+    return { error: E.RITUAL_SESSION_END_FAILED }
   }
 
   return { success: true }

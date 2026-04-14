@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { redeemRewardAction, type Reward } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface RewardCardProps {
   reward: Reward
@@ -24,6 +25,7 @@ export function RewardCard({
 }: RewardCardProps) {
   const t = useTranslations("rewards.rewardCard")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
   const [isRedeeming, setIsRedeeming] = useState(false)
   const canAfford = userBalance >= reward.pointsCost
@@ -36,7 +38,7 @@ export function RewardCard({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

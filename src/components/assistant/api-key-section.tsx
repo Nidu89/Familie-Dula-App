@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import {
   saveApiKeyAction,
   deleteApiKeyAction,
@@ -34,6 +35,7 @@ export function ApiKeySection() {
   const t = useTranslations("assistant.apiKeySection")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
 
   const [loading, setLoading] = useState(true)
   const [configured, setConfigured] = useState(false)
@@ -71,7 +73,7 @@ export function ApiKeySection() {
     try {
       const result = await saveApiKeyAction({ apiKey: apiKeyValue.trim() })
       if ("error" in result) {
-        toast({ title: result.error, variant: "destructive" })
+        toast({ title: te(result.error), variant: "destructive" })
       } else {
         setConfigured(true)
         setMaskedKey(result.masked)
@@ -85,7 +87,7 @@ export function ApiKeySection() {
     } finally {
       setSaving(false)
     }
-  }, [apiKeyValue, toast, t])
+  }, [apiKeyValue, toast, t, te])
 
   const handleDelete = useCallback(async () => {
     setDeleting(true)
@@ -93,7 +95,7 @@ export function ApiKeySection() {
     try {
       const result = await deleteApiKeyAction()
       if ("error" in result) {
-        toast({ title: result.error, variant: "destructive" })
+        toast({ title: te(result.error), variant: "destructive" })
       } else {
         setConfigured(false)
         setMaskedKey(null)
@@ -106,7 +108,7 @@ export function ApiKeySection() {
     } finally {
       setDeleting(false)
     }
-  }, [toast, t])
+  }, [toast, t, te])
 
   const handleCancel = useCallback(() => {
     setEditing(false)

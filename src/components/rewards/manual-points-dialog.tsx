@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { manualPointsAction } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 const manualPointsFormSchema = z.object({
   amount: z
@@ -58,6 +59,7 @@ export function ManualPointsDialog({
   const { toast } = useToast()
   const t = useTranslations("rewards.manualPoints")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<ManualPointsFormValues>({
@@ -84,7 +86,7 @@ export function ManualPointsDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

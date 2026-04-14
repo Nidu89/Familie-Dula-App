@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { useToast } from "@/hooks/use-toast"
 import { contributeToGoalAction } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface ContributePointsDialogProps {
   open: boolean
@@ -37,6 +38,7 @@ export function ContributePointsDialog({
 }: ContributePointsDialogProps) {
   const t = useTranslations("rewards.contributeDialog")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
   const [amount, setAmount] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -53,7 +55,7 @@ export function ContributePointsDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

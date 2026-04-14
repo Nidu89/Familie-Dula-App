@@ -37,6 +37,7 @@ import {
   updateJarAction,
   type SavingsJar,
 } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import { type JarType } from "@/lib/validations/rewards"
 
 const jarFormSchema = z.object({
@@ -74,6 +75,7 @@ export function JarFormDialog({
   const t = useTranslations("rewards.jarForm")
   const tj = useTranslations("rewards.jars")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isEditing = !!editJar
@@ -118,7 +120,7 @@ export function JarFormDialog({
         if ("error" in result) {
           toast({
             title: tc("error"),
-            description: result.error,
+            description: te(result.error),
             variant: "destructive",
           })
           return
@@ -137,7 +139,7 @@ export function JarFormDialog({
         if ("error" in result) {
           toast({
             title: tc("error"),
-            description: result.error,
+            description: te(result.error),
             variant: "destructive",
           })
           return

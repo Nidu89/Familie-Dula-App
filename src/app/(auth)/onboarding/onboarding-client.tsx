@@ -36,6 +36,7 @@ import {
   createFamilyAction,
   joinFamilyByCodeAction,
 } from "@/lib/actions/family"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 type OnboardingStep = "choose" | "create" | "join"
 
@@ -62,6 +63,7 @@ export function OnboardingClient() {
 function OnboardingContent() {
   const t = useTranslations("auth.onboarding")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const searchParams = useSearchParams()
   const inviteCode = searchParams.get("invite")
 
@@ -99,7 +101,7 @@ function OnboardingContent() {
       const result = await createFamilyAction(values.familyName)
       // redirect() wirft intern einen Fehler, deshalb kommt man hier nur bei error an
       if (result?.error) {
-        setErrorMessage(result.error)
+        setErrorMessage(te(result.error))
       }
     } catch {
       // redirect() wirft eine NEXT_REDIRECT Exception – das ist kein Fehler
@@ -115,7 +117,7 @@ function OnboardingContent() {
     try {
       const result = await joinFamilyByCodeAction(values.code)
       if (result?.error) {
-        setErrorMessage(result.error)
+        setErrorMessage(te(result.error))
       }
     } catch {
       // redirect() wirft eine NEXT_REDIRECT Exception

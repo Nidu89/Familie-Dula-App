@@ -13,6 +13,7 @@ import {
 import type { ShoppingList } from "@/lib/actions/shopping"
 import { addRecipeIngredientsToShoppingListAction } from "@/lib/actions/recipes"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface AddToShoppingListDialogProps {
   open: boolean
@@ -34,6 +35,7 @@ export function AddToShoppingListDialog({
   const t = useTranslations("recipes")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const [isAdding, setIsAdding] = useState(false)
   const [addedListId, setAddedListId] = useState<string | null>(null)
 
@@ -55,7 +57,7 @@ export function AddToShoppingListDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

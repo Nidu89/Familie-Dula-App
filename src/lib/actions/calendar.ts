@@ -9,6 +9,7 @@ import {
   getEventsForRangeSchema,
   type SeriesMode,
 } from "@/lib/validations/calendar"
+import { E } from "@/lib/error-codes"
 
 // ============================================================
 // PROJ-4: Familienkalender – Server Actions
@@ -35,12 +36,12 @@ async function getCurrentProfile() {
 // Helper: verify caller is adult or admin
 async function verifyAdultOrAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
   if (!profile.family_id)
-    return { error: "Du gehoerst keiner Familie an.", profile: null }
+    return { error: E.AUTH_NO_FAMILY, profile: null }
   if (!["adult", "admin"].includes(profile.role ?? ""))
     return {
-      error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren.",
+      error: E.PERM_ADULT_REQUIRED,
       profile: null,
     }
   return { error: null, profile }
@@ -75,12 +76,12 @@ export async function getEventsForRangeAction(
 ): Promise<{ events: CalendarEvent[] } | { error: string }> {
   const parsed = getEventsForRangeSchema.safeParse({ startDate, endDate })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -120,7 +121,7 @@ export async function getEventsForRangeAction(
     .order("start_at", { ascending: true })
 
   if (eventsError) {
-    return { error: "Termine konnten nicht geladen werden." }
+    return { error: E.CAL_LOAD_FAILED }
   }
 
   const events: CalendarEvent[] = (rawEvents || []).map((e) => ({
@@ -174,16 +175,16 @@ export async function createEventAction(data: {
 }): Promise<{ event: { id: string } } | { error: string }> {
   const parsed = createEventSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`createEvent:${ip}`, 30, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -207,7 +208,7 @@ export async function createEventAction(data: {
     .single()
 
   if (insertError || !event) {
-    return { error: "Termin konnte nicht erstellt werden." }
+    return { error: E.CAL_CREATE_FAILED }
   }
 
   // Insert participants (validate they belong to the same family)
@@ -258,11 +259,11 @@ export async function updateEventAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = updateEventSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -275,7 +276,7 @@ export async function updateEventAction(
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Termin nicht gefunden." }
+    return { error: E.CAL_NOT_FOUND }
   }
 
   const seriesMode = parsed.data.seriesMode || "single"
@@ -303,7 +304,7 @@ export async function updateEventAction(
           .update({ ...updatePayload, is_exception: true })
           .eq("id", id)
 
-        if (updateError) return { error: "Termin konnte nicht aktualisiert werden." }
+        if (updateError) return { error: E.CAL_UPDATE_FAILED }
       } else {
         // This is the parent – create an exception for this instance
         const { error: exError } = await supabase.from("calendar_events").insert({
@@ -315,7 +316,7 @@ export async function updateEventAction(
           recurrence_rule: null,
         })
 
-        if (exError) return { error: "Ausnahme konnte nicht erstellt werden." }
+        if (exError) return { error: E.CAL_EXCEPTION_FAILED }
       }
     } else {
       // Simple non-recurring event
@@ -324,7 +325,7 @@ export async function updateEventAction(
         .update(updatePayload)
         .eq("id", id)
 
-      if (updateError) return { error: "Termin konnte nicht aktualisiert werden." }
+      if (updateError) return { error: E.CAL_UPDATE_FAILED }
     }
   } else if (seriesMode === "all") {
     // Update the parent event (or self if parent)
@@ -335,7 +336,7 @@ export async function updateEventAction(
       .update(updatePayload)
       .eq("id", parentId)
 
-    if (updateError) return { error: "Serie konnte nicht aktualisiert werden." }
+    if (updateError) return { error: E.CAL_SERIES_UPDATE_FAILED }
 
     // Remove all exceptions for this series
     await supabase
@@ -357,7 +358,7 @@ export async function updateEventAction(
         is_exception: false,
       })
 
-    if (newSeriesError) return { error: "Neue Serie konnte nicht erstellt werden." }
+    if (newSeriesError) return { error: E.CAL_SERIES_CREATE_FAILED }
 
     // Delete future exceptions from the old parent
     await supabase
@@ -410,11 +411,11 @@ export async function deleteEventAction(
 ): Promise<{ success: true } | { error: string }> {
   const parsed = deleteEventSchema.safeParse({ id, seriesMode })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Unbekannter Fehler." }
+  if (authError || !profile) return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -427,7 +428,7 @@ export async function deleteEventAction(
     .single()
 
   if (fetchError || !existing) {
-    return { error: "Termin nicht gefunden." }
+    return { error: E.CAL_NOT_FOUND }
   }
 
   if (parsed.data.seriesMode === "single") {
@@ -452,7 +453,7 @@ export async function deleteEventAction(
         .delete()
         .eq("id", parsed.data.id)
 
-      if (deleteError) return { error: "Termin konnte nicht geloescht werden." }
+      if (deleteError) return { error: E.CAL_DELETE_FAILED }
     }
   } else if (parsed.data.seriesMode === "all") {
     const parentId = existing.recurrence_parent_id || existing.id
@@ -469,7 +470,7 @@ export async function deleteEventAction(
       .delete()
       .eq("id", parentId)
 
-    if (deleteError) return { error: "Serie konnte nicht geloescht werden." }
+    if (deleteError) return { error: E.CAL_SERIES_DELETE_FAILED }
   } else if (parsed.data.seriesMode === "following") {
     const parentId = existing.recurrence_parent_id || existing.id
 

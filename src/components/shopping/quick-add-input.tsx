@@ -15,6 +15,7 @@ import {
 import { addShoppingItemAction, type ShoppingItem } from "@/lib/actions/shopping"
 import { SHOPPING_CATEGORIES } from "@/lib/validations/shopping"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface QuickAddInputProps {
   listId: string
@@ -27,6 +28,7 @@ export function QuickAddInput({ listId, onItemAdded, onAddReverted, onIdResolved
   const t = useTranslations("shopping")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [productName, setProductName] = useState("")
   const [quantity, setQuantity] = useState("")
@@ -77,7 +79,7 @@ export function QuickAddInput({ listId, onItemAdded, onAddReverted, onIdResolved
         onAddReverted(tempId)
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
       } else {

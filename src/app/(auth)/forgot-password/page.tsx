@@ -28,10 +28,12 @@ import {
   type ForgotPasswordFormValues,
 } from "@/lib/validations/auth"
 import { forgotPasswordAction } from "@/lib/actions/auth"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 export default function ForgotPasswordPage() {
   const t = useTranslations("auth.forgotPassword")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -49,7 +51,7 @@ export default function ForgotPasswordPage() {
 
     const result = await forgotPasswordAction(values.email)
     if (result?.error) {
-      setErrorMessage(result.error)
+      setErrorMessage(te(result.error))
       setIsLoading(false)
     } else {
       setIsSuccess(true)

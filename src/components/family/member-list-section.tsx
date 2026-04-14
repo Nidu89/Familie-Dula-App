@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { updateMemberRoleAction, removeMemberAction } from "@/lib/actions/family"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import { InviteSection } from "./invite-section"
 
 /* ── types ─────────────────────────────────────────────── */
@@ -109,6 +110,7 @@ export function MemberListSection({
 }: MemberListSectionProps) {
   const t = useTranslations("family.memberList")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const router = useRouter()
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -122,7 +124,7 @@ export function MemberListSection({
     try {
       const result = await updateMemberRoleAction(memberId, newRole)
       if (result?.error) {
-        setErrorMessage(result.error)
+        setErrorMessage(te(result.error))
       } else {
         setEditMember(null)
         router.refresh()
@@ -141,7 +143,7 @@ export function MemberListSection({
     try {
       const result = await removeMemberAction(confirmRemove.id)
       if (result?.error) {
-        setErrorMessage(result.error)
+        setErrorMessage(te(result.error))
       } else {
         router.refresh()
       }
@@ -289,7 +291,7 @@ export function MemberListSection({
                   }
                   disabled={loadingMemberId === editMember.id}
                 >
-                  <SelectTrigger aria-label="Rolle aendern">
+                  <SelectTrigger aria-label={t("changeRoleAria")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

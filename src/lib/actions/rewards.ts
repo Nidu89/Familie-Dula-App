@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
+import { E } from "@/lib/error-codes"
 import { manualPointsSchema } from "@/lib/validations/tasks"
 import {
   createRewardSchema,
@@ -131,8 +132,8 @@ export async function getRewardsOverviewAction(): Promise<
   { children: ChildPointsSummary[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -145,7 +146,7 @@ export async function getRewardsOverviewAction(): Promise<
     .order("display_name")
 
   if (childError) {
-    return { error: "Punkte-Uebersicht konnte nicht geladen werden." }
+    return { error: E.REWARD_OVERVIEW_FAILED }
   }
 
   return {
@@ -166,16 +167,16 @@ export async function getPointsHistoryAction(
   profileId: string
 ): Promise<{ transactions: PointsTransaction[] } | { error: string }> {
   if (!profileId || typeof profileId !== "string") {
-    return { error: "Ungueltige Profil-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   // Children can only see their own history
   if (profile.role === "child" && profileId !== profile.id) {
-    return { error: "Du kannst nur deine eigene Punktehistorie einsehen." }
+    return { error: E.PERM_OWN_HISTORY_ONLY }
   }
 
   const supabase = await createClient()
@@ -189,7 +190,7 @@ export async function getPointsHistoryAction(
     .single()
 
   if (!targetProfile) {
-    return { error: "Profil nicht gefunden oder nicht in deiner Familie." }
+    return { error: E.REWARD_PROFILE_NOT_FOUND }
   }
 
   // Fetch transactions with task title and creator name via joins
@@ -218,7 +219,7 @@ export async function getPointsHistoryAction(
     .limit(200)
 
   if (txError) {
-    return { error: "Punktehistorie konnte nicht geladen werden." }
+    return { error: E.REWARD_HISTORY_FAILED }
   }
 
   const transactions: PointsTransaction[] = (rawTransactions || []).map((tx) => ({
@@ -261,19 +262,19 @@ export async function manualPointsAction(
 ): Promise<ManualPointsResult | { error: string }> {
   const parsed = manualPointsSchema.safeParse({ profileId, amount, comment })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`manualPoints:${ip}`, 30, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Punkte manuell buchen." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -287,12 +288,12 @@ export async function manualPointsAction(
 
   if (error) {
     if (error.message.includes("different family")) {
-      return { error: "Nicht berechtigt – anderes Familienmitglied." }
+      return { error: E.PERM_OTHER_FAMILY_MEMBER }
     }
     if (error.message.includes("Amount must not be zero")) {
-      return { error: "Betrag darf nicht 0 sein." }
+      return { error: E.REWARD_ZERO_AMOUNT }
     }
-    return { error: "Punkte konnten nicht gebucht werden." }
+    return { error: E.REWARD_MANUAL_FAILED }
   }
 
   const result = data as {
@@ -316,8 +317,8 @@ export async function getFamilyLeaderboardAction(): Promise<
   { members: LeaderboardMember[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -328,7 +329,7 @@ export async function getFamilyLeaderboardAction(): Promise<
     .order("points_balance", { ascending: false })
 
   if (membersError) {
-    return { error: "Leaderboard konnte nicht geladen werden." }
+    return { error: E.REWARD_LEADERBOARD_FAILED }
   }
 
   return {
@@ -350,8 +351,8 @@ export async function getRewardShopAction(): Promise<
   { rewards: Reward[]; userBalance: number; isAdultOrAdmin: boolean } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const isAdultOrAdmin = ["adult", "admin"].includes(profile.role ?? "")
   const supabase = await createClient()
@@ -370,7 +371,7 @@ export async function getRewardShopAction(): Promise<
   const { data: rewards, error: rewardsError } = await query
 
   if (rewardsError) {
-    return { error: "Belohnungen konnten nicht geladen werden." }
+    return { error: E.REWARD_LOAD_FAILED }
   }
 
   return {
@@ -402,14 +403,14 @@ export async function createRewardAction(data: {
 }): Promise<{ reward: { id: string } } | { error: string }> {
   const parsed = createRewardSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Belohnungen anlegen." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -428,7 +429,7 @@ export async function createRewardAction(data: {
     .single()
 
   if (insertError || !reward) {
-    return { error: "Belohnung konnte nicht erstellt werden." }
+    return { error: E.REWARD_CREATE_FAILED }
   }
 
   return { reward: { id: reward.id } }
@@ -449,19 +450,19 @@ export async function updateRewardAction(
   }
 ): Promise<{ success: true } | { error: string }> {
   if (!id || typeof id !== "string") {
-    return { error: "Ungueltige Belohnungs-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const parsed = updateRewardSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Belohnungen bearbeiten." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -475,7 +476,7 @@ export async function updateRewardAction(
     .single()
 
   if (!existing) {
-    return { error: "Belohnung nicht gefunden." }
+    return { error: E.REWARD_NOT_FOUND }
   }
 
   // Build update payload (only set fields that were provided)
@@ -487,7 +488,7 @@ export async function updateRewardAction(
   if (parsed.data.isActive !== undefined) updatePayload.is_active = parsed.data.isActive
 
   if (Object.keys(updatePayload).length === 0) {
-    return { error: "Keine Aenderungen angegeben." }
+    return { error: E.VAL_NO_CHANGES }
   }
 
   const { error: updateError } = await supabase
@@ -496,7 +497,7 @@ export async function updateRewardAction(
     .eq("id", id)
 
   if (updateError) {
-    return { error: "Belohnung konnte nicht aktualisiert werden." }
+    return { error: E.REWARD_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -517,17 +518,17 @@ export async function redeemRewardAction(
 ): Promise<RedeemRewardResult | { error: string }> {
   const parsed = redeemRewardSchema.safeParse({ rewardId })
   if (!parsed.success) {
-    return { error: "Ungueltige Belohnungs-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`redeemReward:${ip}`, 30, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -537,18 +538,18 @@ export async function redeemRewardAction(
 
   if (error) {
     if (error.message.includes("Insufficient points")) {
-      return { error: "Nicht genuegend Punkte." }
+      return { error: E.REWARD_INSUFFICIENT_POINTS }
     }
     if (error.message.includes("not active")) {
-      return { error: "Diese Belohnung ist nicht mehr verfuegbar." }
+      return { error: E.REWARD_UNAVAILABLE }
     }
     if (error.message.includes("different family")) {
-      return { error: "Nicht berechtigt." }
+      return { error: E.PERM_DENIED }
     }
     if (error.message.includes("not found")) {
-      return { error: "Belohnung nicht gefunden." }
+      return { error: E.REWARD_NOT_FOUND }
     }
-    return { error: "Belohnung konnte nicht eingeloest werden." }
+    return { error: E.REWARD_REDEEM_FAILED }
   }
 
   const result = data as {
@@ -572,7 +573,7 @@ export async function getAchievementsAction(): Promise<
   { achievements: Achievement[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
 
@@ -583,7 +584,7 @@ export async function getAchievementsAction(): Promise<
     .order("title")
 
   if (achError) {
-    return { error: "Abzeichen konnten nicht geladen werden." }
+    return { error: E.REWARD_BADGES_FAILED }
   }
 
   // Fetch earned achievements for this user
@@ -619,12 +620,12 @@ export async function checkAndAwardAchievementsAction(
   profileId: string
 ): Promise<{ awarded: string[] } | { error: string }> {
   if (!profileId || typeof profileId !== "string") {
-    return { error: "Ungueltige Profil-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -637,7 +638,7 @@ export async function checkAndAwardAchievementsAction(
     .single()
 
   if (!targetProfile) {
-    return { error: "Profil nicht gefunden oder nicht in deiner Familie." }
+    return { error: E.REWARD_PROFILE_NOT_FOUND }
   }
 
   // Fetch achievements, earned status, and completed tasks in parallel
@@ -660,7 +661,7 @@ export async function checkAndAwardAchievementsAction(
   ])
 
   if (achError || !allAchievements) {
-    return { error: "Abzeichen konnten nicht geladen werden." }
+    return { error: E.REWARD_BADGES_FAILED }
   }
 
   const earnedIds = new Set((alreadyEarned || []).map((e) => e.achievement_id))
@@ -748,8 +749,8 @@ export async function getFamilyGoalAction(): Promise<
   { goal: FamilyGoal | null; contributions: GoalContribution[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -763,7 +764,7 @@ export async function getFamilyGoalAction(): Promise<
     .limit(1)
 
   if (goalError) {
-    return { error: "Familienziel konnte nicht geladen werden." }
+    return { error: E.GOAL_LOAD_FAILED }
   }
 
   const goal = goals && goals.length > 0 ? goals[0] : null
@@ -792,7 +793,7 @@ export async function getFamilyGoalAction(): Promise<
     .limit(50)
 
   if (contribError) {
-    return { error: "Beitraege konnten nicht geladen werden." }
+    return { error: E.GOAL_CONTRIBUTIONS_FAILED }
   }
 
   return {
@@ -833,8 +834,8 @@ export async function getCompletedGoalsAction(): Promise<
   { goals: FamilyGoal[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -847,7 +848,7 @@ export async function getCompletedGoalsAction(): Promise<
     .limit(10)
 
   if (goalsError) {
-    return { error: "Vergangene Ziele konnten nicht geladen werden." }
+    return { error: E.GOAL_PAST_LOAD_FAILED }
   }
 
   return {
@@ -879,14 +880,14 @@ export async function createFamilyGoalAction(data: {
 }): Promise<{ goal: { id: string } } | { error: string }> {
   const parsed = createGoalSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Familienziele anlegen." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -900,7 +901,7 @@ export async function createFamilyGoalAction(data: {
     .limit(1)
 
   if (existingGoals && existingGoals.length > 0) {
-    return { error: "Es gibt bereits ein aktives Familienziel. Bitte schliesse es zuerst ab." }
+    return { error: E.GOAL_ACTIVE_EXISTS }
   }
 
   const { data: goal, error: insertError } = await supabase
@@ -917,7 +918,7 @@ export async function createFamilyGoalAction(data: {
     .single()
 
   if (insertError || !goal) {
-    return { error: "Familienziel konnte nicht erstellt werden." }
+    return { error: E.GOAL_CREATE_FAILED }
   }
 
   return { goal: { id: goal.id } }
@@ -939,12 +940,12 @@ export async function contributeToGoalAction(
 ): Promise<ContributeToGoalResult | { error: string }> {
   const parsed = contributeToGoalSchema.safeParse({ goalId, amount })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -955,18 +956,18 @@ export async function contributeToGoalAction(
 
   if (error) {
     if (error.message.includes("not active")) {
-      return { error: "Dieses Ziel ist nicht mehr aktiv." }
+      return { error: E.GOAL_NOT_ACTIVE }
     }
     if (error.message.includes("No points available")) {
-      return { error: "Keine Punkte verfuegbar zum Beisteuern." }
+      return { error: E.GOAL_NO_POINTS }
     }
     if (error.message.includes("different family")) {
-      return { error: "Nicht berechtigt." }
+      return { error: E.PERM_DENIED }
     }
     if (error.message.includes("not found")) {
-      return { error: "Familienziel nicht gefunden." }
+      return { error: E.GOAL_NOT_FOUND }
     }
-    return { error: "Punkte konnten nicht beigesteuert werden." }
+    return { error: E.GOAL_CONTRIBUTE_FAILED }
   }
 
   const result = data as {
@@ -990,14 +991,14 @@ export async function completeFamilyGoalAction(
   goalId: string
 ): Promise<{ success: true } | { error: string }> {
   if (!goalId || typeof goalId !== "string") {
-    return { error: "Ungueltige Ziel-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Familienziele abschliessen." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -1011,11 +1012,11 @@ export async function completeFamilyGoalAction(
     .single()
 
   if (!existing) {
-    return { error: "Familienziel nicht gefunden." }
+    return { error: E.GOAL_NOT_FOUND }
   }
 
   if (existing.status === "completed") {
-    return { error: "Dieses Ziel ist bereits abgeschlossen." }
+    return { error: E.GOAL_ALREADY_COMPLETED }
   }
 
   const { error: updateError } = await supabase
@@ -1027,7 +1028,7 @@ export async function completeFamilyGoalAction(
     .eq("id", goalId)
 
   if (updateError) {
-    return { error: "Familienziel konnte nicht abgeschlossen werden." }
+    return { error: E.GOAL_COMPLETE_FAILED }
   }
 
   return { success: true }
@@ -1069,16 +1070,16 @@ export async function getJarsForChildAction(
   childProfileId: string
 ): Promise<{ jars: SavingsJar[]; unallocatedPoints: number } | { error: string }> {
   if (!childProfileId || typeof childProfileId !== "string") {
-    return { error: "Ungueltige Profil-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   // Children can only see their own jars
   if (profile.role === "child" && childProfileId !== profile.id) {
-    return { error: "Du kannst nur deine eigenen Toepfe sehen." }
+    return { error: E.PERM_OWN_JARS_ONLY }
   }
 
   const supabase = await createClient()
@@ -1092,7 +1093,7 @@ export async function getJarsForChildAction(
     .single()
 
   if (!targetProfile) {
-    return { error: "Profil nicht gefunden oder nicht in deiner Familie." }
+    return { error: E.REWARD_PROFILE_NOT_FOUND }
   }
 
   const { data: jars, error: jarsError } = await supabase
@@ -1103,7 +1104,7 @@ export async function getJarsForChildAction(
     .order("sort_order", { ascending: true })
 
   if (jarsError) {
-    return { error: "Toepfe konnten nicht geladen werden." }
+    return { error: E.JAR_LOAD_FAILED }
   }
 
   // Calculate unallocated: total points balance - sum of all jar amounts
@@ -1139,19 +1140,19 @@ export async function createJarAction(data: {
 }): Promise<{ jar: { id: string } } | { error: string }> {
   const parsed = createJarSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`createJar:${ip}`, 30, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Toepfe anlegen." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -1165,7 +1166,7 @@ export async function createJarAction(data: {
     .single()
 
   if (!childProfile) {
-    return { error: "Kind nicht gefunden oder nicht in deiner Familie." }
+    return { error: E.JAR_CHILD_NOT_FOUND }
   }
 
   // Get current max sort_order for this child's jars
@@ -1195,7 +1196,7 @@ export async function createJarAction(data: {
     .single()
 
   if (insertError || !jar) {
-    return { error: "Topf konnte nicht erstellt werden." }
+    return { error: E.JAR_CREATE_FAILED }
   }
 
   return { jar: { id: jar.id } }
@@ -1214,19 +1215,19 @@ export async function updateJarAction(
   }
 ): Promise<{ success: true } | { error: string }> {
   if (!jarId || typeof jarId !== "string") {
-    return { error: "Ungueltige Topf-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const parsed = updateJarSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Toepfe bearbeiten." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -1240,7 +1241,7 @@ export async function updateJarAction(
     .single()
 
   if (!existing) {
-    return { error: "Topf nicht gefunden." }
+    return { error: E.JAR_NOT_FOUND }
   }
 
   const updatePayload: Record<string, unknown> = {}
@@ -1250,7 +1251,7 @@ export async function updateJarAction(
   updatePayload.updated_at = new Date().toISOString()
 
   if (Object.keys(updatePayload).length <= 1) {
-    return { error: "Keine Aenderungen angegeben." }
+    return { error: E.VAL_NO_CHANGES }
   }
 
   const { error: updateError } = await supabase
@@ -1259,7 +1260,7 @@ export async function updateJarAction(
     .eq("id", jarId)
 
   if (updateError) {
-    return { error: "Topf konnte nicht aktualisiert werden." }
+    return { error: E.JAR_UPDATE_FAILED }
   }
 
   return { success: true }
@@ -1273,14 +1274,14 @@ export async function deleteJarAction(
   jarId: string
 ): Promise<{ success: true; refundedAmount: number } | { error: string }> {
   if (!jarId || typeof jarId !== "string") {
-    return { error: "Ungueltige Topf-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Toepfe loeschen." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -1294,7 +1295,7 @@ export async function deleteJarAction(
     .single()
 
   if (!jar) {
-    return { error: "Topf nicht gefunden." }
+    return { error: E.JAR_NOT_FOUND }
   }
 
   const refundedAmount = jar.current_amount ?? 0
@@ -1319,7 +1320,7 @@ export async function deleteJarAction(
     .eq("id", jarId)
 
   if (deleteError) {
-    return { error: "Topf konnte nicht geloescht werden." }
+    return { error: E.JAR_DELETE_FAILED }
   }
 
   return { success: true, refundedAmount }
@@ -1340,24 +1341,24 @@ export async function allocatePointsToJarsAction(
 ): Promise<AllocatePointsResult | { error: string }> {
   const parsed = allocatePointsSchema.safeParse({ allocations })
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben: " + parsed.error.issues.map((i) => i.message).join(", ") }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`allocatePoints:${ip}`, 60, 60 * 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte versuche es spaeter erneut." }
+    return { error: E.RATE_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
   // Filter out zero allocations
   const nonZeroAllocations = parsed.data.allocations.filter((a) => a.amount > 0)
   if (nonZeroAllocations.length === 0) {
-    return { error: "Keine Punkte zum Verteilen." }
+    return { error: E.JAR_NO_POINTS }
   }
 
   // Use atomic RPC (handles locking, validation, notifications)
@@ -1387,12 +1388,12 @@ export async function getJarHistoryAction(
   jarId: string
 ): Promise<{ transactions: JarTransaction[] } | { error: string }> {
   if (!jarId || typeof jarId !== "string") {
-    return { error: "Ungueltige Topf-ID." }
+    return { error: E.VAL_INVALID_ID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -1405,12 +1406,12 @@ export async function getJarHistoryAction(
     .single()
 
   if (!jar) {
-    return { error: "Topf nicht gefunden." }
+    return { error: E.JAR_NOT_FOUND }
   }
 
   // Children can only see their own jar history
   if (profile.role === "child" && jar.profile_id !== profile.id) {
-    return { error: "Du kannst nur deine eigene Topf-Historie sehen." }
+    return { error: E.PERM_OWN_JARS_ONLY }
   }
 
   const { data: transactions, error: txError } = await supabase
@@ -1421,7 +1422,7 @@ export async function getJarHistoryAction(
     .limit(100)
 
   if (txError) {
-    return { error: "Topf-Historie konnte nicht geladen werden." }
+    return { error: E.JAR_HISTORY_FAILED }
   }
 
   return {
@@ -1463,17 +1464,17 @@ export async function reorderJarsAction(
   jarIds: string[]
 ): Promise<{ success: true } | { error: string }> {
   if (!Array.isArray(jarIds) || jarIds.length === 0) {
-    return { error: "Keine Toepfe zum Sortieren." }
+    return { error: E.JAR_SORT_EMPTY }
   }
   if (jarIds.some((id) => typeof id !== "string" || !id)) {
-    return { error: "Ungueltige Topf-IDs." }
+    return { error: E.JAR_SORT_INVALID }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
   if (!["adult", "admin"].includes(profile.role ?? "")) {
-    return { error: "Nur Erwachsene und Admins duerfen Toepfe umsortieren." }
+    return { error: E.PERM_ADULT_REQUIRED }
   }
 
   const supabase = await createClient()
@@ -1483,7 +1484,7 @@ export async function reorderJarsAction(
   })
 
   if (rpcError) {
-    return { error: "Toepfe konnten nicht umsortiert werden." }
+    return { error: E.JAR_SORT_FAILED }
   }
 
   return { success: true }
@@ -1497,8 +1498,8 @@ export async function getJarsSummaryForDashboardAction(): Promise<
   { children: JarsSummaryChild[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -1511,7 +1512,7 @@ export async function getJarsSummaryForDashboardAction(): Promise<
     .order("display_name")
 
   if (childError) {
-    return { error: "Kinder konnten nicht geladen werden." }
+    return { error: E.JAR_CHILDREN_FAILED }
   }
 
   if (!children || children.length === 0) {
@@ -1528,7 +1529,7 @@ export async function getJarsSummaryForDashboardAction(): Promise<
     .order("sort_order", { ascending: true })
 
   if (jarsError) {
-    return { error: "Toepfe konnten nicht geladen werden." }
+    return { error: E.JAR_LOAD_FAILED }
   }
 
   // Group jars by child

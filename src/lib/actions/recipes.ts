@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
+import { E } from "@/lib/error-codes"
 import { z } from "zod"
 import {
   createRecipeSchema,
@@ -36,12 +37,12 @@ async function getCurrentProfile() {
 // Helper: verify caller is adult or admin
 async function verifyAdultOrAdmin() {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet.", profile: null }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN, profile: null }
   if (!profile.family_id)
-    return { error: "Du gehoerst keiner Familie an.", profile: null }
+    return { error: E.AUTH_NO_FAMILY, profile: null }
   if (!["adult", "admin"].includes(profile.role ?? ""))
     return {
-      error: "Nur Erwachsene und Admins duerfen diese Aktion ausfuehren.",
+      error: E.PERM_ADULT_REQUIRED,
       profile: null,
     }
   return { error: null, profile }
@@ -91,8 +92,8 @@ export async function getRecipesAction(): Promise<
   { recipes: Recipe[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -116,7 +117,7 @@ export async function getRecipesAction(): Promise<
     .limit(200)
 
   if (recipesError) {
-    return { error: "Rezepte konnten nicht geladen werden." }
+    return { error: E.RECIPE_LOAD_FAILED }
   }
 
   // Fetch all ingredients for these recipes
@@ -184,17 +185,17 @@ export async function createRecipeAction(data: {
 }): Promise<{ recipe: { id: string } } | { error: string }> {
   const parsed = createRecipeSchema.safeParse(data)
   if (!parsed.success) {
-    return { error: "Ungueltige Eingaben." }
+    return { error: E.VAL_INVALID }
   }
 
   const ip = await getIP()
   if (!checkRateLimit(`createRecipe:${ip}`, 20, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -213,7 +214,7 @@ export async function createRecipeAction(data: {
     .single()
 
   if (insertError || !recipe) {
-    return { error: "Rezept konnte nicht erstellt werden." }
+    return { error: E.RECIPE_CREATE_FAILED }
   }
 
   // Insert ingredients
@@ -253,14 +254,14 @@ export async function updateRecipeAction(
   }
 ): Promise<{ success: true } | { error: string }> {
   const uuidResult = z.string().uuid().safeParse(recipeId)
-  if (!uuidResult.success) return { error: "Ungueltige Rezept-ID." }
+  if (!uuidResult.success) return { error: E.VAL_INVALID_ID }
 
   const parsed = updateRecipeSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -272,7 +273,7 @@ export async function updateRecipeAction(
     .eq("family_id", profile.family_id)
     .single()
 
-  if (!existing) return { error: "Rezept nicht gefunden." }
+  if (!existing) return { error: E.RECIPE_NOT_FOUND }
 
   // Update recipe
   const { error: updateError } = await supabase
@@ -285,7 +286,7 @@ export async function updateRecipeAction(
     })
     .eq("id", recipeId)
 
-  if (updateError) return { error: "Rezept konnte nicht aktualisiert werden." }
+  if (updateError) return { error: E.RECIPE_UPDATE_FAILED }
 
   // Replace ingredients: delete all, then re-insert
   const { error: deleteIngError } = await supabase
@@ -294,7 +295,7 @@ export async function updateRecipeAction(
     .eq("recipe_id", recipeId)
 
   if (deleteIngError)
-    return { error: "Zutaten konnten nicht aktualisiert werden." }
+    return { error: E.RECIPE_INGREDIENTS_UPDATE_FAILED }
 
   if (parsed.data.ingredients && parsed.data.ingredients.length > 0) {
     const ingredientRows = parsed.data.ingredients.map((ing) => ({
@@ -309,7 +310,7 @@ export async function updateRecipeAction(
       .insert(ingredientRows)
 
     if (insertIngError)
-      return { error: "Zutaten konnten nicht gespeichert werden." }
+      return { error: E.RECIPE_INGREDIENTS_SAVE_FAILED }
   }
 
   return { success: true }
@@ -323,11 +324,11 @@ export async function deleteRecipeAction(
   recipeId: string
 ): Promise<{ success: true } | { error: string }> {
   const parsed = deleteRecipeSchema.safeParse({ id: recipeId })
-  if (!parsed.success) return { error: "Ungueltige Rezept-ID." }
+  if (!parsed.success) return { error: E.VAL_INVALID_ID }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const supabase = await createClient()
 
@@ -338,7 +339,7 @@ export async function deleteRecipeAction(
     .eq("id", parsed.data.id)
     .eq("family_id", profile.family_id)
 
-  if (deleteError) return { error: "Rezept konnte nicht geloescht werden." }
+  if (deleteError) return { error: E.RECIPE_DELETE_FAILED }
 
   return { success: true }
 }
@@ -354,11 +355,11 @@ export async function getMealPlanAction(
     .string()
     .regex(/^\d{4}-W\d{2}$/)
     .safeParse(weekKey)
-  if (!weekResult.success) return { error: "Ungueltige Wochenkennung." }
+  if (!weekResult.success) return { error: E.VAL_INVALID_WEEK }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -381,7 +382,7 @@ export async function getMealPlanAction(
     .limit(21) // Max 7 days x 3 meals
 
   if (entriesError) {
-    return { error: "Essensplan konnte nicht geladen werden." }
+    return { error: E.RECIPE_PLAN_LOAD_FAILED }
   }
 
   const entries: MealPlanEntry[] = (rawEntries || []).map((e) => ({
@@ -415,15 +416,15 @@ export async function upsertMealPlanEntryAction(data: {
   freeText?: string | null
 }): Promise<{ entry: { id: string } } | { error: string }> {
   const parsed = upsertMealPlanEntrySchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`upsertMeal:${ip}`, 60, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const { error: authError, profile } = await verifyAdultOrAdmin()
-  if (authError || !profile) return { error: authError || "Nicht angemeldet." }
+  if (authError || !profile) return { error: authError || E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
 
@@ -448,7 +449,7 @@ export async function upsertMealPlanEntryAction(data: {
       .eq("id", existing.id)
 
     if (updateError)
-      return { error: "Eintrag konnte nicht aktualisiert werden." }
+      return { error: E.RECIPE_ENTRY_UPDATE_FAILED }
 
     return { entry: { id: existing.id } }
   }
@@ -468,7 +469,7 @@ export async function upsertMealPlanEntryAction(data: {
     .single()
 
   if (insertError || !entry)
-    return { error: "Eintrag konnte nicht erstellt werden." }
+    return { error: E.RECIPE_ENTRY_CREATE_FAILED }
 
   return { entry: { id: entry.id } }
 }
@@ -481,11 +482,11 @@ export async function deleteMealPlanEntryAction(
   entryId: string
 ): Promise<{ success: true } | { error: string }> {
   const parsed = deleteMealPlanEntrySchema.safeParse({ id: entryId })
-  if (!parsed.success) return { error: "Ungueltige Eintrag-ID." }
+  if (!parsed.success) return { error: E.VAL_INVALID_ID }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -495,7 +496,7 @@ export async function deleteMealPlanEntryAction(
     .eq("id", parsed.data.id)
     .eq("family_id", profile.family_id)
 
-  if (deleteError) return { error: "Eintrag konnte nicht geloescht werden." }
+  if (deleteError) return { error: E.RECIPE_ENTRY_DELETE_FAILED }
 
   return { success: true }
 }
@@ -511,11 +512,11 @@ export async function addRecipeIngredientsToShoppingListAction(data: {
   const recipeResult = z.string().uuid().safeParse(data.recipeId)
   const listResult = z.string().uuid().safeParse(data.listId)
   if (!recipeResult.success || !listResult.success)
-    return { error: "Ungueltige IDs." }
+    return { error: E.VAL_INVALID_ID }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
 
@@ -527,7 +528,7 @@ export async function addRecipeIngredientsToShoppingListAction(data: {
     .eq("family_id", profile.family_id)
     .single()
 
-  if (!recipe) return { error: "Rezept nicht gefunden." }
+  if (!recipe) return { error: E.RECIPE_NOT_FOUND }
 
   // Verify list belongs to family
   const { data: list } = await supabase
@@ -537,7 +538,7 @@ export async function addRecipeIngredientsToShoppingListAction(data: {
     .eq("family_id", profile.family_id)
     .single()
 
-  if (!list) return { error: "Einkaufsliste nicht gefunden." }
+  if (!list) return { error: E.SHOP_LIST_NOT_FOUND }
 
   // Get ingredients
   const { data: ingredients } = await supabase
@@ -546,7 +547,7 @@ export async function addRecipeIngredientsToShoppingListAction(data: {
     .eq("recipe_id", data.recipeId)
 
   if (!ingredients || ingredients.length === 0)
-    return { error: "Keine Zutaten vorhanden." }
+    return { error: E.RECIPE_NO_INGREDIENTS }
 
   // Add each ingredient as a shopping item
   const items = ingredients.map((ing) => ({
@@ -564,7 +565,7 @@ export async function addRecipeIngredientsToShoppingListAction(data: {
     .insert(items)
 
   if (insertError)
-    return { error: "Zutaten konnten nicht zur Liste hinzugefuegt werden." }
+    return { error: E.RECIPE_TO_LIST_FAILED }
 
   // Touch list's updated_at
   await supabase
@@ -584,24 +585,24 @@ export async function uploadRecipeImageAction(
 ): Promise<{ url: string } | { error: string }> {
   const { error: authError, profile } = await verifyAdultOrAdmin()
   if (authError || !profile)
-    return { error: authError || "Unbekannter Fehler." }
+    return { error: authError || E.AUTH_UNKNOWN }
 
   const ip = await getIP()
   if (!checkRateLimit(`uploadImage:${ip}`, 10, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const file = formData.get("file") as File | null
-  if (!file) return { error: "Keine Datei hochgeladen." }
+  if (!file) return { error: E.VAL_NO_FILE }
 
   // Validate file
   const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
   if (file.size > MAX_SIZE)
-    return { error: "Datei ist zu gross (max. 5 MB)." }
+    return { error: E.VAL_FILE_TOO_LARGE }
 
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"]
   if (!allowedTypes.includes(file.type))
-    return { error: "Nur JPEG, PNG und WebP sind erlaubt." }
+    return { error: E.VAL_FILE_INVALID_TYPE }
 
   const supabase = await createClient()
   const ext = file.name.split(".").pop() || "jpg"
@@ -615,7 +616,7 @@ export async function uploadRecipeImageAction(
     })
 
   if (uploadError)
-    return { error: "Bild konnte nicht hochgeladen werden." }
+    return { error: E.RECIPE_IMAGE_UPLOAD_FAILED }
 
   const {
     data: { publicUrl },

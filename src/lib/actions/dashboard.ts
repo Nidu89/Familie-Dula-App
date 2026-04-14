@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { E } from "@/lib/error-codes"
 
 // Simple in-memory rate limit: max 30 calls per user per minute
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -45,11 +46,11 @@ export async function getDashboardDataAction(): Promise<
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: "Nicht angemeldet." }
+    return { error: E.AUTH_NOT_LOGGED_IN }
   }
 
   if (isRateLimited(user.id)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   // Get caller's profile with family info
@@ -60,7 +61,7 @@ export async function getDashboardDataAction(): Promise<
     .single()
 
   if (!profile?.family_id) {
-    return { error: "Du gehoerst keiner Familie an." }
+    return { error: E.AUTH_NO_FAMILY }
   }
 
   // Load family name and member count in parallel
@@ -77,7 +78,7 @@ export async function getDashboardDataAction(): Promise<
   ])
 
   if (!family) {
-    return { error: "Familie nicht gefunden." }
+    return { error: E.FAMILY_NOT_FOUND }
   }
 
   return {

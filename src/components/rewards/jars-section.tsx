@@ -36,6 +36,7 @@ import {
   type SavingsJar,
   type ChildPointsSummary,
 } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface JarsSectionProps {
   childProfiles: ChildPointsSummary[]
@@ -50,6 +51,7 @@ export function JarsSection({
 }: JarsSectionProps) {
   const t = useTranslations("rewards.jars")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
 
   // Selected child
@@ -83,7 +85,7 @@ export function JarsSection({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -99,7 +101,7 @@ export function JarsSection({
     } finally {
       setIsLoading(false)
     }
-  }, [selectedChildId, toast, tc, t])
+  }, [selectedChildId, toast, tc, t, te])
 
   useEffect(() => {
     startTransition(() => {
@@ -135,7 +137,7 @@ export function JarsSection({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -172,7 +174,7 @@ export function JarsSection({
 
     const result = await reorderJarsAction(newJars.map((j) => j.id))
     if ("error" in result) {
-      toast({ title: tc("error"), description: result.error, variant: "destructive" })
+      toast({ title: tc("error"), description: te(result.error), variant: "destructive" })
       fetchJars()
     }
   }

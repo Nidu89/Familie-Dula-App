@@ -23,6 +23,7 @@ import {
 } from "@/lib/actions/recipes"
 import { PREDEFINED_TAGS } from "@/lib/validations/recipes"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface IngredientInput {
   name: string
@@ -48,6 +49,7 @@ export function RecipeFormDialog({
   const t = useTranslations("recipes")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
 
   const [open, setOpen] = useState(autoOpen)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -167,7 +169,7 @@ export function RecipeFormDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -206,7 +208,7 @@ export function RecipeFormDialog({
         if ("error" in result) {
           toast({
             title: tc("error"),
-            description: result.error,
+            description: te(result.error),
             variant: "destructive",
           })
           return
@@ -223,7 +225,7 @@ export function RecipeFormDialog({
         if ("error" in result) {
           toast({
             title: tc("error"),
-            description: result.error,
+            description: te(result.error),
             variant: "destructive",
           })
           return

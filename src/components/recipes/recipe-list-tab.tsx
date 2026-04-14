@@ -23,6 +23,7 @@ import {
 } from "@/lib/actions/recipes"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import { TagFilterBar } from "@/components/recipes/tag-filter-bar"
 import { RecipeCard } from "@/components/recipes/recipe-card"
 import dynamic from "next/dynamic"
@@ -50,6 +51,7 @@ export function RecipeListTab({
   const t = useTranslations("recipes")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -84,7 +86,7 @@ export function RecipeListTab({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -99,7 +101,7 @@ export function RecipeListTab({
     } finally {
       setIsLoading(false)
     }
-  }, [toast, tc, t, setRecipes])
+  }, [toast, tc, t, te, setRecipes])
 
   // Realtime subscription
   useEffect(() => {
@@ -136,7 +138,7 @@ export function RecipeListTab({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return

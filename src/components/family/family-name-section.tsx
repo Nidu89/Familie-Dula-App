@@ -29,6 +29,7 @@ import {
   type UpdateFamilyNameFormValues,
 } from "@/lib/validations/family"
 import { updateFamilyNameAction } from "@/lib/actions/family"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 
 interface FamilyNameSectionProps {
   familyName: string
@@ -41,6 +42,7 @@ export function FamilyNameSection({
 }: FamilyNameSectionProps) {
   const t = useTranslations("family.nameSection")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -60,7 +62,7 @@ export function FamilyNameSection({
     try {
       const result = await updateFamilyNameAction(values.familyName)
       if (result?.error) {
-        setErrorMessage(result.error)
+        setErrorMessage(te(result.error))
       } else {
         setIsEditing(false)
         router.refresh()

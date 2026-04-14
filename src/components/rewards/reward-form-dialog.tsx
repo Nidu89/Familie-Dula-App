@@ -32,6 +32,7 @@ import {
   updateRewardAction,
   type Reward,
 } from "@/lib/actions/rewards"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import {
   createRewardSchema,
   type CreateRewardFormValues,
@@ -52,6 +53,7 @@ export function RewardFormDialog({
 }: RewardFormDialogProps) {
   const t = useTranslations("rewards.rewardForm")
   const tc = useTranslations("common")
+  const te = useErrorTranslation()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isActive, setIsActive] = useState(true)
@@ -104,28 +106,28 @@ export function RewardFormDialog({
         if ("error" in result) {
           toast({
             title: tc("error"),
-            description: result.error,
+            description: te(result.error),
             variant: "destructive",
           })
           return
         }
         toast({
           title: t("updated"),
-          description: `"${values.title}" wurde gespeichert.`,
+          description: t("updatedDescription", { title: values.title }),
         })
       } else {
         const result = await createRewardAction(values)
         if ("error" in result) {
           toast({
             title: tc("error"),
-            description: result.error,
+            description: te(result.error),
             variant: "destructive",
           })
           return
         }
         toast({
           title: t("created"),
-          description: `"${values.title}" ist jetzt im Shop verfügbar.`,
+          description: t("createdDescription", { title: values.title }),
         })
       }
 

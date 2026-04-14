@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorTranslation } from "@/lib/use-error-translation"
 import {
   createEventAction,
   updateEventAction,
@@ -110,6 +111,7 @@ export function EventFormDialog({
   const t = useTranslations("calendar")
   const tc = useTranslations("common")
   const { toast } = useToast()
+  const te = useErrorTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [seriesMode, setSeriesMode] = useState<SeriesMode>("single")
@@ -242,7 +244,7 @@ export function EventFormDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -275,7 +277,7 @@ export function EventFormDialog({
       if ("error" in result) {
         toast({
           title: tc("error"),
-          description: result.error,
+          description: te(result.error),
           variant: "destructive",
         })
         return
@@ -565,16 +567,16 @@ export function EventFormDialog({
 
             {isEditing && isRecurring && (
               <div className="rounded-md border p-3 space-y-2">
-                <label className="text-sm font-medium leading-none">Welche Termine bearbeiten?</label>
+                <label className="text-sm font-medium leading-none">{t("eventForm.editSeriesLabel")}</label>
                 <RadioGroup
                   value={seriesMode}
                   onValueChange={(v) => setSeriesMode(v as SeriesMode)}
                   className="space-y-1"
                 >
                   {[
-                    { value: "single", label: "Nur diesen Termin" },
-                    { value: "following", label: "Diesen + alle folgenden" },
-                    { value: "all", label: "Alle Termine der Serie" },
+                    { value: "single", label: t("eventForm.editOnlyThis") },
+                    { value: "following", label: t("eventForm.editThisAndFollowing") },
+                    { value: "all", label: t("eventForm.editAll") },
                   ].map((opt) => (
                     <div key={opt.value} className="flex items-center gap-2">
                       <RadioGroupItem value={opt.value} id={`series-${opt.value}`} />

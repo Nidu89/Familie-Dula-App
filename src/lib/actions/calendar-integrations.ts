@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { checkRateLimit, getIP } from "@/lib/rate-limit"
+import { E } from "@/lib/error-codes"
 import { encrypt, decrypt } from "@/lib/crypto"
 import { getProvider } from "@/lib/calendar-providers"
 import type { ICloudCredentials, ProviderCredentials } from "@/lib/calendar-providers"
@@ -71,7 +72,7 @@ export async function listIntegrationsAction(): Promise<
   { integrations: CalendarIntegration[] } | { error: string }
 > {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -84,7 +85,7 @@ export async function listIntegrationsAction(): Promise<
     .order("created_at", { ascending: true })
     .limit(10)
 
-  if (error) return { error: "Integrationen konnten nicht geladen werden." }
+  if (error) return { error: E.CAL_INT_LOAD_FAILED }
 
   const integrations: CalendarIntegration[] = (data || []).map((row) => ({
     id: row.id,
@@ -110,16 +111,16 @@ export async function connectICloudAction(data: {
   appPassword: string
 }): Promise<{ integrationId: string } | { error: string }> {
   const parsed = connectICloudSchema.safeParse(data)
-  if (!parsed.success) return { error: parsed.error.issues[0].message }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`calConnect:${ip}`, 5, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   // Build credentials and validate
   const credentials: ICloudCredentials = {
@@ -133,8 +134,7 @@ export async function connectICloudAction(data: {
   const isValid = await provider.validateCredentials(credentials)
   if (!isValid) {
     return {
-      error:
-        "Verbindung fehlgeschlagen. Bitte Apple-ID und App-spezifisches Passwort prüfen.",
+      error: E.VAL_INVALID,
     }
   }
 
@@ -159,7 +159,7 @@ export async function connectICloudAction(data: {
     .single()
 
   if (dbError || !row) {
-    return { error: "Integration konnte nicht gespeichert werden." }
+    return { error: E.CAL_INT_SAVE_FAILED }
   }
 
   return { integrationId: row.id }
@@ -176,11 +176,11 @@ export async function fetchAvailableCalendarsAction(data: {
 > {
   const ip = await getIP()
   if (!checkRateLimit(`calFetch:${ip}`, 10, 60 * 1000)) {
-    return { error: "Zu viele Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_LIMITED_SHORT }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
   const { data: integration } = await supabase
@@ -190,7 +190,7 @@ export async function fetchAvailableCalendarsAction(data: {
     .eq("user_id", profile.id)
     .single()
 
-  if (!integration) return { error: "Integration nicht gefunden." }
+  if (!integration) return { error: E.CAL_INT_NOT_FOUND }
 
   try {
     const credentials: ProviderCredentials = JSON.parse(
@@ -200,7 +200,7 @@ export async function fetchAvailableCalendarsAction(data: {
     const calendars = await provider.fetchCalendars(credentials)
     return { calendars }
   } catch {
-    return { error: "Kalender konnten nicht abgerufen werden." }
+    return { error: E.CAL_INT_CALENDARS_FAILED }
   }
 }
 
@@ -213,10 +213,10 @@ export async function updateSelectedCalendarsAction(data: {
   selectedCalendars: { id: string; name: string }[]
 }): Promise<{ success: true } | { error: string }> {
   const parsed = updateSelectedCalendarsSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
   const { error: updateError } = await supabase
@@ -225,7 +225,7 @@ export async function updateSelectedCalendarsAction(data: {
     .eq("id", parsed.data.integrationId)
     .eq("user_id", profile.id)
 
-  if (updateError) return { error: "Kalender konnten nicht aktualisiert werden." }
+  if (updateError) return { error: E.CAL_INT_CALENDARS_UPDATE_FAILED }
   return { success: true }
 }
 
@@ -238,10 +238,10 @@ export async function updateSyncIntervalAction(data: {
   syncIntervalMinutes: number
 }): Promise<{ success: true } | { error: string }> {
   const parsed = updateSyncIntervalSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
   const { error: updateError } = await supabase
@@ -250,7 +250,7 @@ export async function updateSyncIntervalAction(data: {
     .eq("id", parsed.data.integrationId)
     .eq("user_id", profile.id)
 
-  if (updateError) return { error: "Sync-Intervall konnte nicht aktualisiert werden." }
+  if (updateError) return { error: E.CAL_INT_SYNC_INTERVAL_FAILED }
   return { success: true }
 }
 
@@ -262,10 +262,10 @@ export async function disconnectIntegrationAction(data: {
   integrationId: string
 }): Promise<{ success: true } | { error: string }> {
   const parsed = disconnectIntegrationSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
 
   const supabase = await createClient()
 
@@ -283,7 +283,7 @@ export async function disconnectIntegrationAction(data: {
     .eq("id", parsed.data.integrationId)
     .eq("user_id", profile.id)
 
-  if (deleteError) return { error: "Integration konnte nicht getrennt werden." }
+  if (deleteError) return { error: E.CAL_INT_DISCONNECT_FAILED }
   return { success: true }
 }
 
@@ -295,16 +295,16 @@ export async function syncIntegrationAction(data: {
   integrationId: string
 }): Promise<{ eventsImported: number } | { error: string }> {
   const parsed = syncIntegrationSchema.safeParse(data)
-  if (!parsed.success) return { error: "Ungueltige Eingaben." }
+  if (!parsed.success) return { error: E.VAL_INVALID }
 
   const ip = await getIP()
   if (!checkRateLimit(`calSync:${ip}`, 5, 60 * 1000)) {
-    return { error: "Zu viele Sync-Anfragen. Bitte kurz warten." }
+    return { error: E.RATE_SYNC_LIMITED }
   }
 
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
   const { data: integration } = await supabase
@@ -314,12 +314,12 @@ export async function syncIntegrationAction(data: {
     .eq("user_id", profile.id)
     .single()
 
-  if (!integration) return { error: "Integration nicht gefunden." }
+  if (!integration) return { error: E.CAL_INT_NOT_FOUND }
 
   const selectedCalendars =
     (integration.selected_calendars as { id: string; name: string }[]) || []
   if (selectedCalendars.length === 0) {
-    return { error: "Keine Kalender zum Synchronisieren ausgewaehlt." }
+    return { error: E.CAL_INT_NO_CALENDARS }
   }
 
   try {
@@ -370,7 +370,7 @@ export async function syncIntegrationAction(data: {
           .from("calendar_integrations")
           .update({ status: "error", last_error: upsertError.message })
           .eq("id", integration.id)
-        return { error: "Termine konnten nicht gespeichert werden." }
+        return { error: E.CAL_INT_EVENTS_SAVE_FAILED }
       }
     }
 
@@ -394,12 +394,12 @@ export async function syncIntegrationAction(data: {
 
     return { eventsImported: events.length }
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : "Unbekannter Fehler"
+    const errorMsg = err instanceof Error ? err.message : "Unknown error"
     await supabase
       .from("calendar_integrations")
       .update({ status: "error", last_error: errorMsg })
       .eq("id", integration.id)
-    return { error: `Sync fehlgeschlagen: ${errorMsg}` }
+    return { error: E.CAL_INT_SYNC_FAILED }
   }
 }
 
@@ -412,8 +412,8 @@ export async function getExternalEventsForRangeAction(
   endDate: string
 ): Promise<{ events: ExternalCalendarEvent[] } | { error: string }> {
   const profile = await getCurrentProfile()
-  if (!profile) return { error: "Nicht angemeldet." }
-  if (!profile.family_id) return { error: "Du gehoerst keiner Familie an." }
+  if (!profile) return { error: E.AUTH_NOT_LOGGED_IN }
+  if (!profile.family_id) return { error: E.AUTH_NO_FAMILY }
 
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -427,7 +427,7 @@ export async function getExternalEventsForRangeAction(
     .order("start_at", { ascending: true })
     .limit(500)
 
-  if (error) return { error: "Externe Termine konnten nicht geladen werden." }
+  if (error) return { error: E.CAL_INT_EXTERNAL_LOAD_FAILED }
 
   const events: ExternalCalendarEvent[] = (data || []).map((row) => ({
     id: row.id,
